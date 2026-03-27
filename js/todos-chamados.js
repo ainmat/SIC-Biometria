@@ -2,7 +2,7 @@ const SUPABASE_URL = 'https://iemysploewouodsoevyv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_XggfXmsdnywLlSXKiTl3_A_nTwAHa8Y';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let dados = [], filtroSecretaria = 'Todos', filtroMotivo = 'Todos', pesquisa = '';
+let dados = [], filtroSecretaria = 'Todos', filtroMotivo = 'Todos', filtroStatus = 'Todos', pesquisa = '';
 
 const COR_SEC = {
   // Secretarias Municipais (Administração Direta)
@@ -49,6 +49,15 @@ function fmtDate(d){
   return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
 }
 
+function escapeHtml(value){
+  return String(value ?? '—')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function carregar(){
   const {data,error} = await _sb.from('chamados').select('*').order('ticket',{ascending:false});
   if(error){console.error(error);return;}
@@ -70,6 +79,11 @@ function filtrado(){
   // Aplicar filtro de motivo
   if(filtroMotivo!=='Todos'){
     resultado = resultado.filter(d=>d.motivo===filtroMotivo);
+  }
+
+  // Aplicar filtro de status
+  if(filtroStatus!=='Todos'){
+    resultado = resultado.filter(d => (d.status || 'Pendente') === filtroStatus);
   }
   
   // Aplicar pesquisa por ticket
@@ -101,10 +115,11 @@ function render(){
     const statusLimpo = r.status || 'Pendente';
     const statusClass = statusLimpo === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto';
     const cor = COR_SEC[r.secretaria]||'#64748b';
+    const dadosChamado = encodeURIComponent(JSON.stringify(r));
 
-    return `<tr class="clickable-row">
-      <td class="clickable-cell table-right" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:#60a5fa;cursor:pointer" onclick="abrirChamado(${r.ticket})" title="Clique para ver detalhes">#${r.ticket}</td>
-      <td class="clickable-cell table-left" style="color:#f1f5f9;font-weight:500;cursor:pointer" onclick="abrirChamado(${r.ticket})" title="Clique para ver detalhes">${r.unidade || 'N/A'}</td>
+    return `<tr class="clickable-row" onclick="abrirChamado('${dadosChamado}')" title="Clique para ver detalhes">
+      <td class="clickable-cell table-right" style="font-family:'JetBrains Mono',monospace;font-weight:600;color:#60a5fa;cursor:pointer">#${r.ticket}</td>
+      <td class="clickable-cell table-left" style="color:#f1f5f9;font-weight:500;cursor:pointer">${r.unidade || 'N/A'}</td>
       <td class="table-centered" style="font-size:10px;padding:2px 6px;border-radius:4px;background:${cor}20;color:${cor};font-weight:500">${r.secretaria}</td>
       <td class="table-centered" style="font-size:11px">${r.motivo}</td>
       <td class="table-centered" style="font-family:'JetBrains Mono',monospace;font-size:10px">${fmtDate(r.data_abertura)}</td>
@@ -133,6 +148,8 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
       filtroSecretaria = value;
     } else if(type === 'motivo'){
       filtroMotivo = value;
+    } else if(type === 'status'){
+      filtroStatus = value;
     }
     
     render();
@@ -150,9 +167,65 @@ _sb.channel('sic-rt')
   .on('postgres_changes',{event:'*',schema:'public',table:'chamados'},()=>carregar())
   .subscribe();
 
-// Função para abrir detalhes do chamado
-function abrirChamado(ticket){
-  window.open(`chamado-detalhe.html?ticket=${ticket}`, '_blank');
+// Modal de detalhes do chamado
+function abrirChamado(encodedData){
+  const overlay = document.getElementById('chamado-modal-overlay');
+  const content = document.getElementById('chamado-modal-content');
+  const chamado = JSON.parse(decodeURIComponent(encodedData));
+  const statusLimpo = chamado.status || 'Pendente';
+  const statusClass = statusLimpo === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto';
+
+  content.innerHTML = `
+    <div class="chamado-modal-grid">
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Ticket</div>
+        <div class="chamado-modal-value">#${escapeHtml(chamado.ticket)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Status</div>
+        <div class="chamado-modal-value"><span class="badge ${statusClass}" style="font-size:10px">${escapeHtml(statusLimpo)}</span></div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Unidade</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.unidade)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Secretaria</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.secretaria)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Motivo</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.motivo)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Data de Abertura</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.data_abertura ? fmtDate(chamado.data_abertura) : '—')}</div>
+      </div>
+    </div>
+    <div class="chamado-modal-item">
+      <div class="chamado-modal-label">Descrição</div>
+      <div class="chamado-modal-desc">${escapeHtml(chamado.problema)}</div>
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
 }
+
+function fecharChamadoModal(){
+  const overlay = document.getElementById('chamado-modal-overlay');
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+window.abrirChamado = abrirChamado;
+
+document.getElementById('chamado-modal-close').addEventListener('click', fecharChamadoModal);
+document.getElementById('chamado-modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'chamado-modal-overlay') fecharChamadoModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fecharChamadoModal();
+});
 
 carregar();
