@@ -83,7 +83,7 @@ function filtrado(){
 
   // Aplicar filtro de status
   if(filtroStatus!=='Todos'){
-    resultado = resultado.filter(d => (d.status || 'Pendente') === filtroStatus);
+    resultado = resultado.filter(d => (d.status || 'Aguardando Atendimento') === filtroStatus);
   }
   
   // Aplicar pesquisa por ticket
@@ -112,7 +112,7 @@ function render(){
   }
 
   tb.innerHTML = arr.map(r => {
-    const statusLimpo = r.status || 'Pendente';
+    const statusLimpo = r.status || 'Aguardando Atendimento';
     const statusClass = statusLimpo === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto';
     const cor = COR_SEC[r.secretaria]||'#64748b';
     const dadosChamado = encodeURIComponent(JSON.stringify(r));
@@ -172,7 +172,7 @@ function abrirChamado(encodedData){
   const overlay = document.getElementById('chamado-modal-overlay');
   const content = document.getElementById('chamado-modal-content');
   const chamado = JSON.parse(decodeURIComponent(encodedData));
-  const statusLimpo = chamado.status || 'Pendente';
+  const statusLimpo = chamado.status || 'Aguardando Atendimento';
   const statusClass = statusLimpo === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto';
 
   content.innerHTML = `

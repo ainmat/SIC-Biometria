@@ -307,6 +307,56 @@
     #equipamentos-chart {
       max-height: 200px;
     }
+
+    @media (max-width: 900px) {
+      .main-content {
+        padding-left: 0;
+        height: auto;
+      }
+
+      .header {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .content-grid {
+        flex-direction: column;
+        overflow: visible;
+        padding: 12px;
+      }
+
+      .main-panel,
+      .side-panel {
+        flex: 1 1 auto;
+      }
+
+      .search-bar {
+        flex-direction: column;
+      }
+
+      #refresh-button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .summary-tables-container {
+        flex-direction: column;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      #equipamentos-table {
+        min-width: 720px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -336,7 +386,7 @@
       Análise de Tendências
     </a>
     <div class="nav-section">Infraestrutura</div>
-    <a class="nav-item active" href="parque-equipamentos-planilha.html">
+    <a class="nav-item active" href="parque-equipamentos.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
       Parque de Equipamentos
     </a>

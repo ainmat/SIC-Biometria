@@ -684,3 +684,93 @@ tbody tr:hover td{color:var(--text)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 900px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    z-index: 20;
+  }
+
+  .logo {
+    padding: 0 14px 10px;
+    border-bottom: none;
+  }
+
+  .nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 12px;
+    flex: none;
+  }
+
+  .nav-section {
+    display: none;
+  }
+
+  .nav-item {
+    white-space: nowrap;
+    margin-bottom: 0;
+    padding: 8px 10px;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .main {
+    margin-left: 0;
+    min-height: auto;
+  }
+
+  .topbar {
+    padding: 14px 16px;
+  }
+
+  .topbar-left h1 {
+    font-size: 16px;
+  }
+
+  .topbar-left p {
+    font-size: 10px;
+  }
+
+  .content {
+    padding: 14px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .kpi-grid,
+  .charts-row,
+  .bottom-row,
+  .audit-grid,
+  .strategy-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .chart-card,
+  .table-card,
+  .timeline-card {
+    padding: 14px;
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 680px;
+  }
+
+  .hbar-label {
+    min-width: 80px;
+  }
+}

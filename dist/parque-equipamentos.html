@@ -306,10 +306,60 @@
     #equipamentos-chart {
       max-height: 200px;
     }
+
+    @media (max-width: 900px) {
+      .main-content {
+        padding-left: 0;
+        height: auto;
+      }
+
+      .header {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .content-grid {
+        flex-direction: column;
+        overflow: visible;
+        padding: 12px;
+      }
+
+      .main-panel,
+      .side-panel {
+        flex: 1 1 auto;
+      }
+
+      .search-bar {
+        flex-direction: column;
+      }
+
+      #refresh-button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .summary-tables-container {
+        flex-direction: column;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      #equipamentos-table {
+        min-width: 720px;
+      }
+    }
   </style>
-  <script type="module" crossorigin src="./assets/parque-BhynqGXZ.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/styles-CZipJHg9.js">
-  <link rel="stylesheet" crossorigin href="./assets/styles-DV4KIPk3.css">
+  <script type="module" crossorigin src="./assets/parque-BRYKwesE.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/styles-DK7ksmaa.js">
+  <link rel="stylesheet" crossorigin href="./assets/styles-B8xGRwry.css">
   <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script>
   <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
 </head>
@@ -340,7 +390,7 @@
       Análise de Tendências
     </a>
     <div class="nav-section">Infraestrutura</div>
-    <a class="nav-item active" href="parque-equipamentos-planilha.html">
+    <a class="nav-item active" href="parque-equipamentos.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
       Parque de Equipamentos
     </a>
@@ -427,6 +477,6 @@
 <!-- Scripts -->
   <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
   <script nomodule crossorigin id="vite-legacy-polyfill" src="./assets/polyfills-legacy-1GeVzzTZ.js"></script>
-  <script nomodule crossorigin id="vite-legacy-entry" data-src="./assets/parque-legacy-CKpVahg_.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
+  <script nomodule crossorigin id="vite-legacy-entry" data-src="./assets/parque-legacy-Co3CRuhI.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
 </body>
 </html>
