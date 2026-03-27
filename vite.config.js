@@ -24,7 +24,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         todos: resolve(__dirname, 'todos-chamados.html'),
         analise: resolve(__dirname, 'analise-tendencias.html'),
-        detalhe: resolve(__dirname, 'chamado-detalhe.html')
+        detalhe: resolve(__dirname, 'chamado-detalhe.html'),
+        parque: resolve(__dirname, 'parque-equipamentos.html')
       }
     },
     minify: 'terser',
