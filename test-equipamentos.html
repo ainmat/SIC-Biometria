@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Parque de Equipamentos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    .error { background: #dc2626; }
+    .success { background: #16a34a; }
+    .warning { background: #ca8a04; }
+    .equipment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .equipment-card {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .equipment-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #3b82f6;
+    }
+    .equipment-info {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .equipment-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .status-active { color: #34d399; }
+    .status-inactive { color: #f87171; }
+    .status-maintenance { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Teste - Parque de Equipamentos</h1>
+    <div id="status"></div>
+    <div id="equipment-grid"></div>
+  </div>
+
+  <script type="module">
+    // Dados de exemplo para teste
+    const equipmentData = [
+      {
+        id: 1,
+        nome: "Catraca Biométrica A1",
+        tipo: "Catraca",
+        localizacao: "Secretaria de Educação - Sede",
+        status: "active",
+        data_instalacao: "2023-01-15",
+        data_ultima_manutencao: "2024-03-01",
+        modelo: "BioGate Pro",
+        numero_serie: "BGP2023001",
+        secretaria: "Educação",
+        responsavel: "João Silva"
+      },
+      {
+        id: 2,
+        nome: "Leitor Facial B2",
+        tipo: "Leitor Facial",
+        localizacao: "Secretaria de Saúde - Posto Central",
+        status: "active",
+        data_instalacao: "2023-02-20",
+        data_ultima_manutencao: "2024-02-15",
+        modelo: "FaceID 2000",
+        numero_serie: "FID2023002",
+        secretaria: "Saúde",
+        responsavel: "Maria Santos"
+      },
+      {
+        id: 3,
+        nome: "Catraca Biométrica C3",
+        tipo: "Catraca",
+        localizacao: "Secretaria de Educação - Escola Municipal 1",
+        status: "maintenance",
+        data_instalacao: "2023-03-10",
+        data_ultima_manutencao: "2024-01-20",
+        modelo: "BioGate Pro",
+        numero_serie: "BGP2023003",
+        secretaria: "Educação",
+        responsavel: "Pedro Costa"
+      }
+    ];
+
+    function showStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('pt-BR');
+    }
+
+    function getStatusClass(status) {
+      switch(status) {
+        case 'active': return 'status-active';
+        case 'maintenance': return 'status-maintenance';
+        case 'inactive': return 'status-inactive';
+        default: return '';
+      }
+    }
+
+    function getStatusText(status) {
+      switch(status) {
+        case 'active': return 'Ativo';
+        case 'maintenance': return 'Manutenção';
+        case 'inactive': return 'Inativo';
+        default: return 'Desconhecido';
+      }
+    }
+
+    function createEquipmentCard(equipment) {
+      const card = document.createElement('div');
+      card.className = 'equipment-card';
+      
+      card.innerHTML = `
+        <div class="equipment-title">${equipment.nome}</div>
+        <div class="equipment-info">
+          <div class="equipment-row">
+            <span>Tipo:</span>
+            <span>${equipment.tipo}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Local:</span>
+            <span>${equipment.localizacao}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Status:</span>
+            <span class="${getStatusClass(equipment.status)}">${getStatusText(equipment.status)}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Modelo:</span>
+            <span>${equipment.modelo || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Nº Série:</span>
+            <span>${equipment.numero_serie || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Secretaria:</span>
+            <span>${equipment.secretaria || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Responsável:</span>
+            <span>${equipment.responsavel || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Instalação:</span>
+            <span>${formatDate(equipment.data_instalacao)}</span>
+          </div>
+          <div class="equipment-row">
+            <span>Última Manutenção:</span>
+            <span>${formatDate(equipment.data_ultima_manutencao)}</span>
+          </div>
+        </div>
+      `;
+      
+      return card;
+    }
+
+    function renderEquipment() {
+      const grid = document.getElementById('equipment-grid');
+      grid.innerHTML = '';
+      
+      equipmentData.forEach(equipment => {
+        const card = createEquipmentCard(equipment);
+        grid.appendChild(card);
+      });
+      
+      showStatus(`Exibindo ${equipmentData.length} equipamentos (dados de exemplo)`, 'success');
+    }
+
+    // Testar conexão com Supabase se as credenciais existirem
+    async function testSupabaseConnection() {
+      showStatus('Testando conexão com Supabase...', 'warning');
+      
+      try {
+        // Verificar se há credenciais no ambiente
+        const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || supabaseUrl.includes('placeholder') || !supabaseKey) {
+          throw new Error('Credenciais do Supabase não configuradas');
+        }
+        
+        // Tentar carregar Supabase
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        // Testar conexão buscando equipamentos
+        const { data, error } = await supabase
+          .from('equipamentos')
+          .select('*')
+          .limit(5);
+        
+        if (error) throw error;
+        
+        showStatus(`Conectado ao Supabase! Encontrados ${data.length} equipamentos no banco.`, 'success');
+        
+        // Renderizar dados do banco se encontrados
+        if (data.length > 0) {
+          const grid = document.getElementById('equipment-grid');
+          grid.innerHTML = '';
+          
+          data.forEach(equipment => {
+            const card = createEquipmentCard(equipment);
+            grid.appendChild(card);
+          });
+        }
+        
+      } catch (error) {
+        console.error('Erro na conexão:', error);
+        showStatus(`Erro de conexão: ${error.message}. Usando dados de exemplo.`, 'error');
+        renderEquipment();
+      }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+      showStatus('Carregando...', 'warning');
+      
+      // Tentar conexão com Supabase primeiro
+      testSupabaseConnection().then(() => {
+        // Se falhar, já mostra os dados de exemplo na função acima
+      });
+    });
+  </script>
+</body>
+</html>

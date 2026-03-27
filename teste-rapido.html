@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Rápido - Parque de Equipamentos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #3b82f6;
+      margin-bottom: 20px;
+    }
+    .demo-notice {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: #60a5fa;
+      font-size: 14px;
+    }
+    .search-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      max-width: 400px;
+      padding: 12px 16px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 8px 16px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #ccc;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      background: #333;
+    }
+    .filter-btn.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #999;
+    }
+    .equipment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+    .equipment-card {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .equipment-card:hover {
+      border-color: #555;
+      transform: translateY(-2px);
+    }
+    .equipment-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .equipment-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .equipment-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #3b82f6;
+    }
+    .equipment-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .equipment-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 4px 0;
+    }
+    .equipment-label {
+      color: #999;
+    }
+    .equipment-value {
+      color: #fff;
+      font-weight: 500;
+    }
+    .status-active { color: #34d399; }
+    .status-inactive { color: #f87171; }
+    .status-maintenance { color: #fbbf24; }
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Parque de Equipamentos - Teste</h1>
+    
+    <div class="demo-notice">
+      ✅ Página de teste funcional. Exibindo dados de exemplo para demonstração.
+    </div>
+
+    <div class="search-container">
+      <input type="text" class="search-input" id="search-input" placeholder="Buscar equipamentos...">
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="total-equipment">6</div>
+        <div class="stat-label">Total de Equipamentos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value status-active" id="active-equipment">4</div>
+        <div class="stat-label">Ativos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value status-maintenance" id="maintenance-equipment">1</div>
+        <div class="stat-label">Manutenção</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value status-inactive" id="inactive-equipment">1</div>
+        <div class="stat-label">Inativos</div>
+      </div>
+    </div>
+
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">Todos</button>
+      <button class="filter-btn" data-filter="active">Ativos</button>
+      <button class="filter-btn" data-filter="maintenance">Manutenção</button>
+      <button class="filter-btn" data-filter="inactive">Inativos</button>
+    </div>
+
+    <div class="equipment-grid" id="equipment-grid">
+      <!-- Equipment cards will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <script>
+    // Dados de exemplo
+    const equipmentData = [
+      {
+        id: 1,
+        nome: "Catraca Biométrica A1",
+        tipo: "Catraca",
+        localizacao: "Secretaria de Educação - Sede",
+        status: "active",
+        data_instalacao: "2023-01-15",
+        data_ultima_manutencao: "2024-03-01",
+        modelo: "BioGate Pro",
+        numero_serie: "BGP2023001",
+        secretaria: "Educação",
+        responsavel: "João Silva"
+      },
+      {
+        id: 2,
+        nome: "Leitor Facial B2",
+        tipo: "Leitor Facial",
+        localizacao: "Secretaria de Saúde - Posto Central",
+        status: "active",
+        data_instalacao: "2023-02-20",
+        data_ultima_manutencao: "2024-02-15",
+        modelo: "FaceID 2000",
+        numero_serie: "FID2023002",
+        secretaria: "Saúde",
+        responsavel: "Maria Santos"
+      },
+      {
+        id: 3,
+        nome: "Catraca Biométrica C3",
+        tipo: "Catraca",
+        localizacao: "Secretaria de Educação - Escola Municipal 1",
+        status: "maintenance",
+        data_instalacao: "2023-03-10",
+        data_ultima_manutencao: "2024-01-20",
+        modelo: "BioGate Pro",
+        numero_serie: "BGP2023003",
+        secretaria: "Educação",
+        responsavel: "Pedro Costa"
+      },
+      {
+        id: 4,
+        nome: "Leitor Digital D4",
+        tipo: "Leitor Digital",
+        localizacao: "Secretaria de Administração",
+        status: "active",
+        data_instalacao: "2023-04-05",
+        data_ultima_manutencao: "2024-03-10",
+        modelo: "DigitalScan X",
+        numero_serie: "DSX2023004",
+        secretaria: "Administração",
+        responsavel: "Ana Oliveira"
+      },
+      {
+        id: 5,
+        nome: "Catraca Biométrica E5",
+        tipo: "Catraca",
+        localizacao: "Secretária de Saúde - Posto Norte",
+        status: "inactive",
+        data_instalacao: "2023-05-12",
+        data_ultima_manutencao: "2023-12-01",
+        modelo: "BioGate Pro",
+        numero_serie: "BGP2023005",
+        secretaria: "Saúde",
+        responsavel: "Carlos Ferreira"
+      },
+      {
+        id: 6,
+        nome: "Leitor Facial F6",
+        tipo: "Leitor Facial",
+        localizacao: "Secretaria de Educação - Escola Municipal 2",
+        status: "active",
+        data_instalacao: "2023-06-18",
+        data_ultima_manutencao: "2024-02-28",
+        modelo: "FaceID 2000",
+        numero_serie: "FID2023006",
+        secretaria: "Educação",
+        responsavel: "Lucia Pereira"
+      }
+    ];
+
+    let currentFilter = 'all';
+    let searchTerm = '';
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Página carregada com sucesso!');
+      renderEquipment();
+      updateStats();
+      setupEventListeners();
+    });
+
+    // Configurar event listeners
+    function setupEventListeners() {
+      // Filtros
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentFilter = this.dataset.filter;
+          renderEquipment();
+        });
+      });
+
+      // Busca
+      const searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('input', function() {
+        searchTerm = this.value.toLowerCase();
+        renderEquipment();
+      });
+    }
+
+    // Renderizar equipamentos
+    function renderEquipment() {
+      const grid = document.getElementById('equipment-grid');
+      const filteredEquipment = filterEquipment();
+      
+      grid.innerHTML = '';
+      
+      if (filteredEquipment.length === 0) {
+        grid.innerHTML = '<div class="no-results">Nenhum equipamento encontrado</div>';
+        return;
+      }
+      
+      filteredEquipment.forEach(equipment => {
+        const card = createEquipmentCard(equipment);
+        grid.appendChild(card);
+      });
+    }
+
+    // Filtrar equipamentos
+    function filterEquipment() {
+      return equipmentData.filter(equipment => {
+        const matchesFilter = currentFilter === 'all' || equipment.status === currentFilter;
+        const matchesSearch = searchTerm === '' || 
+          equipment.nome.toLowerCase().includes(searchTerm) ||
+          equipment.tipo.toLowerCase().includes(searchTerm) ||
+          equipment.localizacao.toLowerCase().includes(searchTerm) ||
+          (equipment.modelo && equipment.modelo.toLowerCase().includes(searchTerm)) ||
+          (equipment.numero_serie && equipment.numero_serie.toLowerCase().includes(searchTerm)) ||
+          (equipment.secretaria && equipment.secretaria.toLowerCase().includes(searchTerm));
+        
+        return matchesFilter && matchesSearch;
+      });
+    }
+
+    // Criar card de equipamento
+    function createEquipmentCard(equipment) {
+      const card = document.createElement('div');
+      card.className = 'equipment-card';
+      
+      const statusClass = getStatusClass(equipment.status);
+      const statusText = getStatusText(equipment.status);
+      
+      card.innerHTML = `
+        <div class="equipment-header">
+          <div class="equipment-icon">
+            ${getTypeIcon(equipment.tipo)}
+          </div>
+          <div class="equipment-title">${equipment.nome}</div>
+        </div>
+        <div class="equipment-info">
+          <div class="equipment-row">
+            <span class="equipment-label">Tipo:</span>
+            <span class="equipment-value">${equipment.tipo}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Local:</span>
+            <span class="equipment-value">${equipment.localizacao}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Status:</span>
+            <span class="equipment-value ${statusClass}">${statusText}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Modelo:</span>
+            <span class="equipment-value">${equipment.modelo || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Nº Série:</span>
+            <span class="equipment-value">${equipment.numero_serie || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Secretaria:</span>
+            <span class="equipment-value">${equipment.secretaria || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Responsável:</span>
+            <span class="equipment-value">${equipment.responsavel || '—'}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Instalação:</span>
+            <span class="equipment-value">${formatDate(equipment.data_instalacao)}</span>
+          </div>
+          <div class="equipment-row">
+            <span class="equipment-label">Última Manutenção:</span>
+            <span class="equipment-value">${formatDate(equipment.data_ultima_manutencao)}</span>
+          </div>
+        </div>
+      `;
+      
+      return card;
+    }
+
+    // Funções auxiliares
+    function getStatusClass(status) {
+      switch(status) {
+        case 'active': return 'status-active';
+        case 'maintenance': return 'status-maintenance';
+        case 'inactive': return 'status-inactive';
+        default: return '';
+      }
+    }
+
+    function getStatusText(status) {
+      switch(status) {
+        case 'active': return 'Ativo';
+        case 'maintenance': return 'Manutenção';
+        case 'inactive': return 'Inativo';
+        default: return 'Desconhecido';
+      }
+    }
+
+    function getTypeIcon(type) {
+      switch(type) {
+        case 'Catraca':
+          return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>';
+        case 'Leitor Facial':
+          return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3"/><path d="M16 14h-8a4 4 0 00-4 4v2h16v-2a4 4 0 00-4-4z"/></svg>';
+        case 'Leitor Digital':
+          return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>';
+        default:
+          return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/></svg>';
+      }
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    function updateStats() {
+      const total = equipmentData.length;
+      const active = equipmentData.filter(e => e.status === 'active').length;
+      const maintenance = equipmentData.filter(e => e.status === 'maintenance').length;
+      const inactive = equipmentData.filter(e => e.status === 'inactive').length;
+      
+      document.getElementById('total-equipment').textContent = total;
+      document.getElementById('active-equipment').textContent = active;
+      document.getElementById('maintenance-equipment').textContent = maintenance;
+      document.getElementById('inactive-equipment').textContent = inactive;
+    }
+  </script>
+</body>
+</html>

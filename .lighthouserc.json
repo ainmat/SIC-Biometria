@@ -1,0 +1,22 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 3,
+      "settings": {
+        "chromeFlags": "--headless"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", "error"],
+        "categories:accessibility": "error",
+        "categories:best-practices": "warn",
+        "categories:seo": "warn"
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  },
+  "extends": "lighthouse:default"
+}

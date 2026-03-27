@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análise de Tendências · SIC-Biometria</title>
+  
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Local Assets -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">SIC-Biometria</div>
+      <div class="logo-sub">Pref. de Osasco</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Painel de Chamados
+    </a>
+    <a class="nav-item" href="todos-chamados.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      Todos os Chamados
+    </a>
+    <a class="nav-item active" href="analise-tendencias.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Análise de Tendências
+    </a>
+    <div class="nav-section">Infraestrutura</div>
+    <a class="nav-item" href="parque-equipamentos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+      Parque de Equipamentos
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Realtime ativo
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Análise de Tendências</h1>
+      <p id="topbar-date">Carregando...</p>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-live">
+        <div class="status-dot"></div>
+        AO VIVO
+      </div>
+      <div class="avatar">MC</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPIs de Tendência -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#ef4444"></div>
+        <div class="kpi-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+          Principal Motivo
+        </div>
+        <div class="kpi-value" id="kpi-motivo" style="color:#f87171">—</div>
+        <div class="kpi-footer">
+          <span class="kpi-tag tag-red" id="kpi-motivo-tag">0 chamados</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#8b5cf6"></div>
+        <div class="kpi-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Média Diária
+        </div>
+        <div class="kpi-value" id="kpi-media" style="color:#a78bfa">0</div>
+        <div class="kpi-footer">
+          <span class="kpi-tag tag-blue" id="kpi-media-tag">chamados/dia</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#f59e0b"></div>
+        <div class="kpi-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+• Pico de Chamados
+        </div>
+        <div class="kpi-value" id="kpi-pico" style="color:#fbbf24">0</div>
+        <div class="kpi-footer">
+          <span class="kpi-tag tag-amber" id="kpi-pico-tag">em um dia</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos de Tendência - Seção Central -->
+    <div class="charts-section">
+      <div class="section-header">
+        <div class="section-title">Análise Histórica</div>
+        <div class="section-sub">Visão temporal dos chamados</div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Evolução Mensal</div>
+              <div class="chart-sub">Chamados por mês</div>
+            </div>
+            <div class="chart-badge" id="badge-mensal">0 total</div>
+          </div>
+          <div style="position:relative;height:250px">
+            <canvas id="chartMensal"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Distribuição Semanal</div>
+              <div class="chart-sub">Chamados por dia da semana</div>
+            </div>
+            <div class="chart-badge" id="badge-semanal">0 total</div>
+          </div>
+          <div style="position:relative;height:250px">
+            <canvas id="chartSemanal"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Análise por Período -->
+    <div class="table-card">
+      <div class="chart-header" style="margin-bottom:20px">
+        <div>
+          <div class="chart-title">Análise por Período</div>
+          <div class="chart-sub">Estatísticas detalhadas</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <div style="text-align:center;padding:20px;background:var(--surface);border-radius:12px">
+          <div style="font-size:24px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--accent)" id="stat-total">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Total no Período</div>
+        </div>
+        <div style="text-align:center;padding:20px;background:var(--surface);border-radius:12px">
+          <div style="font-size:24px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--green)" id="stat-resolvidos">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Resolvidos</div>
+        </div>
+        <div style="text-align:center;padding:20px;background:var(--surface);border-radius:12px">
+          <div style="font-size:24px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--amber)" id="stat-pendentes">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Pendentes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/analise-tendencias.js"></script>
+</body>
+</html>

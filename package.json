@@ -1,0 +1,69 @@
+{
+  "name": "sic-biometria",
+  "version": "2.0.0",
+  "description": "Sistema Integrado de Controle de Biometria - Prefeitura de Osasco",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint js/ --ext .js,.mjs",
+    "lint:fix": "eslint js/ --ext .js,.mjs --fix",
+    "format": "prettier --write js/ css/ *.html",
+    "validate": "html-validate *.html",
+    "optimize": "npm run build && npm run optimize-images",
+    "analyze": "npm run build && npx bundle-analyzer dist/",
+    "security:audit": "npm audit",
+    "performance:test": "lighthouse --chrome-flags='--headless' --output=html --output-path=./reports/lighthouse http://localhost:3000"
+  },
+  "keywords": [
+    "biometria",
+    "controle",
+    "prefeitura",
+    "osasco",
+    "dashboard",
+    "chamados",
+    "sistema"
+  ],
+  "author": {
+    "name": "Prefeitura de Osasco",
+    "email": "ti@osasco.sp.gov.br"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-legacy": "^5.4.1",
+    "vite": "^5.4.8",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/user-event": "^14.5.2",
+    "html-validate": "^8.2.0",
+    "lighthouse": "^11.7.1",
+    "bundle-analyzer": "^0.1.0",
+    "autoprefixer": "^10.4.18",
+    "cssnano": "^6.0.3",
+    "terser": "^5.27.0",
+    "imagemin": "^8.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-svgo": "^10.0.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not IE 11"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
