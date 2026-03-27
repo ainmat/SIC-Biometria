@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import { legacy } from '@vitejs/plugin-legacy';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import legacy from '@vitejs/plugin-legacy';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
