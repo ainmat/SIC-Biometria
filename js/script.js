@@ -52,6 +52,15 @@ function fmtDate(d){
   return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
 }
 
+function escapeHtml(value){
+  return String(value ?? '—')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function carregar(){
   try {
     if(!_sb && !inicializarSupabase()){
@@ -225,9 +234,10 @@ function render(){
     // Tabela
     const tb = document.getElementById('table-body');
     tb.innerHTML = arr.slice(0,10).map(r=>{
-      const status = r.status || 'Pendente';
+      const status = r.status || 'Aguardando Atendimento';
       const statusClass = status === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto';
-      return `<tr>
+      const dadosChamado = encodeURIComponent(JSON.stringify(r));
+      return `<tr class="clickable-row" onclick="abrirChamadoPainel('${dadosChamado}')" title="Clique para ver detalhes">
         <td style="color:#f1f5f9;font-size:11px;font-weight:500">${r.unidade?.split(' ').slice(0,4).join(' ') || 'N/A'}</td>
         <td style="font-size:11px">${r.secretaria}</td>
         <td style="font-size:11px">${r.motivo}</td>
@@ -241,7 +251,8 @@ function render(){
     tl.innerHTML = arr.slice(0,8).map((d,i)=>{
       const cor = COR_SEC[d.secretaria]||'#64748b';
       const isLast = i===Math.min(7,arr.length-1);
-      return `<div class="tl-item">
+      const dadosChamado = encodeURIComponent(JSON.stringify(d));
+      return `<div class="tl-item clickable-row" onclick="abrirChamadoPainel('${dadosChamado}')" title="Clique para ver detalhes">
         <div class="tl-line">
           <div class="tl-dot2" style="background:${cor}"></div>
           ${!isLast?'<div class="tl-connector"></div>':''}
@@ -285,4 +296,64 @@ setTimeout(() => {
 // Iniciar carregamento quando a página estiver pronta
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(carregar, 500);
+});
+
+function abrirChamadoPainel(encodedData){
+  const overlay = document.getElementById('chamado-modal-overlay');
+  const content = document.getElementById('chamado-modal-content');
+  const chamado = JSON.parse(decodeURIComponent(encodedData));
+  const status = chamado.status || 'Aguardando Atendimento';
+  const statusClass = status === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto';
+
+  content.innerHTML = `
+    <div class="chamado-modal-grid">
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Ticket</div>
+        <div class="chamado-modal-value">#${escapeHtml(chamado.ticket)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Status</div>
+        <div class="chamado-modal-value"><span class="badge ${statusClass}" style="font-size:10px">${escapeHtml(status)}</span></div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Unidade</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.unidade)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Secretaria</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.secretaria)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Motivo</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.motivo)}</div>
+      </div>
+      <div class="chamado-modal-item">
+        <div class="chamado-modal-label">Data de Abertura</div>
+        <div class="chamado-modal-value">${escapeHtml(chamado.data_abertura ? fmtDate(chamado.data_abertura) : '—')}</div>
+      </div>
+    </div>
+    <div class="chamado-modal-item">
+      <div class="chamado-modal-label">Descrição</div>
+      <div class="chamado-modal-desc">${escapeHtml(chamado.problema)}</div>
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function fecharChamadoModalPainel(){
+  const overlay = document.getElementById('chamado-modal-overlay');
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+window.abrirChamadoPainel = abrirChamadoPainel;
+
+document.getElementById('chamado-modal-close').addEventListener('click', fecharChamadoModalPainel);
+document.getElementById('chamado-modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'chamado-modal-overlay') fecharChamadoModalPainel();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fecharChamadoModalPainel();
 });

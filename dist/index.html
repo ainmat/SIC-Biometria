@@ -22,7 +22,94 @@
       console.log('Chart.js disponível:', typeof Chart !== 'undefined');
     });
   </script>
-  <script type="module" crossorigin src="./assets/main-PPsHArUn.js"></script>
+  <style>
+    .clickable-row {
+      cursor: pointer;
+    }
+    .clickable-row:hover td {
+      color: var(--text);
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .chamado-modal {
+      width: min(760px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      padding: 20px;
+    }
+    .chamado-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .chamado-modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .chamado-modal-close {
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--sub);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .chamado-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 14px;
+      margin-bottom: 14px;
+    }
+    .chamado-modal-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .chamado-modal-label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .chamado-modal-value {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .chamado-modal-desc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+  <script type="module" crossorigin src="./assets/main-Bfb9JxSI.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/styles-DK7ksmaa.js">
   <link rel="stylesheet" crossorigin href="./assets/styles-B8xGRwry.css">
   <link rel="stylesheet" crossorigin href="./assets/main-DY-bPeRz.css">
@@ -230,9 +317,19 @@
   </div>
 </main>
 
+<div id="chamado-modal-overlay" class="modal-overlay" aria-hidden="true">
+  <div class="chamado-modal" role="dialog" aria-modal="true" aria-labelledby="chamado-modal-title">
+    <div class="chamado-modal-header">
+      <div id="chamado-modal-title" class="chamado-modal-title">Detalhes do Chamado</div>
+      <button id="chamado-modal-close" class="chamado-modal-close" type="button" aria-label="Fechar">×</button>
+    </div>
+    <div id="chamado-modal-content"></div>
+  </div>
+</div>
+
 <!-- Scripts -->
   <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
-  <script nomodule crossorigin id="vite-legacy-polyfill" src="./assets/polyfills-legacy-1GeVzzTZ.js"></script>
-  <script nomodule crossorigin id="vite-legacy-entry" data-src="./assets/main-legacy-DUz6YNiH.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
+  <script nomodule crossorigin id="vite-legacy-polyfill" src="./assets/polyfills-legacy-XH1ceKeP.js"></script>
+  <script nomodule crossorigin id="vite-legacy-entry" data-src="./assets/main-legacy-pU5ytrCk.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
 </body>
 </html>
