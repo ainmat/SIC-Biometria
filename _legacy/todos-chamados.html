@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todos os Chamados · SIC-Biometria</title>
+  <link rel="icon" href="data:,">
+  
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Local Assets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .clickable-row {
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .clickable-row:hover {
+      background-color: rgba(255,255,255,0.02);
+    }
+    .clickable-cell:hover {
+      text-decoration: underline;
+    }
+    #search-input:focus, #search-unidade-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+    }
+    #search-input:focus {
+      width: 180px;
+    }
+    #search-unidade-input:focus {
+      width: 200px;
+    }
+    .table-centered {
+      text-align: center;
+    }
+    .table-left {
+      text-align: left;
+      padding-left: 12px;
+    }
+    .table-right {
+      text-align: right;
+      padding-right: 12px;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .chamado-modal {
+      width: min(760px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      padding: 20px;
+    }
+    .chamado-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .chamado-modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .chamado-modal-close {
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--sub);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .chamado-modal-close:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+    .chamado-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 14px;
+      margin-bottom: 14px;
+    }
+    .chamado-modal-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .chamado-modal-label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .chamado-modal-value {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .chamado-modal-desc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    @media (max-width: 768px) {
+      .chamado-modal-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">SIC-Biometria</div>
+      <div class="logo-sub">Pref. de Osasco</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Painel de Chamados
+    </a>
+    <a class="nav-item active" href="todos-chamados.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      Todos os Chamados
+    </a>
+    <a class="nav-item" href="unidades-multiplos-chamados.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Unidades com Múltiplos Chamados
+    </a>
+    <a class="nav-item" href="analise-tendencias.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Análise de Tendências
+    </a>
+    <div class="nav-section">Infraestrutura</div>
+    <a class="nav-item" href="parque-equipamentos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+      Parque de Equipamentos
+    </a>
+    <div class="nav-section">Módulo Prévias</div>
+    <a class="nav-item" href="previas-frequencia.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Prévia de Frequência
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Realtime ativo
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Todos os Chamados</h1>
+      <p id="topbar-date">Carregando...</p>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-live">
+        <div class="status-dot"></div>
+        AO VIVO
+      </div>
+      <div class="avatar">MC</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="table-card">
+      <div class="chart-header" style="margin-bottom:20px">
+        <div>
+          <div class="chart-title">Lista Completa de Chamados</div>
+          <div class="chart-sub">Todos os registros do sistema</div>
+        </div>
+      </div>
+      
+      <div class="filters" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="filter-label">Secretaria:</span>
+            <button class="filter-btn on" data-f="Todos" data-type="secretaria">Todos</button>
+            <button class="filter-btn" data-f="Saúde" data-type="secretaria">Saúde</button>
+            <button class="filter-btn" data-f="Educação" data-type="secretaria">Educação</button>
+            <button class="filter-btn" data-f="Outros" data-type="secretaria">Outros</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="filter-label">Motivo:</span>
+            <button class="filter-btn" data-f="Todos" data-type="motivo">Todos</button>
+            <button class="filter-btn" data-f="EQUIPAMENTO" data-type="motivo">Equipamento</button>
+            <button class="filter-btn" data-f="RECONHECIMENTO" data-type="motivo">Reconhecimento</button>
+            <button class="filter-btn" data-f="ESPELHO DE PONTO" data-type="motivo">Espelho de Ponto</button>
+            <button class="filter-btn" data-f="CADASTRO" data-type="motivo">Cadastro</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="filter-label">Status:</span>
+            <button class="filter-btn on" data-f="Todos" data-type="status">Todos</button>
+            <button class="filter-btn" data-f="Aguardando Atendimento" data-type="status">Aguardando Atendimento</button>
+            <button class="filter-btn" data-f="Atendimento Encerrado" data-type="status">Encerrado</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="filter-label">Pesquisar:</span>
+          <input type="text" id="search-input" placeholder="Buscar ticket..." style="padding:6px 12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;width:120px;transition:all 0.2s">
+          <input type="text" id="search-unidade-input" placeholder="Buscar unidade..." style="padding:6px 12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:6px;font-size:11px;width:150px;transition:all 0.2s">
+        </div>
+      </div>
+
+      <table style="font-size:11px">
+        <thead>
+          <tr>
+            <th class="table-right" style="width:8%">Ticket</th>
+            <th class="table-left" style="width:25%">Unidade</th>
+            <th class="table-centered" style="width:12%">Secretaria</th>
+            <th class="table-centered" style="width:15%">Motivo</th>
+            <th class="table-centered" style="width:12%">Data Abertura</th>
+            <th class="table-centered" style="width:10%">Status</th>
+            <th class="table-centered" style="width:18%">Descrição</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td colspan="7" style="text-align:center; padding:40px; color:var(--muted)">
+              Carregando dados...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div id="chamado-modal-overlay" class="modal-overlay" aria-hidden="true">
+  <div class="chamado-modal" role="dialog" aria-modal="true" aria-labelledby="chamado-modal-title">
+    <div class="chamado-modal-header">
+      <div id="chamado-modal-title" class="chamado-modal-title">Detalhes do Chamado</div>
+      <button id="chamado-modal-close" class="chamado-modal-close" type="button" aria-label="Fechar">×</button>
+    </div>
+    <div id="chamado-modal-content"></div>
+  </div>
+</div>
+
+<script type="module" src="js/todos-chamados.js"></script>
+</body>
+</html>

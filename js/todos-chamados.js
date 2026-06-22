@@ -2,7 +2,7 @@ const SUPABASE_URL = 'https://iemysploewouodsoevyv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_XggfXmsdnywLlSXKiTl3_A_nTwAHa8Y';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let dados = [], filtroSecretaria = 'Todos', filtroMotivo = 'Todos', filtroStatus = 'Todos', pesquisa = '';
+let dados = [], filtroSecretaria = 'Todos', filtroMotivo = 'Todos', filtroStatus = 'Todos', pesquisa = '', pesquisaUnidade = '';
 
 const COR_SEC = {
   // Secretarias Municipais (Administração Direta)
@@ -91,6 +91,11 @@ function filtrado(){
     resultado = resultado.filter(d => d.ticket.toString().includes(pesquisa));
   }
   
+  // Aplicar pesquisa por unidade
+  if(pesquisaUnidade){
+    resultado = resultado.filter(d => d.unidade && d.unidade.toLowerCase().includes(pesquisaUnidade.toLowerCase()));
+  }
+  
   return resultado;
 }
 
@@ -159,6 +164,12 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 // Pesquisa
 document.getElementById('search-input').addEventListener('input', (e) => {
   pesquisa = e.target.value;
+  render();
+});
+
+// Pesquisa por unidade
+document.getElementById('search-unidade-input').addEventListener('input', (e) => {
+  pesquisaUnidade = e.target.value;
   render();
 });
 

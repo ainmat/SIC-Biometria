@@ -1,0 +1,3325 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for previas-frequencia.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="prettify.css" />
+    <link rel="stylesheet" href="base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="index.html">All files</a> previas-frequencia.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/562</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/206</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/96</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/528</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a>
+<a name='L323'></a><a href='#L323'>323</a>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a>
+<a name='L326'></a><a href='#L326'>326</a>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a>
+<a name='L338'></a><a href='#L338'>338</a>
+<a name='L339'></a><a href='#L339'>339</a>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a>
+<a name='L347'></a><a href='#L347'>347</a>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a>
+<a name='L363'></a><a href='#L363'>363</a>
+<a name='L364'></a><a href='#L364'>364</a>
+<a name='L365'></a><a href='#L365'>365</a>
+<a name='L366'></a><a href='#L366'>366</a>
+<a name='L367'></a><a href='#L367'>367</a>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a>
+<a name='L392'></a><a href='#L392'>392</a>
+<a name='L393'></a><a href='#L393'>393</a>
+<a name='L394'></a><a href='#L394'>394</a>
+<a name='L395'></a><a href='#L395'>395</a>
+<a name='L396'></a><a href='#L396'>396</a>
+<a name='L397'></a><a href='#L397'>397</a>
+<a name='L398'></a><a href='#L398'>398</a>
+<a name='L399'></a><a href='#L399'>399</a>
+<a name='L400'></a><a href='#L400'>400</a>
+<a name='L401'></a><a href='#L401'>401</a>
+<a name='L402'></a><a href='#L402'>402</a>
+<a name='L403'></a><a href='#L403'>403</a>
+<a name='L404'></a><a href='#L404'>404</a>
+<a name='L405'></a><a href='#L405'>405</a>
+<a name='L406'></a><a href='#L406'>406</a>
+<a name='L407'></a><a href='#L407'>407</a>
+<a name='L408'></a><a href='#L408'>408</a>
+<a name='L409'></a><a href='#L409'>409</a>
+<a name='L410'></a><a href='#L410'>410</a>
+<a name='L411'></a><a href='#L411'>411</a>
+<a name='L412'></a><a href='#L412'>412</a>
+<a name='L413'></a><a href='#L413'>413</a>
+<a name='L414'></a><a href='#L414'>414</a>
+<a name='L415'></a><a href='#L415'>415</a>
+<a name='L416'></a><a href='#L416'>416</a>
+<a name='L417'></a><a href='#L417'>417</a>
+<a name='L418'></a><a href='#L418'>418</a>
+<a name='L419'></a><a href='#L419'>419</a>
+<a name='L420'></a><a href='#L420'>420</a>
+<a name='L421'></a><a href='#L421'>421</a>
+<a name='L422'></a><a href='#L422'>422</a>
+<a name='L423'></a><a href='#L423'>423</a>
+<a name='L424'></a><a href='#L424'>424</a>
+<a name='L425'></a><a href='#L425'>425</a>
+<a name='L426'></a><a href='#L426'>426</a>
+<a name='L427'></a><a href='#L427'>427</a>
+<a name='L428'></a><a href='#L428'>428</a>
+<a name='L429'></a><a href='#L429'>429</a>
+<a name='L430'></a><a href='#L430'>430</a>
+<a name='L431'></a><a href='#L431'>431</a>
+<a name='L432'></a><a href='#L432'>432</a>
+<a name='L433'></a><a href='#L433'>433</a>
+<a name='L434'></a><a href='#L434'>434</a>
+<a name='L435'></a><a href='#L435'>435</a>
+<a name='L436'></a><a href='#L436'>436</a>
+<a name='L437'></a><a href='#L437'>437</a>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a>
+<a name='L442'></a><a href='#L442'>442</a>
+<a name='L443'></a><a href='#L443'>443</a>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a>
+<a name='L448'></a><a href='#L448'>448</a>
+<a name='L449'></a><a href='#L449'>449</a>
+<a name='L450'></a><a href='#L450'>450</a>
+<a name='L451'></a><a href='#L451'>451</a>
+<a name='L452'></a><a href='#L452'>452</a>
+<a name='L453'></a><a href='#L453'>453</a>
+<a name='L454'></a><a href='#L454'>454</a>
+<a name='L455'></a><a href='#L455'>455</a>
+<a name='L456'></a><a href='#L456'>456</a>
+<a name='L457'></a><a href='#L457'>457</a>
+<a name='L458'></a><a href='#L458'>458</a>
+<a name='L459'></a><a href='#L459'>459</a>
+<a name='L460'></a><a href='#L460'>460</a>
+<a name='L461'></a><a href='#L461'>461</a>
+<a name='L462'></a><a href='#L462'>462</a>
+<a name='L463'></a><a href='#L463'>463</a>
+<a name='L464'></a><a href='#L464'>464</a>
+<a name='L465'></a><a href='#L465'>465</a>
+<a name='L466'></a><a href='#L466'>466</a>
+<a name='L467'></a><a href='#L467'>467</a>
+<a name='L468'></a><a href='#L468'>468</a>
+<a name='L469'></a><a href='#L469'>469</a>
+<a name='L470'></a><a href='#L470'>470</a>
+<a name='L471'></a><a href='#L471'>471</a>
+<a name='L472'></a><a href='#L472'>472</a>
+<a name='L473'></a><a href='#L473'>473</a>
+<a name='L474'></a><a href='#L474'>474</a>
+<a name='L475'></a><a href='#L475'>475</a>
+<a name='L476'></a><a href='#L476'>476</a>
+<a name='L477'></a><a href='#L477'>477</a>
+<a name='L478'></a><a href='#L478'>478</a>
+<a name='L479'></a><a href='#L479'>479</a>
+<a name='L480'></a><a href='#L480'>480</a>
+<a name='L481'></a><a href='#L481'>481</a>
+<a name='L482'></a><a href='#L482'>482</a>
+<a name='L483'></a><a href='#L483'>483</a>
+<a name='L484'></a><a href='#L484'>484</a>
+<a name='L485'></a><a href='#L485'>485</a>
+<a name='L486'></a><a href='#L486'>486</a>
+<a name='L487'></a><a href='#L487'>487</a>
+<a name='L488'></a><a href='#L488'>488</a>
+<a name='L489'></a><a href='#L489'>489</a>
+<a name='L490'></a><a href='#L490'>490</a>
+<a name='L491'></a><a href='#L491'>491</a>
+<a name='L492'></a><a href='#L492'>492</a>
+<a name='L493'></a><a href='#L493'>493</a>
+<a name='L494'></a><a href='#L494'>494</a>
+<a name='L495'></a><a href='#L495'>495</a>
+<a name='L496'></a><a href='#L496'>496</a>
+<a name='L497'></a><a href='#L497'>497</a>
+<a name='L498'></a><a href='#L498'>498</a>
+<a name='L499'></a><a href='#L499'>499</a>
+<a name='L500'></a><a href='#L500'>500</a>
+<a name='L501'></a><a href='#L501'>501</a>
+<a name='L502'></a><a href='#L502'>502</a>
+<a name='L503'></a><a href='#L503'>503</a>
+<a name='L504'></a><a href='#L504'>504</a>
+<a name='L505'></a><a href='#L505'>505</a>
+<a name='L506'></a><a href='#L506'>506</a>
+<a name='L507'></a><a href='#L507'>507</a>
+<a name='L508'></a><a href='#L508'>508</a>
+<a name='L509'></a><a href='#L509'>509</a>
+<a name='L510'></a><a href='#L510'>510</a>
+<a name='L511'></a><a href='#L511'>511</a>
+<a name='L512'></a><a href='#L512'>512</a>
+<a name='L513'></a><a href='#L513'>513</a>
+<a name='L514'></a><a href='#L514'>514</a>
+<a name='L515'></a><a href='#L515'>515</a>
+<a name='L516'></a><a href='#L516'>516</a>
+<a name='L517'></a><a href='#L517'>517</a>
+<a name='L518'></a><a href='#L518'>518</a>
+<a name='L519'></a><a href='#L519'>519</a>
+<a name='L520'></a><a href='#L520'>520</a>
+<a name='L521'></a><a href='#L521'>521</a>
+<a name='L522'></a><a href='#L522'>522</a>
+<a name='L523'></a><a href='#L523'>523</a>
+<a name='L524'></a><a href='#L524'>524</a>
+<a name='L525'></a><a href='#L525'>525</a>
+<a name='L526'></a><a href='#L526'>526</a>
+<a name='L527'></a><a href='#L527'>527</a>
+<a name='L528'></a><a href='#L528'>528</a>
+<a name='L529'></a><a href='#L529'>529</a>
+<a name='L530'></a><a href='#L530'>530</a>
+<a name='L531'></a><a href='#L531'>531</a>
+<a name='L532'></a><a href='#L532'>532</a>
+<a name='L533'></a><a href='#L533'>533</a>
+<a name='L534'></a><a href='#L534'>534</a>
+<a name='L535'></a><a href='#L535'>535</a>
+<a name='L536'></a><a href='#L536'>536</a>
+<a name='L537'></a><a href='#L537'>537</a>
+<a name='L538'></a><a href='#L538'>538</a>
+<a name='L539'></a><a href='#L539'>539</a>
+<a name='L540'></a><a href='#L540'>540</a>
+<a name='L541'></a><a href='#L541'>541</a>
+<a name='L542'></a><a href='#L542'>542</a>
+<a name='L543'></a><a href='#L543'>543</a>
+<a name='L544'></a><a href='#L544'>544</a>
+<a name='L545'></a><a href='#L545'>545</a>
+<a name='L546'></a><a href='#L546'>546</a>
+<a name='L547'></a><a href='#L547'>547</a>
+<a name='L548'></a><a href='#L548'>548</a>
+<a name='L549'></a><a href='#L549'>549</a>
+<a name='L550'></a><a href='#L550'>550</a>
+<a name='L551'></a><a href='#L551'>551</a>
+<a name='L552'></a><a href='#L552'>552</a>
+<a name='L553'></a><a href='#L553'>553</a>
+<a name='L554'></a><a href='#L554'>554</a>
+<a name='L555'></a><a href='#L555'>555</a>
+<a name='L556'></a><a href='#L556'>556</a>
+<a name='L557'></a><a href='#L557'>557</a>
+<a name='L558'></a><a href='#L558'>558</a>
+<a name='L559'></a><a href='#L559'>559</a>
+<a name='L560'></a><a href='#L560'>560</a>
+<a name='L561'></a><a href='#L561'>561</a>
+<a name='L562'></a><a href='#L562'>562</a>
+<a name='L563'></a><a href='#L563'>563</a>
+<a name='L564'></a><a href='#L564'>564</a>
+<a name='L565'></a><a href='#L565'>565</a>
+<a name='L566'></a><a href='#L566'>566</a>
+<a name='L567'></a><a href='#L567'>567</a>
+<a name='L568'></a><a href='#L568'>568</a>
+<a name='L569'></a><a href='#L569'>569</a>
+<a name='L570'></a><a href='#L570'>570</a>
+<a name='L571'></a><a href='#L571'>571</a>
+<a name='L572'></a><a href='#L572'>572</a>
+<a name='L573'></a><a href='#L573'>573</a>
+<a name='L574'></a><a href='#L574'>574</a>
+<a name='L575'></a><a href='#L575'>575</a>
+<a name='L576'></a><a href='#L576'>576</a>
+<a name='L577'></a><a href='#L577'>577</a>
+<a name='L578'></a><a href='#L578'>578</a>
+<a name='L579'></a><a href='#L579'>579</a>
+<a name='L580'></a><a href='#L580'>580</a>
+<a name='L581'></a><a href='#L581'>581</a>
+<a name='L582'></a><a href='#L582'>582</a>
+<a name='L583'></a><a href='#L583'>583</a>
+<a name='L584'></a><a href='#L584'>584</a>
+<a name='L585'></a><a href='#L585'>585</a>
+<a name='L586'></a><a href='#L586'>586</a>
+<a name='L587'></a><a href='#L587'>587</a>
+<a name='L588'></a><a href='#L588'>588</a>
+<a name='L589'></a><a href='#L589'>589</a>
+<a name='L590'></a><a href='#L590'>590</a>
+<a name='L591'></a><a href='#L591'>591</a>
+<a name='L592'></a><a href='#L592'>592</a>
+<a name='L593'></a><a href='#L593'>593</a>
+<a name='L594'></a><a href='#L594'>594</a>
+<a name='L595'></a><a href='#L595'>595</a>
+<a name='L596'></a><a href='#L596'>596</a>
+<a name='L597'></a><a href='#L597'>597</a>
+<a name='L598'></a><a href='#L598'>598</a>
+<a name='L599'></a><a href='#L599'>599</a>
+<a name='L600'></a><a href='#L600'>600</a>
+<a name='L601'></a><a href='#L601'>601</a>
+<a name='L602'></a><a href='#L602'>602</a>
+<a name='L603'></a><a href='#L603'>603</a>
+<a name='L604'></a><a href='#L604'>604</a>
+<a name='L605'></a><a href='#L605'>605</a>
+<a name='L606'></a><a href='#L606'>606</a>
+<a name='L607'></a><a href='#L607'>607</a>
+<a name='L608'></a><a href='#L608'>608</a>
+<a name='L609'></a><a href='#L609'>609</a>
+<a name='L610'></a><a href='#L610'>610</a>
+<a name='L611'></a><a href='#L611'>611</a>
+<a name='L612'></a><a href='#L612'>612</a>
+<a name='L613'></a><a href='#L613'>613</a>
+<a name='L614'></a><a href='#L614'>614</a>
+<a name='L615'></a><a href='#L615'>615</a>
+<a name='L616'></a><a href='#L616'>616</a>
+<a name='L617'></a><a href='#L617'>617</a>
+<a name='L618'></a><a href='#L618'>618</a>
+<a name='L619'></a><a href='#L619'>619</a>
+<a name='L620'></a><a href='#L620'>620</a>
+<a name='L621'></a><a href='#L621'>621</a>
+<a name='L622'></a><a href='#L622'>622</a>
+<a name='L623'></a><a href='#L623'>623</a>
+<a name='L624'></a><a href='#L624'>624</a>
+<a name='L625'></a><a href='#L625'>625</a>
+<a name='L626'></a><a href='#L626'>626</a>
+<a name='L627'></a><a href='#L627'>627</a>
+<a name='L628'></a><a href='#L628'>628</a>
+<a name='L629'></a><a href='#L629'>629</a>
+<a name='L630'></a><a href='#L630'>630</a>
+<a name='L631'></a><a href='#L631'>631</a>
+<a name='L632'></a><a href='#L632'>632</a>
+<a name='L633'></a><a href='#L633'>633</a>
+<a name='L634'></a><a href='#L634'>634</a>
+<a name='L635'></a><a href='#L635'>635</a>
+<a name='L636'></a><a href='#L636'>636</a>
+<a name='L637'></a><a href='#L637'>637</a>
+<a name='L638'></a><a href='#L638'>638</a>
+<a name='L639'></a><a href='#L639'>639</a>
+<a name='L640'></a><a href='#L640'>640</a>
+<a name='L641'></a><a href='#L641'>641</a>
+<a name='L642'></a><a href='#L642'>642</a>
+<a name='L643'></a><a href='#L643'>643</a>
+<a name='L644'></a><a href='#L644'>644</a>
+<a name='L645'></a><a href='#L645'>645</a>
+<a name='L646'></a><a href='#L646'>646</a>
+<a name='L647'></a><a href='#L647'>647</a>
+<a name='L648'></a><a href='#L648'>648</a>
+<a name='L649'></a><a href='#L649'>649</a>
+<a name='L650'></a><a href='#L650'>650</a>
+<a name='L651'></a><a href='#L651'>651</a>
+<a name='L652'></a><a href='#L652'>652</a>
+<a name='L653'></a><a href='#L653'>653</a>
+<a name='L654'></a><a href='#L654'>654</a>
+<a name='L655'></a><a href='#L655'>655</a>
+<a name='L656'></a><a href='#L656'>656</a>
+<a name='L657'></a><a href='#L657'>657</a>
+<a name='L658'></a><a href='#L658'>658</a>
+<a name='L659'></a><a href='#L659'>659</a>
+<a name='L660'></a><a href='#L660'>660</a>
+<a name='L661'></a><a href='#L661'>661</a>
+<a name='L662'></a><a href='#L662'>662</a>
+<a name='L663'></a><a href='#L663'>663</a>
+<a name='L664'></a><a href='#L664'>664</a>
+<a name='L665'></a><a href='#L665'>665</a>
+<a name='L666'></a><a href='#L666'>666</a>
+<a name='L667'></a><a href='#L667'>667</a>
+<a name='L668'></a><a href='#L668'>668</a>
+<a name='L669'></a><a href='#L669'>669</a>
+<a name='L670'></a><a href='#L670'>670</a>
+<a name='L671'></a><a href='#L671'>671</a>
+<a name='L672'></a><a href='#L672'>672</a>
+<a name='L673'></a><a href='#L673'>673</a>
+<a name='L674'></a><a href='#L674'>674</a>
+<a name='L675'></a><a href='#L675'>675</a>
+<a name='L676'></a><a href='#L676'>676</a>
+<a name='L677'></a><a href='#L677'>677</a>
+<a name='L678'></a><a href='#L678'>678</a>
+<a name='L679'></a><a href='#L679'>679</a>
+<a name='L680'></a><a href='#L680'>680</a>
+<a name='L681'></a><a href='#L681'>681</a>
+<a name='L682'></a><a href='#L682'>682</a>
+<a name='L683'></a><a href='#L683'>683</a>
+<a name='L684'></a><a href='#L684'>684</a>
+<a name='L685'></a><a href='#L685'>685</a>
+<a name='L686'></a><a href='#L686'>686</a>
+<a name='L687'></a><a href='#L687'>687</a>
+<a name='L688'></a><a href='#L688'>688</a>
+<a name='L689'></a><a href='#L689'>689</a>
+<a name='L690'></a><a href='#L690'>690</a>
+<a name='L691'></a><a href='#L691'>691</a>
+<a name='L692'></a><a href='#L692'>692</a>
+<a name='L693'></a><a href='#L693'>693</a>
+<a name='L694'></a><a href='#L694'>694</a>
+<a name='L695'></a><a href='#L695'>695</a>
+<a name='L696'></a><a href='#L696'>696</a>
+<a name='L697'></a><a href='#L697'>697</a>
+<a name='L698'></a><a href='#L698'>698</a>
+<a name='L699'></a><a href='#L699'>699</a>
+<a name='L700'></a><a href='#L700'>700</a>
+<a name='L701'></a><a href='#L701'>701</a>
+<a name='L702'></a><a href='#L702'>702</a>
+<a name='L703'></a><a href='#L703'>703</a>
+<a name='L704'></a><a href='#L704'>704</a>
+<a name='L705'></a><a href='#L705'>705</a>
+<a name='L706'></a><a href='#L706'>706</a>
+<a name='L707'></a><a href='#L707'>707</a>
+<a name='L708'></a><a href='#L708'>708</a>
+<a name='L709'></a><a href='#L709'>709</a>
+<a name='L710'></a><a href='#L710'>710</a>
+<a name='L711'></a><a href='#L711'>711</a>
+<a name='L712'></a><a href='#L712'>712</a>
+<a name='L713'></a><a href='#L713'>713</a>
+<a name='L714'></a><a href='#L714'>714</a>
+<a name='L715'></a><a href='#L715'>715</a>
+<a name='L716'></a><a href='#L716'>716</a>
+<a name='L717'></a><a href='#L717'>717</a>
+<a name='L718'></a><a href='#L718'>718</a>
+<a name='L719'></a><a href='#L719'>719</a>
+<a name='L720'></a><a href='#L720'>720</a>
+<a name='L721'></a><a href='#L721'>721</a>
+<a name='L722'></a><a href='#L722'>722</a>
+<a name='L723'></a><a href='#L723'>723</a>
+<a name='L724'></a><a href='#L724'>724</a>
+<a name='L725'></a><a href='#L725'>725</a>
+<a name='L726'></a><a href='#L726'>726</a>
+<a name='L727'></a><a href='#L727'>727</a>
+<a name='L728'></a><a href='#L728'>728</a>
+<a name='L729'></a><a href='#L729'>729</a>
+<a name='L730'></a><a href='#L730'>730</a>
+<a name='L731'></a><a href='#L731'>731</a>
+<a name='L732'></a><a href='#L732'>732</a>
+<a name='L733'></a><a href='#L733'>733</a>
+<a name='L734'></a><a href='#L734'>734</a>
+<a name='L735'></a><a href='#L735'>735</a>
+<a name='L736'></a><a href='#L736'>736</a>
+<a name='L737'></a><a href='#L737'>737</a>
+<a name='L738'></a><a href='#L738'>738</a>
+<a name='L739'></a><a href='#L739'>739</a>
+<a name='L740'></a><a href='#L740'>740</a>
+<a name='L741'></a><a href='#L741'>741</a>
+<a name='L742'></a><a href='#L742'>742</a>
+<a name='L743'></a><a href='#L743'>743</a>
+<a name='L744'></a><a href='#L744'>744</a>
+<a name='L745'></a><a href='#L745'>745</a>
+<a name='L746'></a><a href='#L746'>746</a>
+<a name='L747'></a><a href='#L747'>747</a>
+<a name='L748'></a><a href='#L748'>748</a>
+<a name='L749'></a><a href='#L749'>749</a>
+<a name='L750'></a><a href='#L750'>750</a>
+<a name='L751'></a><a href='#L751'>751</a>
+<a name='L752'></a><a href='#L752'>752</a>
+<a name='L753'></a><a href='#L753'>753</a>
+<a name='L754'></a><a href='#L754'>754</a>
+<a name='L755'></a><a href='#L755'>755</a>
+<a name='L756'></a><a href='#L756'>756</a>
+<a name='L757'></a><a href='#L757'>757</a>
+<a name='L758'></a><a href='#L758'>758</a>
+<a name='L759'></a><a href='#L759'>759</a>
+<a name='L760'></a><a href='#L760'>760</a>
+<a name='L761'></a><a href='#L761'>761</a>
+<a name='L762'></a><a href='#L762'>762</a>
+<a name='L763'></a><a href='#L763'>763</a>
+<a name='L764'></a><a href='#L764'>764</a>
+<a name='L765'></a><a href='#L765'>765</a>
+<a name='L766'></a><a href='#L766'>766</a>
+<a name='L767'></a><a href='#L767'>767</a>
+<a name='L768'></a><a href='#L768'>768</a>
+<a name='L769'></a><a href='#L769'>769</a>
+<a name='L770'></a><a href='#L770'>770</a>
+<a name='L771'></a><a href='#L771'>771</a>
+<a name='L772'></a><a href='#L772'>772</a>
+<a name='L773'></a><a href='#L773'>773</a>
+<a name='L774'></a><a href='#L774'>774</a>
+<a name='L775'></a><a href='#L775'>775</a>
+<a name='L776'></a><a href='#L776'>776</a>
+<a name='L777'></a><a href='#L777'>777</a>
+<a name='L778'></a><a href='#L778'>778</a>
+<a name='L779'></a><a href='#L779'>779</a>
+<a name='L780'></a><a href='#L780'>780</a>
+<a name='L781'></a><a href='#L781'>781</a>
+<a name='L782'></a><a href='#L782'>782</a>
+<a name='L783'></a><a href='#L783'>783</a>
+<a name='L784'></a><a href='#L784'>784</a>
+<a name='L785'></a><a href='#L785'>785</a>
+<a name='L786'></a><a href='#L786'>786</a>
+<a name='L787'></a><a href='#L787'>787</a>
+<a name='L788'></a><a href='#L788'>788</a>
+<a name='L789'></a><a href='#L789'>789</a>
+<a name='L790'></a><a href='#L790'>790</a>
+<a name='L791'></a><a href='#L791'>791</a>
+<a name='L792'></a><a href='#L792'>792</a>
+<a name='L793'></a><a href='#L793'>793</a>
+<a name='L794'></a><a href='#L794'>794</a>
+<a name='L795'></a><a href='#L795'>795</a>
+<a name='L796'></a><a href='#L796'>796</a>
+<a name='L797'></a><a href='#L797'>797</a>
+<a name='L798'></a><a href='#L798'>798</a>
+<a name='L799'></a><a href='#L799'>799</a>
+<a name='L800'></a><a href='#L800'>800</a>
+<a name='L801'></a><a href='#L801'>801</a>
+<a name='L802'></a><a href='#L802'>802</a>
+<a name='L803'></a><a href='#L803'>803</a>
+<a name='L804'></a><a href='#L804'>804</a>
+<a name='L805'></a><a href='#L805'>805</a>
+<a name='L806'></a><a href='#L806'>806</a>
+<a name='L807'></a><a href='#L807'>807</a>
+<a name='L808'></a><a href='#L808'>808</a>
+<a name='L809'></a><a href='#L809'>809</a>
+<a name='L810'></a><a href='#L810'>810</a>
+<a name='L811'></a><a href='#L811'>811</a>
+<a name='L812'></a><a href='#L812'>812</a>
+<a name='L813'></a><a href='#L813'>813</a>
+<a name='L814'></a><a href='#L814'>814</a>
+<a name='L815'></a><a href='#L815'>815</a>
+<a name='L816'></a><a href='#L816'>816</a>
+<a name='L817'></a><a href='#L817'>817</a>
+<a name='L818'></a><a href='#L818'>818</a>
+<a name='L819'></a><a href='#L819'>819</a>
+<a name='L820'></a><a href='#L820'>820</a>
+<a name='L821'></a><a href='#L821'>821</a>
+<a name='L822'></a><a href='#L822'>822</a>
+<a name='L823'></a><a href='#L823'>823</a>
+<a name='L824'></a><a href='#L824'>824</a>
+<a name='L825'></a><a href='#L825'>825</a>
+<a name='L826'></a><a href='#L826'>826</a>
+<a name='L827'></a><a href='#L827'>827</a>
+<a name='L828'></a><a href='#L828'>828</a>
+<a name='L829'></a><a href='#L829'>829</a>
+<a name='L830'></a><a href='#L830'>830</a>
+<a name='L831'></a><a href='#L831'>831</a>
+<a name='L832'></a><a href='#L832'>832</a>
+<a name='L833'></a><a href='#L833'>833</a>
+<a name='L834'></a><a href='#L834'>834</a>
+<a name='L835'></a><a href='#L835'>835</a>
+<a name='L836'></a><a href='#L836'>836</a>
+<a name='L837'></a><a href='#L837'>837</a>
+<a name='L838'></a><a href='#L838'>838</a>
+<a name='L839'></a><a href='#L839'>839</a>
+<a name='L840'></a><a href='#L840'>840</a>
+<a name='L841'></a><a href='#L841'>841</a>
+<a name='L842'></a><a href='#L842'>842</a>
+<a name='L843'></a><a href='#L843'>843</a>
+<a name='L844'></a><a href='#L844'>844</a>
+<a name='L845'></a><a href='#L845'>845</a>
+<a name='L846'></a><a href='#L846'>846</a>
+<a name='L847'></a><a href='#L847'>847</a>
+<a name='L848'></a><a href='#L848'>848</a>
+<a name='L849'></a><a href='#L849'>849</a>
+<a name='L850'></a><a href='#L850'>850</a>
+<a name='L851'></a><a href='#L851'>851</a>
+<a name='L852'></a><a href='#L852'>852</a>
+<a name='L853'></a><a href='#L853'>853</a>
+<a name='L854'></a><a href='#L854'>854</a>
+<a name='L855'></a><a href='#L855'>855</a>
+<a name='L856'></a><a href='#L856'>856</a>
+<a name='L857'></a><a href='#L857'>857</a>
+<a name='L858'></a><a href='#L858'>858</a>
+<a name='L859'></a><a href='#L859'>859</a>
+<a name='L860'></a><a href='#L860'>860</a>
+<a name='L861'></a><a href='#L861'>861</a>
+<a name='L862'></a><a href='#L862'>862</a>
+<a name='L863'></a><a href='#L863'>863</a>
+<a name='L864'></a><a href='#L864'>864</a>
+<a name='L865'></a><a href='#L865'>865</a>
+<a name='L866'></a><a href='#L866'>866</a>
+<a name='L867'></a><a href='#L867'>867</a>
+<a name='L868'></a><a href='#L868'>868</a>
+<a name='L869'></a><a href='#L869'>869</a>
+<a name='L870'></a><a href='#L870'>870</a>
+<a name='L871'></a><a href='#L871'>871</a>
+<a name='L872'></a><a href='#L872'>872</a>
+<a name='L873'></a><a href='#L873'>873</a>
+<a name='L874'></a><a href='#L874'>874</a>
+<a name='L875'></a><a href='#L875'>875</a>
+<a name='L876'></a><a href='#L876'>876</a>
+<a name='L877'></a><a href='#L877'>877</a>
+<a name='L878'></a><a href='#L878'>878</a>
+<a name='L879'></a><a href='#L879'>879</a>
+<a name='L880'></a><a href='#L880'>880</a>
+<a name='L881'></a><a href='#L881'>881</a>
+<a name='L882'></a><a href='#L882'>882</a>
+<a name='L883'></a><a href='#L883'>883</a>
+<a name='L884'></a><a href='#L884'>884</a>
+<a name='L885'></a><a href='#L885'>885</a>
+<a name='L886'></a><a href='#L886'>886</a>
+<a name='L887'></a><a href='#L887'>887</a>
+<a name='L888'></a><a href='#L888'>888</a>
+<a name='L889'></a><a href='#L889'>889</a>
+<a name='L890'></a><a href='#L890'>890</a>
+<a name='L891'></a><a href='#L891'>891</a>
+<a name='L892'></a><a href='#L892'>892</a>
+<a name='L893'></a><a href='#L893'>893</a>
+<a name='L894'></a><a href='#L894'>894</a>
+<a name='L895'></a><a href='#L895'>895</a>
+<a name='L896'></a><a href='#L896'>896</a>
+<a name='L897'></a><a href='#L897'>897</a>
+<a name='L898'></a><a href='#L898'>898</a>
+<a name='L899'></a><a href='#L899'>899</a>
+<a name='L900'></a><a href='#L900'>900</a>
+<a name='L901'></a><a href='#L901'>901</a>
+<a name='L902'></a><a href='#L902'>902</a>
+<a name='L903'></a><a href='#L903'>903</a>
+<a name='L904'></a><a href='#L904'>904</a>
+<a name='L905'></a><a href='#L905'>905</a>
+<a name='L906'></a><a href='#L906'>906</a>
+<a name='L907'></a><a href='#L907'>907</a>
+<a name='L908'></a><a href='#L908'>908</a>
+<a name='L909'></a><a href='#L909'>909</a>
+<a name='L910'></a><a href='#L910'>910</a>
+<a name='L911'></a><a href='#L911'>911</a>
+<a name='L912'></a><a href='#L912'>912</a>
+<a name='L913'></a><a href='#L913'>913</a>
+<a name='L914'></a><a href='#L914'>914</a>
+<a name='L915'></a><a href='#L915'>915</a>
+<a name='L916'></a><a href='#L916'>916</a>
+<a name='L917'></a><a href='#L917'>917</a>
+<a name='L918'></a><a href='#L918'>918</a>
+<a name='L919'></a><a href='#L919'>919</a>
+<a name='L920'></a><a href='#L920'>920</a>
+<a name='L921'></a><a href='#L921'>921</a>
+<a name='L922'></a><a href='#L922'>922</a>
+<a name='L923'></a><a href='#L923'>923</a>
+<a name='L924'></a><a href='#L924'>924</a>
+<a name='L925'></a><a href='#L925'>925</a>
+<a name='L926'></a><a href='#L926'>926</a>
+<a name='L927'></a><a href='#L927'>927</a>
+<a name='L928'></a><a href='#L928'>928</a>
+<a name='L929'></a><a href='#L929'>929</a>
+<a name='L930'></a><a href='#L930'>930</a>
+<a name='L931'></a><a href='#L931'>931</a>
+<a name='L932'></a><a href='#L932'>932</a>
+<a name='L933'></a><a href='#L933'>933</a>
+<a name='L934'></a><a href='#L934'>934</a>
+<a name='L935'></a><a href='#L935'>935</a>
+<a name='L936'></a><a href='#L936'>936</a>
+<a name='L937'></a><a href='#L937'>937</a>
+<a name='L938'></a><a href='#L938'>938</a>
+<a name='L939'></a><a href='#L939'>939</a>
+<a name='L940'></a><a href='#L940'>940</a>
+<a name='L941'></a><a href='#L941'>941</a>
+<a name='L942'></a><a href='#L942'>942</a>
+<a name='L943'></a><a href='#L943'>943</a>
+<a name='L944'></a><a href='#L944'>944</a>
+<a name='L945'></a><a href='#L945'>945</a>
+<a name='L946'></a><a href='#L946'>946</a>
+<a name='L947'></a><a href='#L947'>947</a>
+<a name='L948'></a><a href='#L948'>948</a>
+<a name='L949'></a><a href='#L949'>949</a>
+<a name='L950'></a><a href='#L950'>950</a>
+<a name='L951'></a><a href='#L951'>951</a>
+<a name='L952'></a><a href='#L952'>952</a>
+<a name='L953'></a><a href='#L953'>953</a>
+<a name='L954'></a><a href='#L954'>954</a>
+<a name='L955'></a><a href='#L955'>955</a>
+<a name='L956'></a><a href='#L956'>956</a>
+<a name='L957'></a><a href='#L957'>957</a>
+<a name='L958'></a><a href='#L958'>958</a>
+<a name='L959'></a><a href='#L959'>959</a>
+<a name='L960'></a><a href='#L960'>960</a>
+<a name='L961'></a><a href='#L961'>961</a>
+<a name='L962'></a><a href='#L962'>962</a>
+<a name='L963'></a><a href='#L963'>963</a>
+<a name='L964'></a><a href='#L964'>964</a>
+<a name='L965'></a><a href='#L965'>965</a>
+<a name='L966'></a><a href='#L966'>966</a>
+<a name='L967'></a><a href='#L967'>967</a>
+<a name='L968'></a><a href='#L968'>968</a>
+<a name='L969'></a><a href='#L969'>969</a>
+<a name='L970'></a><a href='#L970'>970</a>
+<a name='L971'></a><a href='#L971'>971</a>
+<a name='L972'></a><a href='#L972'>972</a>
+<a name='L973'></a><a href='#L973'>973</a>
+<a name='L974'></a><a href='#L974'>974</a>
+<a name='L975'></a><a href='#L975'>975</a>
+<a name='L976'></a><a href='#L976'>976</a>
+<a name='L977'></a><a href='#L977'>977</a>
+<a name='L978'></a><a href='#L978'>978</a>
+<a name='L979'></a><a href='#L979'>979</a>
+<a name='L980'></a><a href='#L980'>980</a>
+<a name='L981'></a><a href='#L981'>981</a>
+<a name='L982'></a><a href='#L982'>982</a>
+<a name='L983'></a><a href='#L983'>983</a>
+<a name='L984'></a><a href='#L984'>984</a>
+<a name='L985'></a><a href='#L985'>985</a>
+<a name='L986'></a><a href='#L986'>986</a>
+<a name='L987'></a><a href='#L987'>987</a>
+<a name='L988'></a><a href='#L988'>988</a>
+<a name='L989'></a><a href='#L989'>989</a>
+<a name='L990'></a><a href='#L990'>990</a>
+<a name='L991'></a><a href='#L991'>991</a>
+<a name='L992'></a><a href='#L992'>992</a>
+<a name='L993'></a><a href='#L993'>993</a>
+<a name='L994'></a><a href='#L994'>994</a>
+<a name='L995'></a><a href='#L995'>995</a>
+<a name='L996'></a><a href='#L996'>996</a>
+<a name='L997'></a><a href='#L997'>997</a>
+<a name='L998'></a><a href='#L998'>998</a>
+<a name='L999'></a><a href='#L999'>999</a>
+<a name='L1000'></a><a href='#L1000'>1000</a>
+<a name='L1001'></a><a href='#L1001'>1001</a>
+<a name='L1002'></a><a href='#L1002'>1002</a>
+<a name='L1003'></a><a href='#L1003'>1003</a>
+<a name='L1004'></a><a href='#L1004'>1004</a>
+<a name='L1005'></a><a href='#L1005'>1005</a>
+<a name='L1006'></a><a href='#L1006'>1006</a>
+<a name='L1007'></a><a href='#L1007'>1007</a>
+<a name='L1008'></a><a href='#L1008'>1008</a>
+<a name='L1009'></a><a href='#L1009'>1009</a>
+<a name='L1010'></a><a href='#L1010'>1010</a>
+<a name='L1011'></a><a href='#L1011'>1011</a>
+<a name='L1012'></a><a href='#L1012'>1012</a>
+<a name='L1013'></a><a href='#L1013'>1013</a>
+<a name='L1014'></a><a href='#L1014'>1014</a>
+<a name='L1015'></a><a href='#L1015'>1015</a>
+<a name='L1016'></a><a href='#L1016'>1016</a>
+<a name='L1017'></a><a href='#L1017'>1017</a>
+<a name='L1018'></a><a href='#L1018'>1018</a>
+<a name='L1019'></a><a href='#L1019'>1019</a>
+<a name='L1020'></a><a href='#L1020'>1020</a>
+<a name='L1021'></a><a href='#L1021'>1021</a>
+<a name='L1022'></a><a href='#L1022'>1022</a>
+<a name='L1023'></a><a href='#L1023'>1023</a>
+<a name='L1024'></a><a href='#L1024'>1024</a>
+<a name='L1025'></a><a href='#L1025'>1025</a>
+<a name='L1026'></a><a href='#L1026'>1026</a>
+<a name='L1027'></a><a href='#L1027'>1027</a>
+<a name='L1028'></a><a href='#L1028'>1028</a>
+<a name='L1029'></a><a href='#L1029'>1029</a>
+<a name='L1030'></a><a href='#L1030'>1030</a>
+<a name='L1031'></a><a href='#L1031'>1031</a>
+<a name='L1032'></a><a href='#L1032'>1032</a>
+<a name='L1033'></a><a href='#L1033'>1033</a>
+<a name='L1034'></a><a href='#L1034'>1034</a>
+<a name='L1035'></a><a href='#L1035'>1035</a>
+<a name='L1036'></a><a href='#L1036'>1036</a>
+<a name='L1037'></a><a href='#L1037'>1037</a>
+<a name='L1038'></a><a href='#L1038'>1038</a>
+<a name='L1039'></a><a href='#L1039'>1039</a>
+<a name='L1040'></a><a href='#L1040'>1040</a>
+<a name='L1041'></a><a href='#L1041'>1041</a>
+<a name='L1042'></a><a href='#L1042'>1042</a>
+<a name='L1043'></a><a href='#L1043'>1043</a>
+<a name='L1044'></a><a href='#L1044'>1044</a>
+<a name='L1045'></a><a href='#L1045'>1045</a>
+<a name='L1046'></a><a href='#L1046'>1046</a>
+<a name='L1047'></a><a href='#L1047'>1047</a>
+<a name='L1048'></a><a href='#L1048'>1048</a>
+<a name='L1049'></a><a href='#L1049'>1049</a>
+<a name='L1050'></a><a href='#L1050'>1050</a>
+<a name='L1051'></a><a href='#L1051'>1051</a>
+<a name='L1052'></a><a href='#L1052'>1052</a>
+<a name='L1053'></a><a href='#L1053'>1053</a>
+<a name='L1054'></a><a href='#L1054'>1054</a>
+<a name='L1055'></a><a href='#L1055'>1055</a>
+<a name='L1056'></a><a href='#L1056'>1056</a>
+<a name='L1057'></a><a href='#L1057'>1057</a>
+<a name='L1058'></a><a href='#L1058'>1058</a>
+<a name='L1059'></a><a href='#L1059'>1059</a>
+<a name='L1060'></a><a href='#L1060'>1060</a>
+<a name='L1061'></a><a href='#L1061'>1061</a>
+<a name='L1062'></a><a href='#L1062'>1062</a>
+<a name='L1063'></a><a href='#L1063'>1063</a>
+<a name='L1064'></a><a href='#L1064'>1064</a>
+<a name='L1065'></a><a href='#L1065'>1065</a>
+<a name='L1066'></a><a href='#L1066'>1066</a>
+<a name='L1067'></a><a href='#L1067'>1067</a>
+<a name='L1068'></a><a href='#L1068'>1068</a>
+<a name='L1069'></a><a href='#L1069'>1069</a>
+<a name='L1070'></a><a href='#L1070'>1070</a>
+<a name='L1071'></a><a href='#L1071'>1071</a>
+<a name='L1072'></a><a href='#L1072'>1072</a>
+<a name='L1073'></a><a href='#L1073'>1073</a>
+<a name='L1074'></a><a href='#L1074'>1074</a>
+<a name='L1075'></a><a href='#L1075'>1075</a>
+<a name='L1076'></a><a href='#L1076'>1076</a>
+<a name='L1077'></a><a href='#L1077'>1077</a>
+<a name='L1078'></a><a href='#L1078'>1078</a>
+<a name='L1079'></a><a href='#L1079'>1079</a>
+<a name='L1080'></a><a href='#L1080'>1080</a>
+<a name='L1081'></a><a href='#L1081'>1081</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SIC-Biometria — Prévia de Frequência
+import {
+  getPreviasRegistros,
+  countPreviasExistentes,
+  deletePreviasPeriodo,
+  insertPreviasLote
+} from './api.js';
+import { Toast } from './components.js';
+&nbsp;
+const BATCH_SIZE = <span class="cstat-no" title="statement not covered" >500;</span>
+const PREVIEW_LIMIT = <span class="cstat-no" title="statement not covered" >50;</span>
+&nbsp;
+// Estado da aplicação
+let arquivoSelecionado = <span class="cstat-no" title="statement not covered" >null;</span>
+let registrosValidos = <span class="cstat-no" title="statement not covered" >[];</span>
+let linhasDescartadas = <span class="cstat-no" title="statement not covered" >[];</span>
+let totalLinhasLidas = <span class="cstat-no" title="statement not covered" >0;</span>
+let processando = <span class="cstat-no" title="statement not covered" >false;</span>
+let zScoreResultado = <span class="cstat-no" title="statement not covered" >null;</span>
+let todosRegistrosSecretaria = <span class="cstat-no" title="statement not covered" >[];</span>
+let filaHistorico = <span class="cstat-no" title="statement not covered" >[];</span> // { id, file, secretaria_codigo, periodo_referencia }
+&nbsp;
+// ─── Utilitários ───────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >escapeHtml(</span>value) {
+<span class="cstat-no" title="statement not covered" >  return String(value ?? '—')</span>
+    .replace(/&amp;/g, '&amp;amp;')
+    .replace(/&lt;/g, '&amp;lt;')
+    .replace(/&gt;/g, '&amp;gt;')
+    .replace(/"/g, '&amp;quot;')
+    .replace(/'/g, '&amp;#39;');
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >formatarTamanho(</span>bytes) {
+<span class="cstat-no" title="statement not covered" >  if (bytes &lt; 1024) <span class="cstat-no" title="statement not covered" >return `${bytes} B`;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (bytes &lt; 1024 * 1024) <span class="cstat-no" title="statement not covered" >return `${(bytes / 1024).toFixed(1)} KB`;</span></span>
+<span class="cstat-no" title="statement not covered" >  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >formatarPeriodo(</span>periodo) {
+  const [ano, mes] = <span class="cstat-no" title="statement not covered" >periodo.split('-');</span>
+  const meses = <span class="cstat-no" title="statement not covered" >['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];</span>
+<span class="cstat-no" title="statement not covered" >  return `${meses[parseInt(mes, 10) - 1]}/${ano}`;</span>
+}
+&nbsp;
+// ─── Log terminal ──────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >limparLog(</span>) {
+<span class="cstat-no" title="statement not covered" >  document.getElementById('log-terminal').innerHTML = '';</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >addLog(</span>mensagem, tipo = <span class="branch-0 cbranch-no" title="branch not covered" >'info')</span> {
+  const terminal = <span class="cstat-no" title="statement not covered" >document.getElementById('log-terminal');</span>
+  const linha = <span class="cstat-no" title="statement not covered" >document.createElement('div');</span>
+<span class="cstat-no" title="statement not covered" >  linha.className = `log-line-${tipo}`;</span>
+<span class="cstat-no" title="statement not covered" >  linha.textContent = `[${new Date().toLocaleTimeString('pt-BR')}] ${mensagem}`;</span>
+<span class="cstat-no" title="statement not covered" >  terminal.appendChild(linha);</span>
+<span class="cstat-no" title="statement not covered" >  terminal.scrollTop = terminal.scrollHeight;</span>
+}
+&nbsp;
+// ─── Parser de nome de arquivo ───────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >extrairMetadadosDoNome(</span>nomeArquivo) {
+  const base = <span class="cstat-no" title="statement not covered" >nomeArquivo.replace(/\.txt$/i, '');</span>
+&nbsp;
+  // Formato: Previa589_2025-12 ou previa589_2025-12
+  const matchHifen = <span class="cstat-no" title="statement not covered" >base.match(/[Pp]revia[_]?(\d+)[_-](\d{4})-(\d{2})/);</span>
+<span class="cstat-no" title="statement not covered" >  if (matchHifen) {</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      secretaria_codigo: matchHifen[1],
+      periodo_referencia: `${matchHifen[2]}-${matchHifen[3]}`
+    };
+  }
+&nbsp;
+  // Formato: previa_589_202512 ou Previa589_202601
+  const matchCompacto = <span class="cstat-no" title="statement not covered" >base.match(/[Pp]revia[_]?(\d+)[_-](\d{4})(\d{2})/);</span>
+<span class="cstat-no" title="statement not covered" >  if (matchCompacto) {</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      secretaria_codigo: matchCompacto[1],
+      periodo_referencia: `${matchCompacto[2]}-${matchCompacto[3]}`
+    };
+  }
+&nbsp;
+  // Formato: 589_2026-01 ou 589_202601 (sem prefixo previa)
+  const matchSecPeriodo = <span class="cstat-no" title="statement not covered" >base.match(/(?:^|[_-])(\d{2,4})[_-](\d{4})-(\d{2})(?:$|[_-])/);</span>
+<span class="cstat-no" title="statement not covered" >  if (matchSecPeriodo) {</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      secretaria_codigo: matchSecPeriodo[1],
+      periodo_referencia: `${matchSecPeriodo[2]}-${matchSecPeriodo[3]}`
+    };
+  }
+&nbsp;
+  const matchSecCompacto = <span class="cstat-no" title="statement not covered" >base.match(/(?:^|[_-])(\d{2,4})[_-](\d{4})(\d{2})(?:$|[_-.])/);</span>
+<span class="cstat-no" title="statement not covered" >  if (matchSecCompacto) {</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      secretaria_codigo: matchSecCompacto[1],
+      periodo_referencia: `${matchSecCompacto[2]}-${matchSecCompacto[3]}`
+    };
+  }
+&nbsp;
+  // Apenas período no nome: _2026-01 ou _202601
+  const matchSoPeriodoHifen = <span class="cstat-no" title="statement not covered" >base.match(/(\d{4})-(\d{2})/);</span>
+<span class="cstat-no" title="statement not covered" >  if (matchSoPeriodoHifen) {</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      secretaria_codigo: null,
+      periodo_referencia: `${matchSoPeriodoHifen[1]}-${matchSoPeriodoHifen[2]}`
+    };
+  }
+&nbsp;
+  const matchSoPeriodoCompacto = <span class="cstat-no" title="statement not covered" >base.match(/(?:^|[_-])(\d{4})(\d{2})(?:$|[_-.])/);</span>
+<span class="cstat-no" title="statement not covered" >  if (matchSoPeriodoCompacto) {</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+      secretaria_codigo: null,
+      periodo_referencia: `${matchSoPeriodoCompacto[1]}-${matchSoPeriodoCompacto[2]}`
+    };
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return null;</span>
+}
+&nbsp;
+// ─── Parser posicional ───────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >converterData(</span>dataStr) {
+  const match = <span class="cstat-no" title="statement not covered" >dataStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);</span>
+<span class="cstat-no" title="statement not covered" >  if (!match) <span class="cstat-no" title="statement not covered" >return null;</span></span>
+  const [, dia, mes, ano] = <span class="cstat-no" title="statement not covered" >match;</span>
+<span class="cstat-no" title="statement not covered" >  return `${ano}-${mes}-${dia}`;</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >temEspacosConsecutivos(</span>str) {
+<span class="cstat-no" title="statement not covered" >  return /  +/.test(str);</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >parsearLinha(</span>linha, numeroLinha) {
+<span class="cstat-no" title="statement not covered" >  if (!linha || linha.trim() === '') {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: vazia ou apenas espaços` };</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (linha.length &lt; 29) {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: menos de 29 caracteres (${linha.length})` };</span>
+  }
+&nbsp;
+  const areaData = <span class="cstat-no" title="statement not covered" >linha.substring(10, 20);</span>
+  const areaCodigo = <span class="cstat-no" title="statement not covered" >linha.substring(21, 24);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (temEspacosConsecutivos(areaData)) {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: espaços consecutivos na área de data` };</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (temEspacosConsecutivos(areaCodigo)) {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: espaços consecutivos na área de código` };</span>
+  }
+&nbsp;
+  const matricula = <span class="cstat-no" title="statement not covered" >linha.substring(2, 8).trim();</span>
+  const dataOcorrencia = <span class="cstat-no" title="statement not covered" >areaData.trim();</span>
+  const codigoOcorrencia = <span class="cstat-no" title="statement not covered" >areaCodigo.trim();</span>
+  const percentualStr = <span class="cstat-no" title="statement not covered" >linha.substring(26, 29).trim();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataOcorrencia)) {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: data inválida "${dataOcorrencia}"` };</span>
+  }
+&nbsp;
+  const dataConvertida = <span class="cstat-no" title="statement not covered" >converterData(dataOcorrencia);</span>
+<span class="cstat-no" title="statement not covered" >  if (!dataConvertida) {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: falha na conversão de data` };</span>
+  }
+&nbsp;
+  const percentual = <span class="cstat-no" title="statement not covered" >parseInt(percentualStr, 10);</span>
+<span class="cstat-no" title="statement not covered" >  if (isNaN(percentual) || percentual &lt; 0 || percentual &gt; 100) {</span>
+<span class="cstat-no" title="statement not covered" >    return { valido: false, motivo: `Linha ${numeroLinha}: percentual inválido "${percentualStr}"` };</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return {</span>
+    valido: true,
+    registro: {
+      matricula,
+      data_ocorrencia: dataConvertida,
+      data_exibicao: dataOcorrencia,
+      codigo_ocorrencia: codigoOcorrencia,
+      percentual_desconto: percentual
+    }
+  };
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >parsearArquivo(</span>conteudo) {
+  const linhas = <span class="cstat-no" title="statement not covered" >conteudo.split(/\r?\n/);</span>
+  const validos = <span class="cstat-no" title="statement not covered" >[];</span>
+  const descartados = <span class="cstat-no" title="statement not covered" >[];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  linhas.forEach(<span class="fstat-no" title="function not covered" >(l</span>inha, idx) =&gt; {</span>
+    const numeroLinha = <span class="cstat-no" title="statement not covered" >idx + 1;</span>
+    const resultado = <span class="cstat-no" title="statement not covered" >parsearLinha(linha, numeroLinha);</span>
+<span class="cstat-no" title="statement not covered" >    if (resultado.valido) {</span>
+<span class="cstat-no" title="statement not covered" >      validos.push(resultado.registro);</span>
+    } else <span class="cstat-no" title="statement not covered" >if (linha.trim() !== '') {</span>
+<span class="cstat-no" title="statement not covered" >      descartados.push(resultado.motivo);</span>
+    } else <span class="cstat-no" title="statement not covered" >if (linha === '' || linha.trim() === '') {</span>
+<span class="cstat-no" title="statement not covered" >      descartados.push(`Linha ${numeroLinha}: vazia ou apenas espaços`);</span>
+    }
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return { validos, descartados, totalLinhas: linhas.length };</span>
+}
+&nbsp;
+// ─── Z-Score ─────────────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >agruparPorPeriodo(</span>registros) {
+  const mapa = <span class="cstat-no" title="statement not covered" >{};</span>
+<span class="cstat-no" title="statement not covered" >  registros.forEach(<span class="fstat-no" title="function not covered" >r </span>=&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    if (!mapa[r.periodo_referencia]) {</span>
+<span class="cstat-no" title="statement not covered" >      mapa[r.periodo_referencia] = {</span>
+        periodo_referencia: r.periodo_referencia,
+        total_ocorrencias: 0,
+        servidores: new Set(),
+        desconto_acumulado: 0
+      };
+    }
+<span class="cstat-no" title="statement not covered" >    mapa[r.periodo_referencia].total_ocorrencias++;</span>
+<span class="cstat-no" title="statement not covered" >    mapa[r.periodo_referencia].servidores.add(r.matricula);</span>
+<span class="cstat-no" title="statement not covered" >    mapa[r.periodo_referencia].desconto_acumulado += r.percentual_desconto;</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return Object.values(mapa).map(<span class="fstat-no" title="function not covered" >p </span>=&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
+    periodo_referencia: p.periodo_referencia,
+    total_ocorrencias: p.total_ocorrencias,
+    servidores_afetados: p.servidores.size,
+    desconto_acumulado: p.desconto_acumulado
+  }));
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >contarPorPeriodo(</span>registros) {
+  const mapa = <span class="cstat-no" title="statement not covered" >{};</span>
+<span class="cstat-no" title="statement not covered" >  registros.forEach(<span class="fstat-no" title="function not covered" >r </span>=&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    mapa[r.periodo_referencia] = (mapa[r.periodo_referencia] || 0) + 1;</span>
+  });
+<span class="cstat-no" title="statement not covered" >  return mapa;</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >calcularZScore(</span>totalAtual, contagensAnteriores) {
+<span class="cstat-no" title="statement not covered" >  if (contagensAnteriores.length &lt; 2) {</span>
+<span class="cstat-no" title="statement not covered" >    return { zScore: null, media: null, desvio: null, insuficiente: true };</span>
+  }
+&nbsp;
+  const media = <span class="cstat-no" title="statement not covered" >contagensAnteriores.reduce(<span class="fstat-no" title="function not covered" >(s</span>, v) =&gt; <span class="cstat-no" title="statement not covered" >s + v,</span> 0) / contagensAnteriores.length;</span>
+&nbsp;
+  const variancia = <span class="cstat-no" title="statement not covered" >contagensAnteriores.reduce(<span class="fstat-no" title="function not covered" >(s</span>, v) =&gt; <span class="cstat-no" title="statement not covered" >s + Math.pow(v - media, 2),</span> 0) / (contagensAnteriores.length - 1);</span>
+  const desvio = <span class="cstat-no" title="statement not covered" >Math.sqrt(variancia);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (desvio === 0) {</span>
+<span class="cstat-no" title="statement not covered" >    addLog(`Aviso: desvio padrão é zero (todos os valores anteriores são iguais: ${media}). Não é possível calcular Z-Score.`, 'warn');</span>
+<span class="cstat-no" title="statement not covered" >    return { zScore: 0, media, desvio: 0, insuficiente: false };</span>
+  }
+&nbsp;
+  const zScore = <span class="cstat-no" title="statement not covered" >(totalAtual - media) / desvio;</span>
+<span class="cstat-no" title="statement not covered" >  return { zScore, media, desvio, insuficiente: false };</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >obterContagensAnteriores(</span>contagensPorPeriodo, periodoReferencia, limite = <span class="branch-0 cbranch-no" title="branch not covered" >3)</span> {
+<span class="cstat-no" title="statement not covered" >  return Object.entries(contagensPorPeriodo)</span>
+    .filter(<span class="fstat-no" title="function not covered" >([</span>periodo]) =&gt; <span class="cstat-no" title="statement not covered" >periodo &lt; periodoReferencia)</span>
+    .sort(<span class="fstat-no" title="function not covered" >([</span>a], [b]) =&gt; <span class="cstat-no" title="statement not covered" >b.localeCompare(a))</span>
+    .slice(0, limite)
+    .map(<span class="fstat-no" title="function not covered" >([</span>, total]) =&gt; <span class="cstat-no" title="statement not covered" >total)</span>;
+}
+&nbsp;
+// ─── Upload ──────────────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >setupUpload(</span>) {
+<span class="cstat-no" title="statement not covered" >  console.log('Setting up upload functionality...');</span>
+  const zone = <span class="cstat-no" title="statement not covered" >document.getElementById('upload-zone');</span>
+  const fileInput = <span class="cstat-no" title="statement not covered" >document.getElementById('file-input');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!zone || !fileInput) {</span>
+<span class="cstat-no" title="statement not covered" >    console.error('Upload elements not found:', { zone, fileInput });</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  console.log('Upload elements found, adding event listeners');</span>
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('click', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    console.log('Upload zone clicked');</span>
+<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
+<span class="cstat-no" title="statement not covered" >    fileInput.click();</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('dragover', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
+<span class="cstat-no" title="statement not covered" >    zone.classList.add('drag-over');</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('dragleave', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    zone.classList.remove('drag-over');</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('drop', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
+<span class="cstat-no" title="statement not covered" >    zone.classList.remove('drag-over');</span>
+    const file = <span class="cstat-no" title="statement not covered" >e.dataTransfer.files[0];</span>
+<span class="cstat-no" title="statement not covered" >    if (file) <span class="cstat-no" title="statement not covered" >selecionarArquivo(file);</span></span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  fileInput.addEventListener('change', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    console.log('File input changed');</span>
+    const file = <span class="cstat-no" title="statement not covered" >e.target.files[0];</span>
+<span class="cstat-no" title="statement not covered" >    if (file) <span class="cstat-no" title="statement not covered" >selecionarArquivo(file);</span></span>
+  });
+&nbsp;
+  const btnRemover = <span class="cstat-no" title="statement not covered" >document.getElementById('btn-remover-arquivo');</span>
+  const btnTrocar = <span class="cstat-no" title="statement not covered" >document.getElementById('btn-trocar-arquivo');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (btnRemover) {</span>
+<span class="cstat-no" title="statement not covered" >    btnRemover.addEventListener('click', removerArquivo);</span>
+  }
+<span class="cstat-no" title="statement not covered" >  if (btnTrocar) {</span>
+<span class="cstat-no" title="statement not covered" >    btnTrocar.addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >fileInput.click())</span>;</span>
+  }
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >selecionarArquivo(</span>file) {
+<span class="cstat-no" title="statement not covered" >  console.log('selecionarArquivo called with file:', file.name);</span>
+<span class="cstat-no" title="statement not covered" >  if (!file.name.toLowerCase().endsWith('.txt')) {</span>
+<span class="cstat-no" title="statement not covered" >    if (typeof Toast !== 'undefined' &amp;&amp; Toast.show) {</span>
+<span class="cstat-no" title="statement not covered" >      Toast.show('Apenas arquivos .txt são aceitos', 'error');</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      alert('Apenas arquivos .txt são aceitos');</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  arquivoSelecionado = file;</span>
+<span class="cstat-no" title="statement not covered" >  console.log('File selected successfully');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('upload-file-name').textContent = file.name;</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('upload-file-size').textContent = formatarTamanho(file.size);</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('upload-file-info').classList.add('show');</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('upload-zone').style.display = 'none';</span>
+&nbsp;
+  const metadados = <span class="cstat-no" title="statement not covered" >extrairMetadadosDoNome(file.name);</span>
+<span class="cstat-no" title="statement not covered" >  if (metadados) {</span>
+<span class="cstat-no" title="statement not covered" >    document.getElementById('secretaria_codigo').value = metadados.secretaria_codigo;</span>
+<span class="cstat-no" title="statement not covered" >    document.getElementById('periodo_referencia').value = metadados.periodo_referencia;</span>
+<span class="cstat-no" title="statement not covered" >    addLog(`Metadados extraídos do nome: secretaria ${metadados.secretaria_codigo}, período ${metadados.periodo_referencia}`, 'info');</span>
+<span class="cstat-no" title="statement not covered" >    carregarHistorico();</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >  addLog(`Arquivo selecionado: ${file.name} (${formatarTamanho(file.size)})`, 'info');</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >removerArquivo(</span>) {
+<span class="cstat-no" title="statement not covered" >  arquivoSelecionado = null;</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('file-input').value = '';</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('upload-file-info').classList.remove('show');</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('upload-zone').style.display = '';</span>
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >  resetarProcessamento();</span>
+}
+&nbsp;
+// ─── Formulário ──────────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >validarFormulario(</span>) {
+  const secretaria = <span class="cstat-no" title="statement not covered" >document.getElementById('secretaria_codigo').value.trim();</span>
+  const periodo = <span class="cstat-no" title="statement not covered" >document.getElementById('periodo_referencia').value;</span>
+  const btn = <span class="cstat-no" title="statement not covered" >document.getElementById('btn-processar');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  btn.disabled = !arquivoSelecionado || !secretaria || !periodo || processando;</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >setupFormulario(</span>) {
+<span class="cstat-no" title="statement not covered" >  ['secretaria_codigo', 'periodo_referencia', 'threshold_zscore'].forEach(<span class="fstat-no" title="function not covered" >id</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    document.getElementById(id).addEventListener('input', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >      if (id === 'secretaria_codigo') {</span>
+<span class="cstat-no" title="statement not covered" >        clearTimeout(setupFormulario._debounce);</span>
+<span class="cstat-no" title="statement not covered" >        setupFormulario._debounce = setTimeout(carregarHistorico, 400);</span>
+      }
+    });
+<span class="cstat-no" title="statement not covered" >    document.getElementById(id).addEventListener('change', validarFormulario);</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-processar').addEventListener('click', processarArquivo);</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('preview-busca').addEventListener('input', renderizarPreview);</span>
+}
+&nbsp;
+// ─── Processamento ───────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >resetarProcessamento(</span>) {
+<span class="cstat-no" title="statement not covered" >  registrosValidos = [];</span>
+<span class="cstat-no" title="statement not covered" >  linhasDescartadas = [];</span>
+<span class="cstat-no" title="statement not covered" >  totalLinhasLidas = 0;</span>
+<span class="cstat-no" title="statement not covered" >  zScoreResultado = null;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('preview-section').classList.remove('show');</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-banner').classList.remove('show');</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('progress-bar-wrap').classList.remove('show');</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('resumo-final').classList.remove('show');</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >readFileAsLatin1(</span>file) {
+<span class="cstat-no" title="statement not covered" >  return new Promise(<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
+    const reader = <span class="cstat-no" title="statement not covered" >new FileReader();</span>
+<span class="cstat-no" title="statement not covered" >    reader.onload = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >resolve(reader.result);</span></span>
+<span class="cstat-no" title="statement not covered" >    reader.onerror = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >reject(new Error('Erro ao ler arquivo'));</span></span>
+<span class="cstat-no" title="statement not covered" >    reader.readAsText(file, 'latin1');</span>
+  });
+}
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >processarArquivo(</span>) {
+<span class="cstat-no" title="statement not covered" >  if (processando || !arquivoSelecionado) <span class="cstat-no" title="statement not covered" >return;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  processando = true;</span>
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >  resetarProcessamento();</span>
+<span class="cstat-no" title="statement not covered" >  limparLog();</span>
+&nbsp;
+  const secretaria = <span class="cstat-no" title="statement not covered" >document.getElementById('secretaria_codigo').value.trim();</span>
+  const periodo = <span class="cstat-no" title="statement not covered" >document.getElementById('periodo_referencia').value;</span>
+  const threshold = <span class="cstat-no" title="statement not covered" >parseFloat(document.getElementById('threshold_zscore').value);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  addLog('Iniciando processamento do arquivo...', 'info');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const conteudo = <span class="cstat-no" title="statement not covered" >await readFileAsLatin1(arquivoSelecionado);</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Arquivo lido com sucesso (encoding: latin1). Iniciando parse posicional...', 'info');</span>
+&nbsp;
+    const resultado = <span class="cstat-no" title="statement not covered" >parsearArquivo(conteudo);</span>
+<span class="cstat-no" title="statement not covered" >    registrosValidos = resultado.validos;</span>
+<span class="cstat-no" title="statement not covered" >    linhasDescartadas = resultado.descartados;</span>
+<span class="cstat-no" title="statement not covered" >    totalLinhasLidas = resultado.totalLinhas;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    addLog(`Total de linhas lidas: ${totalLinhasLidas}`, 'info');</span>
+<span class="cstat-no" title="statement not covered" >    addLog(`Registros válidos: ${registrosValidos.length}`, 'ok');</span>
+<span class="cstat-no" title="statement not covered" >    addLog(`Linhas descartadas: ${linhasDescartadas.length}`, linhasDescartadas.length &gt; 0 ? 'warn' : 'info');</span>
+&nbsp;
+    // Mostrar primeiras 5 linhas descartadas
+    const amostraDescartadas = <span class="cstat-no" title="statement not covered" >linhasDescartadas.slice(0, 5);</span>
+<span class="cstat-no" title="statement not covered" >    amostraDescartadas.forEach(<span class="fstat-no" title="function not covered" >mo</span>tivo =&gt; <span class="cstat-no" title="statement not covered" >addLog(motivo, 'warn'))</span>;</span>
+<span class="cstat-no" title="statement not covered" >    if (linhasDescartadas.length &gt; 5) {</span>
+<span class="cstat-no" title="statement not covered" >      addLog(`... e mais ${linhasDescartadas.length - 5} linhas descartadas`, 'warn');</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (registrosValidos.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >      addLog('Nenhum registro válido encontrado. Processamento encerrado.', 'err');</span>
+<span class="cstat-no" title="statement not covered" >      processando = false;</span>
+<span class="cstat-no" title="statement not covered" >      validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+    // Preview
+<span class="cstat-no" title="statement not covered" >    document.getElementById('preview-section').classList.add('show');</span>
+<span class="cstat-no" title="statement not covered" >    renderizarPreview();</span>
+&nbsp;
+    // Z-Score
+<span class="cstat-no" title="statement not covered" >    addLog('Buscando histórico para cálculo de Z-Score...', 'info');</span>
+    const registrosHistorico = <span class="cstat-no" title="statement not covered" >await getPreviasRegistros(secretaria, periodo);</span>
+    const contagensPorPeriodo = <span class="cstat-no" title="statement not covered" >contarPorPeriodo(registrosHistorico);</span>
+    const contagensAnteriores = <span class="cstat-no" title="statement not covered" >obterContagensAnteriores(contagensPorPeriodo, periodo, 3);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    zScoreResultado = calcularZScore(registrosValidos.length, contagensAnteriores);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (zScoreResultado.insuficiente) {</span>
+<span class="cstat-no" title="statement not covered" >      addLog('Histórico insuficiente para cálculo de anomalia — mínimo 2 meses anteriores necessários', 'warn');</span>
+<span class="cstat-no" title="statement not covered" >      exibirConfirmacaoNeutra();</span>
+    } else {
+      const z = <span class="cstat-no" title="statement not covered" >zScoreResultado.zScore;</span>
+<span class="cstat-no" title="statement not covered" >      addLog(`Z-Score calculado: ${z.toFixed(2)}σ (média: ${zScoreResultado.media.toFixed(1)}, desvio: ${zScoreResultado.desvio.toFixed(1)})`, 'info');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (z &gt;= threshold) {</span>
+<span class="cstat-no" title="statement not covered" >        exibirBannerAnomalia(z, zScoreResultado.media, threshold);</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        exibirBannerNormal(z);</span>
+      }
+    }
+&nbsp;
+  } catch (err) {
+<span class="cstat-no" title="statement not covered" >    addLog(`Erro no processamento: ${err.message}`, 'err');</span>
+<span class="cstat-no" title="statement not covered" >    Toast.show('Erro ao processar arquivo', 'error');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  processando = false;</span>
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+}
+&nbsp;
+// ─── Banners de anomalia ─────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >esconderBanner(</span>) {
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-banner').classList.remove('show');</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >exibirBannerAnomalia(</span>z, media, threshold) {
+  const banner = <span class="cstat-no" title="statement not covered" >document.getElementById('anomalia-banner');</span>
+<span class="cstat-no" title="statement not covered" >  banner.className = 'anomalia-banner red show';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-title').textContent =</span>
+    '🚨 Anomalia Detectada — Revisar antes de enviar ao pagamento';
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-msg').textContent =</span>
+    `Volume atual (${registrosValidos.length} ocorrências) está ${z.toFixed(2)}σ acima da média histórica de ${media.toFixed(1)} ocorrências. Investigue o arquivo antes de confirmar o envio ao pagamento.`;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-actions').innerHTML = `</span>
+    &lt;button class="btn-confirm secondary" id="btn-cancelar-upload" type="button"&gt;Cancelar upload&lt;/button&gt;
+    &lt;button class="btn-confirm danger" id="btn-confirmar-anomalia" type="button"&gt;Confirmar mesmo assim&lt;/button&gt;
+  `;
+&nbsp;
+  // Cancelar: apenas fecha o banner, não insere nada
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-cancelar-upload').addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    esconderBanner();</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Upload cancelado pelo usuário — nenhum dado foi inserido.', 'warn');</span>
+  });
+&nbsp;
+  // Confirmar: usuário assume o risco e prossegue com o insert
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-confirmar-anomalia').addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    esconderBanner();</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Usuário confirmou inserção mesmo com anomalia detectada.', 'warn');</span>
+<span class="cstat-no" title="statement not covered" >    iniciarInsercao();</span>
+  });
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >exibirConfirmacaoNeutra(</span>) {
+  const banner = <span class="cstat-no" title="statement not covered" >document.getElementById('anomalia-banner');</span>
+<span class="cstat-no" title="statement not covered" >  banner.className = 'anomalia-banner green show';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-title').textContent = '⚠️ Histórico Insuficiente';</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-msg').textContent =</span>
+    `${registrosValidos.length} registros válidos parseados. Histórico insuficiente para cálculo de anomalia — mínimo 2 meses anteriores necessários. Use a aba "Importação Histórica" para registrar prévias anteriores e enriquecer o Z-Score.`;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-actions').innerHTML = `</span>
+    &lt;button class="btn-confirm secondary" id="btn-cancelar-neutro" type="button"&gt;Cancelar&lt;/button&gt;
+    &lt;button class="btn-confirm primary" id="btn-confirmar-neutro" type="button"&gt;Confirmar e inserir&lt;/button&gt;
+  `;
+&nbsp;
+  // Cancelar: fecha o banner sem inserir
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-cancelar-neutro').addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    esconderBanner();</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Upload cancelado pelo usuário.', 'warn');</span>
+  });
+&nbsp;
+  // Confirmar: prossegue com insert mesmo sem histórico para comparação
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-confirmar-neutro').addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    esconderBanner();</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Inserção confirmada (sem histórico de referência).', 'info');</span>
+<span class="cstat-no" title="statement not covered" >    iniciarInsercao();</span>
+  });
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >exibirBannerNormal(</span>z) {
+  const banner = <span class="cstat-no" title="statement not covered" >document.getElementById('anomalia-banner');</span>
+<span class="cstat-no" title="statement not covered" >  banner.className = 'anomalia-banner green show';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-title').textContent = '✅ Prévia dentro do padrão normal';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-msg').textContent =</span>
+    `Prévia dentro do padrão normal (${z.toFixed(2)}σ). Volume de ${registrosValidos.length} ocorrências está dentro da faixa esperada. Pode prosseguir com o envio ao pagamento.`;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-actions').innerHTML = `</span>
+    &lt;button class="btn-confirm secondary" id="btn-cancelar-normal" type="button"&gt;Cancelar&lt;/button&gt;
+    &lt;button class="btn-confirm primary" id="btn-confirmar-normal" type="button"&gt;Confirmar e inserir&lt;/button&gt;
+  `;
+&nbsp;
+  // Cancelar: fecha o banner sem inserir
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-cancelar-normal').addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    esconderBanner();</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Upload cancelado pelo usuário.', 'warn');</span>
+  });
+&nbsp;
+  // Confirmar: prossegue com o insert no Supabase
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-confirmar-normal').addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    esconderBanner();</span>
+<span class="cstat-no" title="statement not covered" >    addLog('Inserção confirmada pelo usuário.', 'ok');</span>
+<span class="cstat-no" title="statement not covered" >    iniciarInsercao();</span>
+  });
+}
+&nbsp;
+// ─── Inserção no Supabase ────────────────────────────────────────
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >iniciarInsercao(</span>) {
+  const secretaria = <span class="cstat-no" title="statement not covered" >document.getElementById('secretaria_codigo').value.trim();</span>
+  const periodo = <span class="cstat-no" title="statement not covered" >document.getElementById('periodo_referencia').value;</span>
+&nbsp;
+  const resultado = <span class="cstat-no" title="statement not covered" >await executarInsercao(secretaria, periodo, registrosValidos, linhasDescartadas.length, {</span>
+    substituirAutomatico: false
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!resultado || resultado.pulado) <span class="cstat-no" title="statement not covered" >return;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  finalizarResumoInsercao(resultado);</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >finalizarResumoInsercao(</span>resultado, mensagemToast = <span class="branch-0 cbranch-no" title="branch not covered" >null)</span> {
+  const { inseridos, erros, descartadas } = <span class="cstat-no" title="statement not covered" >resultado;</span>
+  const resumo = <span class="cstat-no" title="statement not covered" >`✔ ${inseridos} registros inseridos | ⚠ ${erros} erros | ✗ ${descartadas} linhas descartadas`;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('progress-label').textContent = 'Inserção concluída';</span>
+&nbsp;
+  const resumoEl = <span class="cstat-no" title="statement not covered" >document.getElementById('resumo-final');</span>
+<span class="cstat-no" title="statement not covered" >  resumoEl.textContent = resumo;</span>
+<span class="cstat-no" title="statement not covered" >  resumoEl.classList.add('show');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (inseridos &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    Toast.show(mensagemToast || `${inseridos} registros inseridos com sucesso`, 'success');</span>
+<span class="cstat-no" title="statement not covered" >    carregarHistorico();</span>
+  }
+}
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >executarInsercao(</span>secretaria, periodo, validos, qtdDescartadas, opcoes = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
+  const { substituirAutomatico = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span> silencioso = <span class="branch-0 cbranch-no" title="branch not covered" >false </span>} = <span class="cstat-no" title="statement not covered" >opcoes;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!silencioso) <span class="cstat-no" title="statement not covered" >addLog('Verificando registros existentes...', 'info');</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const existentes = <span class="cstat-no" title="statement not covered" >await countPreviasExistentes(secretaria, periodo);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (existentes &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >      addLog(`Já existem ${existentes} registros para ${periodo} / secretaria ${secretaria}`, 'warn');</span>
+&nbsp;
+      let substituir = <span class="cstat-no" title="statement not covered" >substituirAutomatico;</span>
+<span class="cstat-no" title="statement not covered" >      if (!substituirAutomatico) {</span>
+<span class="cstat-no" title="statement not covered" >        substituir = confirm(</span>
+          'Já existem registros para este período e secretaria.\nDeseja substituir (apagar e reinserir) ou cancelar?'
+        );
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (!substituir) {</span>
+<span class="cstat-no" title="statement not covered" >        addLog('Inserção cancelada — registros existentes mantidos.', 'warn');</span>
+<span class="cstat-no" title="statement not covered" >        return { inseridos: 0, erros: 0, descartadas: qtdDescartadas, pulado: true };</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      addLog('Removendo registros existentes...', 'info');</span>
+<span class="cstat-no" title="statement not covered" >      await deletePreviasPeriodo(secretaria, periodo);</span>
+<span class="cstat-no" title="statement not covered" >      addLog('Registros anteriores removidos.', 'ok');</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return await inserirEmLotes(secretaria, periodo, validos, qtdDescartadas, opcoes);</span>
+&nbsp;
+  } catch (err) {
+<span class="cstat-no" title="statement not covered" >    addLog(`Erro na inserção: ${err.message}`, 'err');</span>
+<span class="cstat-no" title="statement not covered" >    if (!silencioso) <span class="cstat-no" title="statement not covered" >Toast.show('Erro ao inserir registros', 'error');</span></span>
+<span class="cstat-no" title="statement not covered" >    throw err;</span>
+  }
+}
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >inserirEmLotes(</span>secretaria, periodo, validos, qtdDescartadas, opcoes = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
+  const { labelProgresso = <span class="branch-0 cbranch-no" title="branch not covered" >null </span>} = <span class="cstat-no" title="statement not covered" >opcoes;</span>
+&nbsp;
+  const registros = <span class="cstat-no" title="statement not covered" >validos.map(<span class="fstat-no" title="function not covered" >r </span>=&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
+    periodo_referencia: periodo,
+    secretaria_codigo: secretaria,
+    matricula: r.matricula,
+    data_ocorrencia: r.data_ocorrencia,
+    codigo_ocorrencia: r.codigo_ocorrencia,
+    percentual_desconto: r.percentual_desconto
+  }));
+&nbsp;
+  const totalLotes = <span class="cstat-no" title="statement not covered" >Math.ceil(registros.length / BATCH_SIZE);</span>
+  let inseridos = <span class="cstat-no" title="statement not covered" >0;</span>
+  let erros = <span class="cstat-no" title="statement not covered" >0;</span>
+&nbsp;
+  const progressWrap = <span class="cstat-no" title="statement not covered" >document.getElementById('progress-bar-wrap');</span>
+  const progressLabel = <span class="cstat-no" title="statement not covered" >document.getElementById('progress-label');</span>
+  const progressFill = <span class="cstat-no" title="statement not covered" >document.getElementById('progress-fill');</span>
+<span class="cstat-no" title="statement not covered" >  progressWrap.classList.add('show');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  addLog(`Iniciando inserção em ${totalLotes} lote(s) de até ${BATCH_SIZE} registros...`, 'info');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; totalLotes; i++) {</span>
+    const lote = <span class="cstat-no" title="statement not covered" >registros.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);</span>
+    const numLote = <span class="cstat-no" title="statement not covered" >i + 1;</span>
+&nbsp;
+    const prefixo = <span class="cstat-no" title="statement not covered" >labelProgresso ? `${labelProgresso} — ` : '';</span>
+<span class="cstat-no" title="statement not covered" >    progressLabel.textContent = `${prefixo}Inserindo lote ${numLote} de ${totalLotes}...`;</span>
+<span class="cstat-no" title="statement not covered" >    progressFill.style.width = `${(numLote / totalLotes) * 100}%`;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    try {</span>
+<span class="cstat-no" title="statement not covered" >      await insertPreviasLote(lote);</span>
+<span class="cstat-no" title="statement not covered" >      inseridos += lote.length;</span>
+<span class="cstat-no" title="statement not covered" >      addLog(`${prefixo}Lote ${numLote}/${totalLotes}: ${lote.length} registros inseridos`, 'ok');</span>
+    } catch (err) {
+<span class="cstat-no" title="statement not covered" >      erros += lote.length;</span>
+<span class="cstat-no" title="statement not covered" >      addLog(`${prefixo}Lote ${numLote}/${totalLotes}: erro — ${err.message}`, 'err');</span>
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  progressFill.style.width = '100%';</span>
+&nbsp;
+  const resumo = <span class="cstat-no" title="statement not covered" >`✔ ${inseridos} registros inseridos | ⚠ ${erros} erros | ✗ ${qtdDescartadas} linhas descartadas`;</span>
+<span class="cstat-no" title="statement not covered" >  addLog(resumo, inseridos &gt; 0 ? 'ok' : 'err');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return { inseridos, erros, descartadas: qtdDescartadas };</span>
+}
+&nbsp;
+// ─── Preview ─────────────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >renderizarPreview(</span>) {
+  const busca = <span class="cstat-no" title="statement not covered" >document.getElementById('preview-busca').value.trim().toLowerCase();</span>
+  const filtrados = <span class="cstat-no" title="statement not covered" >busca</span>
+    ? registrosValidos.filter(<span class="fstat-no" title="function not covered" >r </span>=&gt; <span class="cstat-no" title="statement not covered" >r.matricula.toLowerCase().includes(busca))</span>
+    : registrosValidos;
+&nbsp;
+  const exibir = <span class="cstat-no" title="statement not covered" >filtrados.slice(0, PREVIEW_LIMIT);</span>
+  const tbody = <span class="cstat-no" title="statement not covered" >document.getElementById('preview-tbody');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  tbody.innerHTML = exibir.map(<span class="fstat-no" title="function not covered" >r </span>=&gt; <span class="cstat-no" title="statement not covered" >`</span></span>
+    &lt;tr class="${r.percentual_desconto === 100 ? 'row-alerta' : ''}"&gt;
+      &lt;td&gt;${escapeHtml(r.matricula)}&lt;/td&gt;
+      &lt;td&gt;${escapeHtml(r.data_exibicao)}&lt;/td&gt;
+      &lt;td&gt;${escapeHtml(r.codigo_ocorrencia)}&lt;/td&gt;
+      &lt;td&gt;${r.percentual_desconto}%&lt;/td&gt;
+      &lt;td&gt;&lt;span class="status-valido"&gt;Válido&lt;/span&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  `).join('');
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('preview-counter').textContent =</span>
+    `Exibindo ${exibir.length} de ${filtrados.length} registros` +
+    (filtrados.length !== registrosValidos.length ? ` (${registrosValidos.length} total)` : '');
+}
+&nbsp;
+// ─── Histórico ───────────────────────────────────────────────────
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >carregarHistorico(</span>) {
+  const secretaria = <span class="cstat-no" title="statement not covered" >document.getElementById('secretaria_codigo').value.trim();</span>
+  const tbody = <span class="cstat-no" title="statement not covered" >document.getElementById('historico-tbody');</span>
+  const threshold = <span class="cstat-no" title="statement not covered" >parseFloat(document.getElementById('threshold_zscore').value);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!secretaria) {</span>
+<span class="cstat-no" title="statement not covered" >    tbody.innerHTML = '&lt;tr&gt;&lt;td colspan="6" style="text-align:center;color:var(--muted);padding:24px"&gt;Informe o código da secretaria para ver o histórico&lt;/td&gt;&lt;/tr&gt;';</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  tbody.innerHTML = '&lt;tr&gt;&lt;td colspan="6" style="text-align:center;color:var(--muted);padding:24px"&gt;Carregando histórico...&lt;/td&gt;&lt;/tr&gt;';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const registros = <span class="cstat-no" title="statement not covered" >await getPreviasRegistros(secretaria);</span>
+<span class="cstat-no" title="statement not covered" >    todosRegistrosSecretaria = registros;</span>
+&nbsp;
+    // Load last 6 periods for Tab 1 (simulation)
+    const periodos = <span class="cstat-no" title="statement not covered" >agruparPorPeriodo(registros)</span>
+      .sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >b.periodo_referencia.localeCompare(a.periodo_referencia))</span>
+      .slice(0, 6);
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (periodos.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >      tbody.innerHTML = '&lt;tr&gt;&lt;td colspan="6" style="text-align:center;color:var(--muted);padding:24px"&gt;Nenhum período registrado para esta secretaria&lt;/td&gt;&lt;/tr&gt;';</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+    const contagensPorPeriodo = <span class="cstat-no" title="statement not covered" >contarPorPeriodo(registros);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    tbody.innerHTML = periodos.map(<span class="fstat-no" title="function not covered" >p </span>=&gt; {</span>
+      const contagensAnteriores = <span class="cstat-no" title="statement not covered" >obterContagensAnteriores(contagensPorPeriodo, p.periodo_referencia, 3);</span>
+      const zResult = <span class="cstat-no" title="statement not covered" >calcularZScore(p.total_ocorrencias, contagensAnteriores);</span>
+&nbsp;
+      let zDisplay, statusHtml;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (zResult.insuficiente) {</span>
+<span class="cstat-no" title="statement not covered" >        zDisplay = '—';</span>
+<span class="cstat-no" title="statement not covered" >        statusHtml = '&lt;span class="status-badge insuficiente"&gt;Sem histórico&lt;/span&gt;';</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        zDisplay = `${zResult.zScore.toFixed(2)}σ`;</span>
+        const isAnomalia = <span class="cstat-no" title="statement not covered" >zResult.zScore &gt;= threshold;</span>
+        const isAtencao = <span class="cstat-no" title="statement not covered" >zResult.zScore &gt;= 1.5 &amp;&amp; zResult.zScore &lt; threshold;</span>
+        
+<span class="cstat-no" title="statement not covered" >        if (isAnomalia) {</span>
+<span class="cstat-no" title="statement not covered" >          statusHtml = '&lt;span class="status-badge anomalia"&gt;Anomalia&lt;/span&gt;';</span>
+        } else <span class="cstat-no" title="statement not covered" >if (isAtencao) {</span>
+<span class="cstat-no" title="statement not covered" >          statusHtml = '&lt;span class="status-badge atencao"&gt;Atenção&lt;/span&gt;';</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >          statusHtml = '&lt;span class="status-badge normal"&gt;Normal&lt;/span&gt;';</span>
+        }
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      return `</span>
+        &lt;tr&gt;
+          &lt;td&gt;${formatarPeriodo(p.periodo_referencia)}&lt;/td&gt;
+          &lt;td&gt;${p.total_ocorrencias.toLocaleString('pt-BR')}&lt;/td&gt;
+          &lt;td&gt;${p.servidores_afetados.toLocaleString('pt-BR')}&lt;/td&gt;
+          &lt;td&gt;${p.desconto_acumulado.toLocaleString('pt-BR')}%&lt;/td&gt;
+          &lt;td class="${zResult.insuficiente ? '' : (zResult.zScore &gt;= threshold ? 'zscore-anomalia' : (zResult.zScore &gt;= 1.5 ? 'zscore-atencao' : 'zscore-normal'))}"&gt;${zDisplay}&lt;/td&gt;
+          &lt;td&gt;${statusHtml}&lt;/td&gt;
+        &lt;/tr&gt;
+      `;
+    }).join('');
+&nbsp;
+  } catch (err) {
+<span class="cstat-no" title="statement not covered" >    tbody.innerHTML = `&lt;tr&gt;&lt;td colspan="6" style="text-align:center;color:var(--red);padding:24px"&gt;Erro ao carregar histórico: ${escapeHtml(err.message)}&lt;/td&gt;&lt;/tr&gt;`;</span>
+  }
+}
+&nbsp;
+// ─── Importação histórica em lote ────────────────────────────────
+&nbsp;
+let proximoIdHistorico = <span class="cstat-no" title="statement not covered" >1;</span>
+&nbsp;
+function <span class="fstat-no" title="function not covered" >setupModoTabs(</span>) {
+  const tabPrevia = <span class="cstat-no" title="statement not covered" >document.getElementById('tab-previa');</span>
+  const tabHistorico = <span class="cstat-no" title="statement not covered" >document.getElementById('tab-historico');</span>
+  const panelPrevia = <span class="cstat-no" title="statement not covered" >document.getElementById('panel-previa');</span>
+  const panelHistorico = <span class="cstat-no" title="statement not covered" >document.getElementById('panel-historico');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  tabPrevia.addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    tabPrevia.classList.add('active');</span>
+<span class="cstat-no" title="statement not covered" >    tabHistorico.classList.remove('active');</span>
+<span class="cstat-no" title="statement not covered" >    panelPrevia.classList.add('active');</span>
+<span class="cstat-no" title="statement not covered" >    panelHistorico.classList.remove('active');</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  tabHistorico.addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    tabHistorico.classList.add('active');</span>
+<span class="cstat-no" title="statement not covered" >    tabPrevia.classList.remove('active');</span>
+<span class="cstat-no" title="statement not covered" >    panelHistorico.classList.add('active');</span>
+<span class="cstat-no" title="statement not covered" >    panelPrevia.classList.remove('active');</span>
+&nbsp;
+    // Sincronizar secretaria entre abas
+    const sec = <span class="cstat-no" title="statement not covered" >document.getElementById('secretaria_codigo').value.trim();</span>
+<span class="cstat-no" title="statement not covered" >    if (sec &amp;&amp; !document.getElementById('hist_secretaria_codigo').value.trim()) {</span>
+<span class="cstat-no" title="statement not covered" >      document.getElementById('hist_secretaria_codigo').value = sec;</span>
+    }
+  });
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >setupHistoricoUpload(</span>) {
+  const zone = <span class="cstat-no" title="statement not covered" >document.getElementById('hist-upload-zone');</span>
+  const fileInput = <span class="cstat-no" title="statement not covered" >document.getElementById('hist-file-input');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >fileInput.click())</span>;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('dragover', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
+<span class="cstat-no" title="statement not covered" >    zone.classList.add('drag-over');</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('dragleave', <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >zone.classList.remove('drag-over'))</span>;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  zone.addEventListener('drop', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
+<span class="cstat-no" title="statement not covered" >    zone.classList.remove('drag-over');</span>
+<span class="cstat-no" title="statement not covered" >    adicionarArquivosHistorico(Array.from(e.dataTransfer.files));</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  fileInput.addEventListener('change', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    adicionarArquivosHistorico(Array.from(e.target.files));</span>
+<span class="cstat-no" title="statement not covered" >    fileInput.value = '';</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('hist_secretaria_codigo').addEventListener('input', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    atualizarSecretariaFilaHistorico();</span>
+<span class="cstat-no" title="statement not covered" >    validarFilaHistorico();</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('btn-importar-historico').addEventListener('click', importarHistorico);</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >adicionarArquivosHistorico(</span>files) {
+  const secretariaPadrao = <span class="cstat-no" title="statement not covered" >document.getElementById('hist_secretaria_codigo').value.trim()</span>
+    || document.getElementById('secretaria_codigo').value.trim();
+&nbsp;
+  const txtFiles = <span class="cstat-no" title="statement not covered" >files.filter(<span class="fstat-no" title="function not covered" >f </span>=&gt; <span class="cstat-no" title="statement not covered" >f.name.toLowerCase().endsWith('.txt'))</span>;</span>
+<span class="cstat-no" title="statement not covered" >  if (txtFiles.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >    Toast.show('Selecione apenas arquivos .txt', 'error');</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  txtFiles.forEach(<span class="fstat-no" title="function not covered" >fi</span>le =&gt; {</span>
+    const metadados = <span class="cstat-no" title="statement not covered" >extrairMetadadosDoNome(file.name);</span>
+    const jaExiste = <span class="cstat-no" title="statement not covered" >filaHistorico.some(<span class="fstat-no" title="function not covered" >it</span>em =&gt; <span class="cstat-no" title="statement not covered" >item.file.name === file.name &amp;&amp; item.file.size === file.size)</span>;</span>
+<span class="cstat-no" title="statement not covered" >    if (jaExiste) <span class="cstat-no" title="statement not covered" >return;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    filaHistorico.push({</span>
+      id: proximoIdHistorico++,
+      file,
+      secretaria_codigo: metadados?.secretaria_codigo || secretariaPadrao || '',
+      periodo_referencia: metadados?.periodo_referencia || ''
+    });
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  filaHistorico.sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >a.periodo_referencia.localeCompare(b.periodo_referencia))</span>;</span>
+<span class="cstat-no" title="statement not covered" >  renderizarFilaHistorico();</span>
+<span class="cstat-no" title="statement not covered" >  validarFilaHistorico();</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >atualizarSecretariaFilaHistorico(</span>) {
+  const padrao = <span class="cstat-no" title="statement not covered" >document.getElementById('hist_secretaria_codigo').value.trim();</span>
+<span class="cstat-no" title="statement not covered" >  filaHistorico.forEach(<span class="fstat-no" title="function not covered" >it</span>em =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    if (!extrairMetadadosDoNome(item.file.name)?.secretaria_codigo) {</span>
+<span class="cstat-no" title="statement not covered" >      item.secretaria_codigo = padrao;</span>
+    }
+  });
+<span class="cstat-no" title="statement not covered" >  renderizarFilaHistorico();</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >renderizarFilaHistorico(</span>) {
+  const listEl = <span class="cstat-no" title="statement not covered" >document.getElementById('hist-file-list');</span>
+  const tbody = <span class="cstat-no" title="statement not covered" >document.getElementById('hist-file-tbody');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (filaHistorico.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >    listEl.style.display = 'none';</span>
+<span class="cstat-no" title="statement not covered" >    tbody.innerHTML = '';</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  listEl.style.display = 'block';</span>
+<span class="cstat-no" title="statement not covered" >  tbody.innerHTML = filaHistorico.map(<span class="fstat-no" title="function not covered" >it</span>em =&gt; {</span>
+    const ok = <span class="cstat-no" title="statement not covered" >item.secretaria_codigo &amp;&amp; item.periodo_referencia;</span>
+<span class="cstat-no" title="statement not covered" >    return `</span>
+      &lt;tr&gt;
+        &lt;td title="${escapeHtml(item.file.name)}"&gt;${escapeHtml(item.file.name)}&lt;/td&gt;
+        &lt;td&gt;
+          &lt;input type="text" data-id="${item.id}" data-field="secretaria" value="${escapeHtml(item.secretaria_codigo)}" maxlength="10"&gt;
+        &lt;/td&gt;
+        &lt;td&gt;
+          &lt;input type="month" data-id="${item.id}" data-field="periodo" value="${escapeHtml(item.periodo_referencia)}"&gt;
+        &lt;/td&gt;
+        &lt;td&gt;${ok ? '&lt;span class="hist-badge-ok"&gt;OK&lt;/span&gt;' : '&lt;span class="hist-badge-warn"&gt;Pendente&lt;/span&gt;'}&lt;/td&gt;
+        &lt;td&gt;&lt;button class="btn-sm danger" data-remove="${item.id}" type="button"&gt;×&lt;/button&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    `;
+  }).join('');
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  tbody.querySelectorAll('input[data-field]').forEach(<span class="fstat-no" title="function not covered" >in</span>put =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    input.addEventListener('change', <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+      const id = <span class="cstat-no" title="statement not covered" >parseInt(e.target.dataset.id, 10);</span>
+      const field = <span class="cstat-no" title="statement not covered" >e.target.dataset.field;</span>
+      const item = <span class="cstat-no" title="statement not covered" >filaHistorico.find(<span class="fstat-no" title="function not covered" >f </span>=&gt; <span class="cstat-no" title="statement not covered" >f.id === id)</span>;</span>
+<span class="cstat-no" title="statement not covered" >      if (!item) <span class="cstat-no" title="statement not covered" >return;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (field === 'secretaria') <span class="cstat-no" title="statement not covered" >item.secretaria_codigo = e.target.value.trim();</span></span>
+<span class="cstat-no" title="statement not covered" >      if (field === 'periodo') <span class="cstat-no" title="statement not covered" >item.periodo_referencia = e.target.value;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      validarFilaHistorico();</span>
+<span class="cstat-no" title="statement not covered" >      renderizarFilaHistorico();</span>
+    });
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  tbody.querySelectorAll('[data-remove]').forEach(<span class="fstat-no" title="function not covered" >bt</span>n =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    btn.addEventListener('click', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+      const id = <span class="cstat-no" title="statement not covered" >parseInt(btn.dataset.remove, 10);</span>
+<span class="cstat-no" title="statement not covered" >      filaHistorico = filaHistorico.filter(<span class="fstat-no" title="function not covered" >f </span>=&gt; <span class="cstat-no" title="statement not covered" >f.id !== id)</span>;</span>
+<span class="cstat-no" title="statement not covered" >      renderizarFilaHistorico();</span>
+<span class="cstat-no" title="statement not covered" >      validarFilaHistorico();</span>
+    });
+  });
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >validarFilaHistorico(</span>) {
+  const btn = <span class="cstat-no" title="statement not covered" >document.getElementById('btn-importar-historico');</span>
+  const todosOk = <span class="cstat-no" title="statement not covered" >filaHistorico.length &gt; 0 &amp;&amp; filaHistorico.every(</span>
+<span class="fstat-no" title="function not covered" >    f </span>=&gt; <span class="cstat-no" title="statement not covered" >f.secretaria_codigo &amp;&amp; f.periodo_referencia</span>
+  );
+<span class="cstat-no" title="statement not covered" >  btn.disabled = !todosOk || processando;</span>
+}
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >importarHistorico(</span>) {
+<span class="cstat-no" title="statement not covered" >  if (processando || filaHistorico.length === 0) <span class="cstat-no" title="statement not covered" >return;</span></span>
+&nbsp;
+  const substituir = <span class="cstat-no" title="statement not covered" >document.getElementById('hist-substituir').checked;</span>
+  const periodos = <span class="cstat-no" title="statement not covered" >filaHistorico.map(<span class="fstat-no" title="function not covered" >f </span>=&gt; <span class="cstat-no" title="statement not covered" >formatarPeriodo(f.periodo_referencia))</span>.join(', ');</span>
+&nbsp;
+  // First pass: parse all files to get count
+  let totalRegistros = <span class="cstat-no" title="statement not covered" >0;</span>
+<span class="cstat-no" title="statement not covered" >  for (const item of filaHistorico) {</span>
+<span class="cstat-no" title="statement not covered" >    try {</span>
+      const conteudo = <span class="cstat-no" title="statement not covered" >await readFileAsLatin1(item.file);</span>
+      const resultado = <span class="cstat-no" title="statement not covered" >parsearArquivo(conteudo);</span>
+<span class="cstat-no" title="statement not covered" >      totalRegistros += resultado.validos.length;</span>
+    } catch (err) {
+      // If parsing fails, we'll handle it in the main loop
+    }
+  }
+&nbsp;
+  const confirmar = <span class="cstat-no" title="statement not covered" >confirm(</span>
+    `⚠️ IMPORTAÇÃO PARA HISTÓRICO PERMANENTE ⚠️\n\n` +
+    `Você está prestes a adicionar ${totalRegistros.toLocaleString('pt-BR')} registros ao histórico permanente.\n` +
+    `Esta ação alimentará as comparações futuras de Z-Score.\n\n` +
+    `Arquivos: ${filaHistorico.length}\n` +
+    `Períodos: ${periodos}\n` +
+    `Secretaria: ${filaHistorico[0].secretaria_codigo}\n\n` +
+    (substituir ? 'Períodos existentes serão substituídos.' : 'Períodos existentes serão ignorados.') +
+    '\n\nConfirmar importação?'
+  );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!confirmar) <span class="cstat-no" title="statement not covered" >return;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  processando = true;</span>
+<span class="cstat-no" title="statement not covered" >  validarFilaHistorico();</span>
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >  limparLog();</span>
+<span class="cstat-no" title="statement not covered" >  resetarProcessamento();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  document.getElementById('anomalia-banner').classList.remove('show');</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('preview-section').classList.remove('show');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  addLog('═══ Importação histórica iniciada ═══', 'info');</span>
+<span class="cstat-no" title="statement not covered" >  addLog(`${filaHistorico.length} arquivo(s) na fila — sem validação de Z-Score`, 'info');</span>
+&nbsp;
+  const filaOrdenada = <span class="cstat-no" title="statement not covered" >[...filaHistorico].sort(</span>
+<span class="fstat-no" title="function not covered" >    (a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >a.periodo_referencia.localeCompare(b.periodo_referencia)</span>
+  );
+&nbsp;
+  let totalInseridos = <span class="cstat-no" title="statement not covered" >0;</span>
+  let totalErros = <span class="cstat-no" title="statement not covered" >0;</span>
+  let totalDescartadas = <span class="cstat-no" title="statement not covered" >0;</span>
+  let arquivosOk = <span class="cstat-no" title="statement not covered" >0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; filaOrdenada.length; i++) {</span>
+      const item = <span class="cstat-no" title="statement not covered" >filaOrdenada[i];</span>
+      const label = <span class="cstat-no" title="statement not covered" >`${formatarPeriodo(item.periodo_referencia)} (${i + 1}/${filaOrdenada.length})`;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      addLog(`── Processando ${item.file.name} [${label}] ──`, 'info');</span>
+&nbsp;
+      const conteudo = <span class="cstat-no" title="statement not covered" >await item.file.text();</span>
+      const resultado = <span class="cstat-no" title="statement not covered" >parsearArquivo(conteudo);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      addLog(`${label}: ${resultado.validos.length} válidos, ${resultado.descartados.length} descartados`, 'ok');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (resultado.validos.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >        addLog(`${label}: nenhum registro válido — arquivo ignorado`, 'warn');</span>
+<span class="cstat-no" title="statement not covered" >        continue;</span>
+      }
+&nbsp;
+      const insertResult = <span class="cstat-no" title="statement not covered" >await executarInsercao(</span>
+        item.secretaria_codigo,
+        item.periodo_referencia,
+        resultado.validos,
+        resultado.descartados.length,
+        { substituirAutomatico: substituir, labelProgresso: label }
+      );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (insertResult &amp;&amp; !insertResult.pulado) {</span>
+<span class="cstat-no" title="statement not covered" >        totalInseridos += insertResult.inseridos;</span>
+<span class="cstat-no" title="statement not covered" >        totalErros += insertResult.erros;</span>
+<span class="cstat-no" title="statement not covered" >        totalDescartadas += insertResult.descartadas;</span>
+<span class="cstat-no" title="statement not covered" >        arquivosOk++;</span>
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    addLog('═══ Importação histórica concluída ═══', 'info');</span>
+    const resumoGeral = <span class="cstat-no" title="statement not covered" >`✔ ${totalInseridos} registros inseridos em ${arquivosOk} período(s) | ⚠ ${totalErros} erros | ✗ ${totalDescartadas} linhas descartadas`;</span>
+<span class="cstat-no" title="statement not covered" >    addLog(resumoGeral, totalInseridos &gt; 0 ? 'ok' : 'warn');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    finalizarResumoInsercao(</span>
+      { inseridos: totalInseridos, erros: totalErros, descartadas: totalDescartadas },
+      `Histórico importado: ${arquivosOk} período(s), ${totalInseridos.toLocaleString('pt-BR')} registros`
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (filaOrdenada[0]?.secretaria_codigo) {</span>
+<span class="cstat-no" title="statement not covered" >      document.getElementById('secretaria_codigo').value = filaOrdenada[0].secretaria_codigo;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (totalInseridos &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >      filaHistorico = [];</span>
+<span class="cstat-no" title="statement not covered" >      renderizarFilaHistorico();</span>
+    }
+&nbsp;
+  } catch (err) {
+<span class="cstat-no" title="statement not covered" >    addLog(`Erro na importação histórica: ${err.message}`, 'err');</span>
+<span class="cstat-no" title="statement not covered" >    Toast.show('Erro na importação histórica', 'error');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  processando = false;</span>
+<span class="cstat-no" title="statement not covered" >  validarFilaHistorico();</span>
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+<span class="cstat-no" title="statement not covered" >  await carregarHistorico();</span>
+}
+&nbsp;
+// ─── Inicialização ───────────────────────────────────────────────
+&nbsp;
+function <span class="fstat-no" title="function not covered" >atualizarTopbar(</span>) {
+<span class="cstat-no" title="statement not covered" >  document.getElementById('topbar-date').textContent =</span>
+    `Atualizado em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`;
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >document.addEventListener('DOMContentLoaded', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  console.log('DOM Content Loaded - initializing previas-frequencia');</span>
+<span class="cstat-no" title="statement not covered" >  atualizarTopbar();</span>
+<span class="cstat-no" title="statement not covered" >  setupModoTabs();</span>
+<span class="cstat-no" title="statement not covered" >  setupUpload();</span>
+<span class="cstat-no" title="statement not covered" >  setupHistoricoUpload();</span>
+<span class="cstat-no" title="statement not covered" >  setupFormulario();</span>
+<span class="cstat-no" title="statement not covered" >  validarFormulario();</span>
+&nbsp;
+  // Aguardar config-db carregar
+<span class="cstat-no" title="statement not covered" >  setTimeout(carregarHistorico, 200);</span>
+});
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-06-17T18:28:49.210Z
+            </div>
+        <script src="prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="sorter.js"></script>
+        <script src="block-navigation.js"></script>
+    </body>
+</html>
+    

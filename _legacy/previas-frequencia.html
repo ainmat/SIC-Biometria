@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prévia de Frequência · SIC-Biometria</title>
+  <link rel="icon" href="data:,">
+
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    .previas-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 960px) {
+      .previas-grid { grid-template-columns: 1fr; }
+    }
+
+    .previas-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .previas-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .previas-card-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* Upload drag & drop */
+    .upload-zone {
+      border: 2px dashed var(--border2);
+      border-radius: 10px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface);
+    }
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.04);
+    }
+    .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .upload-zone-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+    .upload-zone-text {
+      font-size: 13px;
+      color: var(--sub);
+    }
+    .upload-zone-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .upload-file-info {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+    }
+    .upload-file-info.show { display: flex; }
+    .upload-file-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .upload-file-size {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .upload-file-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sm {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--sub);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-sm:hover { color: var(--text); border-color: var(--accent); }
+    .btn-sm.danger:hover { color: var(--red); border-color: var(--red); }
+
+    /* Formulário */
+    .meta-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 600px) {
+      .meta-form { grid-template-columns: 1fr; }
+    }
+    .meta-form .full-width { grid-column: 1 / -1; }
+    .meta-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .meta-field input,
+    .meta-field select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+    }
+    .meta-field input:focus,
+    .meta-field select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-processar {
+      width: 100%;
+      padding: 10px;
+      margin-top: 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Sora', sans-serif;
+    }
+    .btn-processar:hover:not(:disabled) { background: #2563eb; }
+    .btn-processar:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Log terminal */
+    .log-terminal {
+      background: #0a0e17;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 24px;
+    }
+    .log-line-info { color: #60a5fa; }
+    .log-line-ok { color: #34d399; }
+    .log-line-warn { color: #fbbf24; }
+    .log-line-err { color: #f87171; }
+
+    /* Banner anomalia */
+    .anomalia-banner {
+      display: none;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .anomalia-banner.show { display: block; }
+    .anomalia-banner.red {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .anomalia-banner.green {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .anomalia-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .anomalia-banner.red .anomalia-title { color: #f87171; }
+    .anomalia-banner.green .anomalia-title { color: #34d399; }
+    .anomalia-msg {
+      font-size: 12px;
+      color: var(--sub);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .anomalia-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-confirm {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'Sora', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-confirm.primary { background: var(--green); color: white; }
+    .btn-confirm.primary:hover { background: #059669; }
+    .btn-confirm.danger { background: var(--red); color: white; }
+    .btn-confirm.danger:hover { background: #dc2626; }
+    .btn-confirm.secondary {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--sub);
+    }
+    .btn-confirm.secondary:hover { color: var(--text); }
+
+    /* Barra de progresso */
+    .progress-bar-wrap {
+      display: none;
+      margin-bottom: 20px;
+    }
+    .progress-bar-wrap.show { display: block; }
+    .progress-label {
+      font-size: 12px;
+      color: var(--sub);
+      margin-bottom: 6px;
+    }
+    .progress-track {
+      height: 6px;
+      background: var(--surface);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    /* Preview tabela */
+    .preview-section { display: none; margin-bottom: 24px; }
+    .preview-section.show { display: block; }
+    .preview-search {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .preview-counter {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .row-alerta td {
+      background: rgba(239, 68, 68, 0.08) !important;
+      color: #f87171 !important;
+    }
+    .status-valido {
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Histórico */
+    .historico-section { margin-top: 8px; }
+    .zscore-normal { color: var(--green); font-weight: 600; }
+    .zscore-atencao { color: #fbbf24; font-weight: 600; }
+    .zscore-anomalia { color: var(--red); font-weight: 600; }
+    .status-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .status-badge.normal {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .status-badge.atencao {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+    .status-badge.anomalia {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .status-badge.insuficiente {
+      background: rgba(100, 116, 139, 0.1);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .resumo-final {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .resumo-final.show { display: block; }
+
+    #file-input, #hist-file-input { display: none; }
+
+    /* Abas de modo */
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .mode-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--sub);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Sora', sans-serif;
+    }
+    .mode-tab:hover { color: var(--text); border-color: var(--border2); }
+    .mode-tab.active {
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--accent);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
+
+    .hist-file-list {
+      margin-top: 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .hist-file-list table { width: 100%; border-collapse: collapse; }
+    .hist-file-list th {
+      background: rgba(255,255,255,0.02);
+      padding: 8px 10px;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+    }
+    .hist-file-list td {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .hist-file-list input[type="month"],
+    .hist-file-list input[type="text"] {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--text);
+    }
+    .hist-meta-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 600px) {
+      .hist-meta-row { grid-template-columns: 1fr; }
+    }
+    .hist-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--sub);
+      margin: 14px 0;
+    }
+    .hist-checkbox input { accent-color: var(--accent); }
+    .btn-importar {
+      width: 100%;
+      padding: 10px;
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-importar:hover:not(:disabled) { background: #059669; }
+    .btn-importar:disabled { opacity: 0.4; cursor: not-allowed; }
+    .hist-badge-ok { color: var(--green); font-size: 10px; font-weight: 600; }
+    .hist-badge-warn { color: var(--amber); font-size: 10px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">SIC-Biometria</div>
+      <div class="logo-sub">Pref. de Osasco</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Painel de Chamados
+    </a>
+    <a class="nav-item" href="todos-chamados.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      Todos os Chamados
+    </a>
+    <a class="nav-item" href="unidades-multiplos-chamados.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Unidades com Múltiplos Chamados
+    </a>
+    <a class="nav-item" href="analise-tendencias.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Análise de Tendências
+    </a>
+    <div class="nav-section">Infraestrutura</div>
+    <a class="nav-item" href="parque-equipamentos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+      Parque de Equipamentos
+    </a>
+    <div class="nav-section">Módulo Prévias</div>
+    <a class="nav-item active" href="previas-frequencia.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Prévia de Frequência
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Realtime ativo
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Prévia de Frequência</h1>
+      <p id="topbar-date">Carregando...</p>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-live">
+        <div class="status-dot"></div>
+        AO VIVO
+      </div>
+      <div class="avatar">MC</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-previa" type="button">Prévia Mensal</button>
+      <button class="mode-tab" id="tab-historico" type="button">Importação Histórica</button>
+    </div>
+
+    <div class="mode-panel active" id="panel-previa">
+    <div class="previas-grid">
+      <!-- Upload -->
+      <div class="previas-card">
+        <div class="previas-card-title">Upload do Arquivo</div>
+        <div class="previas-card-sub">Arraste ou selecione um arquivo .txt de prévia de frequência</div>
+
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-zone-icon">📄</div>
+          <div class="upload-zone-text">Arraste o arquivo .txt aqui</div>
+          <div class="upload-zone-hint">ou clique para selecionar</div>
+        </div>
+        <input type="file" id="file-input" accept=".txt">
+
+        <div class="upload-file-info" id="upload-file-info">
+          <div>
+            <div class="upload-file-name" id="upload-file-name"></div>
+            <div class="upload-file-size" id="upload-file-size"></div>
+          </div>
+          <div class="upload-file-actions">
+            <button class="btn-sm" id="btn-trocar-arquivo" type="button">Trocar</button>
+            <button class="btn-sm danger" id="btn-remover-arquivo" type="button">Remover</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metadados -->
+      <div class="previas-card">
+        <div class="previas-card-title">Metadados do Lote</div>
+        <div class="previas-card-sub">Informações obrigatórias para processamento</div>
+
+        <div class="meta-form">
+          <div class="meta-field">
+            <label for="secretaria_codigo">Código da Secretaria</label>
+            <input type="text" id="secretaria_codigo" placeholder="Ex: 589" maxlength="10">
+          </div>
+          <div class="meta-field">
+            <label for="periodo_referencia">Período de Referência</label>
+            <input type="month" id="periodo_referencia">
+          </div>
+          <div class="meta-field">
+            <label for="threshold_zscore">Threshold Z-Score</label>
+            <select id="threshold_zscore">
+              <option value="1.5">1.5 σ</option>
+              <option value="2.0" selected>2.0 σ</option>
+              <option value="2.5">2.5 σ</option>
+              <option value="3.0">3.0 σ</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-processar" id="btn-processar" type="button" disabled>Processar Arquivo</button>
+      </div>
+    </div>
+    </div>
+
+    <div class="mode-panel" id="panel-historico">
+      <div class="previas-card" style="margin-bottom:20px">
+        <div class="previas-card-title">Importação Histórica em Lote</div>
+        <div class="previas-card-sub">Suba prévias finais já enviadas ao pagamento (ex.: Jan–Mai/26) para compor a base do Z-Score. Sem validação de anomalia.</div>
+
+        <div class="hist-meta-row">
+          <div class="meta-field">
+            <label for="hist_secretaria_codigo">Código da Secretaria (padrão)</label>
+            <input type="text" id="hist_secretaria_codigo" placeholder="Ex: 589" maxlength="10">
+          </div>
+          <div class="meta-field">
+            <label>&nbsp;</label>
+            <div style="font-size:11px;color:var(--muted);padding-top:8px">Usado quando o nome do arquivo não traz o código</div>
+          </div>
+        </div>
+
+        <div class="upload-zone" id="hist-upload-zone">
+          <div class="upload-zone-icon">📁</div>
+          <div class="upload-zone-text">Arraste vários arquivos .txt aqui</div>
+          <div class="upload-zone-hint">Jan, Fev, Mar… — ou clique para selecionar múltiplos</div>
+        </div>
+        <input type="file" id="hist-file-input" accept=".txt" multiple>
+
+        <div class="hist-file-list" id="hist-file-list" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Arquivo</th>
+                <th style="width:90px">Secretaria</th>
+                <th style="width:140px">Período</th>
+                <th style="width:70px">Status</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody id="hist-file-tbody"></tbody>
+          </table>
+        </div>
+
+        <label class="hist-checkbox">
+          <input type="checkbox" id="hist-substituir" checked>
+          Substituir automaticamente períodos que já existem no banco
+        </label>
+
+        <button class="btn-importar" id="btn-importar-historico" type="button" disabled>Importar Histórico</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="previas-card" style="margin-bottom:20px">
+      <div class="previas-card-title">Log de Processamento</div>
+      <div class="previas-card-sub">Acompanhamento em tempo real</div>
+      <div class="log-terminal" id="log-terminal">
+        <div class="log-line-info">Aguardando arquivo...</div>
+      </div>
+    </div>
+
+    <!-- Banner anomalia -->
+    <div class="anomalia-banner" id="anomalia-banner">
+      <div class="anomalia-title" id="anomalia-title"></div>
+      <div class="anomalia-msg" id="anomalia-msg"></div>
+      <div class="anomalia-actions" id="anomalia-actions"></div>
+    </div>
+
+    <!-- Progresso insert -->
+    <div class="progress-bar-wrap" id="progress-bar-wrap">
+      <div class="progress-label" id="progress-label">Inserindo...</div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Resumo final -->
+    <div class="resumo-final" id="resumo-final"></div>
+
+    <!-- Preview -->
+    <div class="preview-section" id="preview-section">
+      <div class="table-card">
+        <div class="chart-header" style="margin-bottom:16px">
+          <div>
+            <div class="chart-title">Preview dos Registros</div>
+            <div class="chart-sub">Primeiros 50 registros parseados</div>
+          </div>
+        </div>
+        <div class="preview-search">
+          <input type="text" class="filter-input" id="preview-busca" placeholder="Buscar por matrícula...">
+          <span class="preview-counter" id="preview-counter">Exibindo 0 de 0 registros</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Matrícula</th>
+              <th>Data Ocorrência</th>
+              <th>Código</th>
+              <th>% Desconto</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="historico-section">
+      <div class="table-card">
+        <div class="chart-header" style="margin-bottom:16px">
+          <div>
+            <div class="chart-title">Histórico de Prévias</div>
+            <div class="chart-sub">Últimos 12 períodos da secretaria selecionada</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Ocorrências</th>
+              <th>Servidores</th>
+              <th>Desconto Acum.</th>
+              <th>Z-Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historico-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Informe o código da secretaria para ver o histórico</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="js/config-db.js"></script>
+<script type="module" src="js/previas-frequencia.js"></script>
+</body>
+</html>

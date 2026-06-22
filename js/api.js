@@ -14,8 +14,16 @@ class SupabaseClient {
     try {
       // Dynamic import of Supabase
       const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+
+      // Preferir CONFIG global (config-db.js) quando disponível
+      const supabaseUrl = (typeof window !== 'undefined' && window.CONFIG?.supabase?.url && !window.CONFIG.supabase.url.includes('placeholder'))
+        ? window.CONFIG.supabase.url
+        : CONFIG.supabase.url;
+      const supabaseKey = (typeof window !== 'undefined' && window.CONFIG?.supabase?.anonKey && !window.CONFIG.supabase.anonKey.includes('placeholder'))
+        ? window.CONFIG.supabase.anonKey
+        : CONFIG.supabase.anonKey;
       
-      this.client = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey, {
+      this.client = createClient(supabaseUrl, supabaseKey, {
         auth: {
           autoRefreshToken: false,
           persistSession: false
@@ -202,6 +210,93 @@ class SupabaseClient {
         .subscribe();
     } catch (error) {
       throw new AppError(`Failed to subscribe to equipments: ${error.message}`, 'SUBSCRIPTION_ERROR');
+    }
+  }
+
+  // Prévias de frequência
+  async getPreviasRegistros(secretariaCodigo, beforePeriodo = null) {
+    await this.initialize();
+
+    try {
+      let query = this.client
+        .from('previas_frequencia')
+        .select('periodo_referencia, matricula, percentual_desconto')
+        .eq('secretaria_codigo', secretariaCodigo);
+
+      if (beforePeriodo) {
+        query = query.lt('periodo_referencia', beforePeriodo);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        console.error('[Supabase Error] getPreviasRegistros:', error);
+        throw new AppError(`Failed to fetch previas: ${error.message} (status: ${error.status || 'unknown'})`, 'FETCH_ERROR');
+      }
+      return data || [];
+    } catch (error) {
+      console.error('[Supabase Error] getPreviasRegistros:', error);
+      throw new AppError(`Failed to fetch previas: ${error.message}`, 'FETCH_ERROR');
+    }
+  }
+
+  async countPreviasExistentes(secretariaCodigo, periodoReferencia) {
+    await this.initialize();
+
+    try {
+      const { count, error } = await this.client
+        .from('previas_frequencia')
+        .select('id', { count: 'exact', head: true })
+        .eq('secretaria_codigo', secretariaCodigo)
+        .eq('periodo_referencia', periodoReferencia);
+
+      if (error) {
+        console.error('[Supabase Error] countPreviasExistentes:', error);
+        throw new AppError(`Failed to count previas: ${error.message} (status: ${error.status || 'unknown'})`, 'FETCH_ERROR');
+      }
+      return count || 0;
+    } catch (error) {
+      console.error('[Supabase Error] countPreviasExistentes:', error);
+      throw new AppError(`Failed to count previas: ${error.message}`, 'FETCH_ERROR');
+    }
+  }
+
+  async deletePreviasPeriodo(secretariaCodigo, periodoReferencia) {
+    await this.initialize();
+
+    try {
+      const { error } = await this.client
+        .from('previas_frequencia')
+        .delete()
+        .eq('secretaria_codigo', secretariaCodigo)
+        .eq('periodo_referencia', periodoReferencia);
+
+      if (error) {
+        console.error('[Supabase Error] deletePreviasPeriodo:', error);
+        throw new AppError(`Failed to delete previas: ${error.message} (status: ${error.status || 'unknown'})`, 'DELETE_ERROR');
+      }
+      return true;
+    } catch (error) {
+      console.error('[Supabase Error] deletePreviasPeriodo:', error);
+      throw new AppError(`Failed to delete previas: ${error.message}`, 'DELETE_ERROR');
+    }
+  }
+
+  async insertPreviasLote(registros) {
+    await this.initialize();
+
+    try {
+      const { error } = await this.client
+        .from('previas_frequencia')
+        .insert(registros);
+
+      if (error) {
+        console.error('[Supabase Error] insertPreviasLote:', error);
+        throw new AppError(`Failed to insert previas batch: ${error.message} (status: ${error.status || 'unknown'})`, 'CREATE_ERROR');
+      }
+      return true;
+    } catch (error) {
+      console.error('[Supabase Error] insertPreviasLote:', error);
+      throw new AppError(`Failed to insert previas batch: ${error.message}`, 'CREATE_ERROR');
     }
   }
 }
@@ -397,6 +492,23 @@ class ApiService {
       throw error;
     }
   }
+
+  // Prévias de frequência
+  async getPreviasRegistros(secretariaCodigo, beforePeriodo = null) {
+    return this.supabase.getPreviasRegistros(secretariaCodigo, beforePeriodo);
+  }
+
+  async countPreviasExistentes(secretariaCodigo, periodoReferencia) {
+    return this.supabase.countPreviasExistentes(secretariaCodigo, periodoReferencia);
+  }
+
+  async deletePreviasPeriodo(secretariaCodigo, periodoReferencia) {
+    return this.supabase.deletePreviasPeriodo(secretariaCodigo, periodoReferencia);
+  }
+
+  async insertPreviasLote(registros) {
+    return this.supabase.insertPreviasLote(registros);
+  }
 }
 
 // Create singleton instance
@@ -413,3 +525,9 @@ export const createEquipment = (equipmentData) => api.createEquipment(equipmentD
 export const updateEquipment = (id, equipmentData) => api.updateEquipment(id, equipmentData);
 export const deleteEquipment = (id) => api.deleteEquipment(id);
 export const subscribeToEquipmentsRealtime = (callback) => api.subscribeToEquipmentsRealtime(callback);
+
+// Prévias de frequência
+export const getPreviasRegistros = (secretariaCodigo, beforePeriodo) => api.getPreviasRegistros(secretariaCodigo, beforePeriodo);
+export const countPreviasExistentes = (secretariaCodigo, periodoReferencia) => api.countPreviasExistentes(secretariaCodigo, periodoReferencia);
+export const deletePreviasPeriodo = (secretariaCodigo, periodoReferencia) => api.deletePreviasPeriodo(secretariaCodigo, periodoReferencia);
+export const insertPreviasLote = (registros) => api.insertPreviasLote(registros);
