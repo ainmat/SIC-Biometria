@@ -201,7 +201,7 @@ export default function Sidebar() {
         <img
           src={logoDarh}
           alt="DARH Osasco"
-          style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }}
+          style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, filter: 'brightness(1.15) contrast(1.1) drop-shadow(0 0 4px rgba(255,255,255,.15))' }}
         />
         <div className="logo-text">SIC · Biometria</div>
       </div>
