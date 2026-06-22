@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { RefreshCw, Download, LogOut } from 'lucide-react';
+import logoDarh from '../../../img/logo-darh.png';
 import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -197,18 +198,12 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="logo">
-        <div className="logo-icon">
-          <svg viewBox="0 0 20 20" fill="none">
-            <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity=".9" />
-            <rect x="12" y="2" width="6" height="6" rx="1.5" fill="white" fillOpacity=".55" />
-            <rect x="2" y="12" width="6" height="6" rx="1.5" fill="white" fillOpacity=".55" />
-            <rect x="12" y="12" width="6" height="6" rx="1.5" fill="white" fillOpacity=".3" />
-          </svg>
-        </div>
-        <div>
-          <div className="logo-text">SIC · Biometria</div>
-          <div className="logo-sub">Prefeitura de Osasco</div>
-        </div>
+        <img
+          src={logoDarh}
+          alt="DARH Osasco"
+          style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }}
+        />
+        <div className="logo-text">SIC · Biometria</div>
       </div>
 
       <nav className="nav">
