@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Filter, Download, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { SECRETARIAS, formatarCompetencia } from '@/modules/previas/constants';
@@ -183,7 +184,7 @@ export default function HistoricoPrevias() {
           >
             <Download size={12} /> Exportar
           </button>
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

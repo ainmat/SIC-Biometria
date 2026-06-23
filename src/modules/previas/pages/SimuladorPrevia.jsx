@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useRef, useCallback } from 'react';
 import {
   Upload, FileText, Play, CheckCircle, XCircle, AlertTriangle, TrendingUp, TrendingDown,
@@ -314,7 +315,7 @@ export default function SimuladorPrevia() {
               Nova Simulação
             </button>
           )}
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

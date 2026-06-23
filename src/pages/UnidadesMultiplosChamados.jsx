@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, fetchChamados } from '@/lib/supabase';
@@ -120,7 +121,7 @@ export default function UnidadesMultiplosChamados() {
         </div>
         <div className="topbar-right">
           <div className="badge-live"><div className="status-dot" />AO VIVO</div>
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

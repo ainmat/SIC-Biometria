@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Doughnut } from 'react-chartjs-2';
@@ -174,7 +175,7 @@ export default function PainelChamados() {
             <div className="status-dot" />
             AO VIVO
           </div>
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

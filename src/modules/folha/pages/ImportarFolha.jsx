@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   CheckCircle, XCircle, FileSpreadsheet, AlertTriangle, Info,
@@ -606,7 +607,7 @@ export default function ImportarFolha() {
           <p>Upload do arquivo XLS/XLSX para processar verbas de desconto</p>
         </div>
         <div className="topbar-right">
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

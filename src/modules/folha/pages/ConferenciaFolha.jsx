@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useMemo } from 'react';
 import {
   fetchCompetencias,
@@ -121,7 +122,7 @@ export default function ConferenciaFolha() {
           <p>Cruzamento entre registros biométricos e folha processada</p>
         </div>
         <div className="topbar-right">
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

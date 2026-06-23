@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -412,7 +413,7 @@ export default function DashboardFolha() {
           <p>{loading ? 'Carregando...' : statusMsg}</p>
         </div>
         <div className="topbar-right">
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

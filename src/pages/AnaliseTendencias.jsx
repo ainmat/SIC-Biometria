@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -146,7 +147,7 @@ export default function AnaliseTendencias() {
         </div>
         <div className="topbar-right">
           <div className="badge-live"><div className="status-dot" />AO VIVO</div>
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

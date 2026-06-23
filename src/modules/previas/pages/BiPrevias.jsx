@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
@@ -682,7 +683,7 @@ export default function BiPrevias() {
           >
             <RefreshCw size={12} /> Atualizar
           </button>
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

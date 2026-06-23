@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useMemo } from 'react';
 import { User, Calendar } from 'lucide-react';
 import {
@@ -159,7 +160,7 @@ export default function SimuladorFolha() {
           <p>Consulte as verbas individuais de cada servidor</p>
         </div>
         <div className="topbar-right">
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, fetchEquipamentos } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -94,7 +95,7 @@ export default function ParqueEquipamentos() {
         </div>
         <div className="topbar-right">
           <div className="badge-live"><div className="status-dot" />AO VIVO</div>
-          <div className="avatar">MC</div>
+          <TopbarAvatar />
         </div>
       </div>
 

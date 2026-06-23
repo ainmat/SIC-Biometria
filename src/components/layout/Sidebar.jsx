@@ -1,8 +1,116 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { RefreshCw, Download, LogOut } from 'lucide-react';
+import { RefreshCw, Download, LogOut, KeyRound } from 'lucide-react';
 import logoDarh from '../../../img/logo-darh.png';
 import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+
+const inputSt = {
+  width: '100%', background: 'rgba(255,255,255,.06)',
+  border: '1px solid rgba(255,255,255,.1)', borderRadius: 7,
+  padding: '9px 12px', color: '#f1f5f9', fontSize: 13,
+  outline: 'none', boxSizing: 'border-box',
+};
+const labelSt = {
+  display: 'block', fontSize: 11, color: '#64748b', fontWeight: 600,
+  marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.06em',
+};
+
+function ModalAlterarSenha({ onClose }) {
+  const { sessao } = useAuth();
+  const [senhaAtual, setSenhaAtual] = useState('');
+  const [novaSenha,  setNovaSenha]  = useState('');
+  const [confirmar,  setConfirmar]  = useState('');
+  const [erro,       setErro]       = useState('');
+  const [sucesso,    setSucesso]    = useState(false);
+  const [loading,    setLoading]    = useState(false);
+
+  async function salvar(e) {
+    e.preventDefault();
+    setErro('');
+    if (!senhaAtual)                     { setErro('Informe sua senha atual'); return; }
+    if (!novaSenha)                      { setErro('Informe a nova senha'); return; }
+    if (novaSenha.length < 6)            { setErro('Nova senha: mínimo 6 caracteres'); return; }
+    if (novaSenha !== confirmar)         { setErro('As senhas não coincidem'); return; }
+    if (novaSenha === senhaAtual)        { setErro('A nova senha deve ser diferente da atual'); return; }
+    setLoading(true);
+    try {
+      const { data: auth, error: authErr } = await supabase.rpc('login_usuario', {
+        p_username: sessao.username, p_senha: senhaAtual,
+      });
+      if (authErr) throw authErr;
+      if (!auth || auth.length === 0) { setErro('Senha atual incorreta'); setLoading(false); return; }
+      const { error: resetErr } = await supabase.rpc('resetar_senha_usuario', {
+        p_username: sessao.username, p_senha_nova: novaSenha,
+      });
+      if (resetErr) throw resetErr;
+      setSucesso(true);
+    } catch (e) {
+      setErro(e.message || 'Erro ao alterar senha');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay show" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="chamado-modal" style={{ maxWidth: 420 }}>
+        <div className="chamado-modal-header">
+          <div className="chamado-modal-title">Alterar Senha</div>
+          <button className="chamado-modal-close" onClick={onClose}>×</button>
+        </div>
+        {sucesso ? (
+          <div style={{ padding: '28px 24px', textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', margin: '0 auto 16px', background: 'rgba(16,185,129,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" style={{ width: 24, height: 24 }}>
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>Senha alterada com sucesso</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 24 }}>Use a nova senha no próximo acesso.</div>
+            <button onClick={onClose} style={{ padding: '9px 24px', borderRadius: 7, background: 'rgba(99,102,241,.85)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              Fechar
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={salvar} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ background: 'rgba(99,102,241,.07)', border: '1px solid rgba(99,102,241,.18)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Usuário</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', fontFamily: 'monospace' }}>{sessao?.username}</div>
+              </div>
+            </div>
+            <div>
+              <label style={labelSt}>Senha atual</label>
+              <input type="password" value={senhaAtual} onChange={e => setSenhaAtual(e.target.value)} placeholder="Digite sua senha atual" style={inputSt} autoFocus />
+            </div>
+            <div>
+              <label style={labelSt}>Nova senha</label>
+              <input type="password" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} placeholder="Mínimo 6 caracteres" style={inputSt} />
+            </div>
+            <div>
+              <label style={labelSt}>Confirmar nova senha</label>
+              <input type="password" value={confirmar} onChange={e => setConfirmar(e.target.value)} placeholder="Repita a nova senha" style={inputSt} />
+            </div>
+            {erro && (
+              <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,.1)', borderRadius: 6 }}>{erro}</div>
+            )}
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+              <button type="button" onClick={onClose} style={{ padding: '9px 18px', borderRadius: 7, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#64748b', fontSize: 13, cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button type="submit" disabled={loading} style={{ padding: '9px 20px', borderRadius: 7, background: 'rgba(99,102,241,.85)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}>
+                {loading ? 'Salvando...' : 'Alterar senha'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const NAV = [
   {
@@ -189,6 +297,7 @@ const NAV = [
 export default function Sidebar() {
   const { isAdmin, isMaster, sessao, logout } = useAuth();
   const navigate = useNavigate();
+  const [modalSenha, setModalSenha] = useState(false);
 
   function handleLogout() {
     logout();
@@ -196,6 +305,7 @@ export default function Sidebar() {
   }
 
   return (
+    <>
     <aside className="sidebar">
       <div className="logo">
         <img
@@ -256,19 +366,34 @@ export default function Sidebar() {
               </span>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            title="Sair"
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer', padding: 3,
-              color: '#475569', display: 'flex', alignItems: 'center',
-              borderRadius: 4, transition: 'color .15s',
-            }}
-            onMouseOver={e => { e.currentTarget.style.color = '#f87171'; }}
-            onMouseOut={e => { e.currentTarget.style.color = '#475569'; }}
-          >
-            <LogOut size={13} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <button
+              onClick={() => setModalSenha(true)}
+              title="Alterar senha"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 3,
+                color: '#475569', display: 'flex', alignItems: 'center',
+                borderRadius: 4, transition: 'color .15s',
+              }}
+              onMouseOver={e => { e.currentTarget.style.color = '#a5b4fc'; }}
+              onMouseOut={e => { e.currentTarget.style.color = '#475569'; }}
+            >
+              <KeyRound size={13} />
+            </button>
+            <button
+              onClick={handleLogout}
+              title="Sair"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 3,
+                color: '#475569', display: 'flex', alignItems: 'center',
+                borderRadius: 4, transition: 'color .15s',
+              }}
+              onMouseOver={e => { e.currentTarget.style.color = '#f87171'; }}
+              onMouseOut={e => { e.currentTarget.style.color = '#475569'; }}
+            >
+              <LogOut size={13} />
+            </button>
+          </div>
         </div>
 
         <div className="status-pill" style={{ marginBottom: 12 }}>
@@ -281,5 +406,8 @@ export default function Sidebar() {
         </IconBar>
       </div>
     </aside>
+
+    {modalSenha && <ModalAlterarSenha onClose={() => setModalSenha(false)} />}
+  </>
   );
 }

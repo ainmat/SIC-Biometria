@@ -1,3 +1,4 @@
+import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -345,7 +346,7 @@ export default function ComparativoFolha() {
           <h1>Comparativo de Folhas</h1>
           <p>Análise e comparação de verbas entre competências</p>
         </div>
-        <div className="topbar-right no-print"><div className="avatar">MC</div></div>
+        <div className="topbar-right no-print"><TopbarAvatar /></div>
       </div>
 
       <div className="content">
