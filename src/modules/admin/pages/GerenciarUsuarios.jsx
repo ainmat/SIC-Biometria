@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
-const ROLES = [
+const ROLES_MASTER = [
   { value: 'admin',  label: 'Administrador', desc: 'Pode importar folha e publicar prévias' },
-  { value: 'viewer', label: 'Visualizador',   desc: 'Somente leitura dos dashboards' },
+  { value: 'viewer', label: 'Visitante',      desc: 'Somente leitura dos dashboards' },
+];
+const ROLES_ADMIN = [
+  { value: 'viewer', label: 'Visitante',      desc: 'Somente leitura dos dashboards' },
 ];
 
-const ROLE_LABELS = { master: 'Master', admin: 'Administrador', viewer: 'Visualizador' };
+const ROLE_LABELS = { master: 'Master', admin: 'Administrador', viewer: 'Visitante' };
 const ROLE_COLORS = { master: '#f59e0b', admin: '#6366f1', viewer: '#10b981' };
 
 const inputSt = {
@@ -22,7 +25,7 @@ const labelSt = {
   marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.06em',
 };
 
-function ModalNovoUsuario({ onClose, onSalvo }) {
+function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
   const [form, setForm] = useState({ nome: '', username: '', senha: '', role: 'viewer' });
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,7 +84,7 @@ function ModalNovoUsuario({ onClose, onSalvo }) {
           <div>
             <label style={labelSt}>Nível de acesso</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {ROLES.map(r => (
+              {rolesDisponiveis.map(r => (
                 <label key={r.value} style={{
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                   cursor: 'pointer', padding: '10px 12px', borderRadius: 8,
@@ -228,7 +231,8 @@ function ModalConfirmarExclusao({ usuario, onClose, onExcluido }) {
 }
 
 export default function GerenciarUsuarios() {
-  const { sessao } = useAuth();
+  const { sessao, isMaster } = useAuth();
+  const rolesDisponiveis = isMaster ? ROLES_MASTER : ROLES_ADMIN;
   const [usuarios,       setUsuarios]       = useState([]);
   const [loading,        setLoading]        = useState(true);
   const [modalNovo,      setModalNovo]      = useState(false);
@@ -284,7 +288,7 @@ export default function GerenciarUsuarios() {
           {[
             { role: 'master',  desc: 'Acesso total + gerenciar usuários' },
             { role: 'admin',   desc: 'Importar folha, publicar prévias, ver dashboards' },
-            { role: 'viewer',  desc: 'Somente leitura dos dashboards' },
+            { role: 'viewer',  desc: 'Somente leitura — acesso criado por Admin ou Master' },
           ].map(({ role, desc }) => (
             <div key={role} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{
@@ -354,7 +358,7 @@ export default function GerenciarUsuarios() {
                           {new Date(u.created_at).toLocaleDateString('pt-BR')}
                         </td>
                         <td style={{ textAlign: 'center' }}>
-                          {!isSelf && u.role !== 'master' ? (
+                          {!isSelf && u.role !== 'master' && (isMaster || u.role === 'viewer') ? (
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
                               <button onClick={() => setModalReset(u)} style={{
                                 padding: '4px 10px', borderRadius: 5, cursor: 'pointer', fontSize: 11, fontWeight: 600,
@@ -391,7 +395,7 @@ export default function GerenciarUsuarios() {
         </div>
       </div>
 
-      {modalNovo    && <ModalNovoUsuario onClose={() => setModalNovo(false)} onSalvo={carregar} />}
+      {modalNovo    && <ModalNovoUsuario onClose={() => setModalNovo(false)} onSalvo={carregar} rolesDisponiveis={rolesDisponiveis} />}
       {modalReset   && <ModalResetSenha usuario={modalReset} onClose={() => setModalReset(null)} onSalvo={carregar} />}
       {modalExcluir && <ModalConfirmarExclusao usuario={modalExcluir} onClose={() => setModalExcluir(null)} onExcluido={carregar} />}
     </div>

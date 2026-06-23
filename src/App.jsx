@@ -73,7 +73,7 @@ export default function App() {
 
         {/* Administração */}
         <Route path="admin">
-          <Route path="usuarios" element={<RequireMaster><GerenciarUsuarios /></RequireMaster>} />
+          <Route path="usuarios" element={<RequireAdmin><GerenciarUsuarios /></RequireAdmin>} />
         </Route>
 
         {/* Redirecionamentos */}

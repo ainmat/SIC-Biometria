@@ -39,17 +39,8 @@ function HeroPainel() {
   );
 }
 
-const VisitorIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
 export default function Login() {
-  const { loginUser, loginVisitor } = useAuth();
+  const { loginUser } = useAuth();
   const navigate = useNavigate();
   const [erro,       setErro]       = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -69,11 +60,6 @@ export default function Login() {
     } finally {
       setCarregando(false);
     }
-  }
-
-  function handleVisitor() {
-    loginVisitor();
-    navigate('/', { replace: true });
   }
 
   return (
@@ -105,7 +91,6 @@ export default function Login() {
           description="Prefeitura de Osasco — acesso restrito a servidores autorizados."
           heroContent={<HeroPainel />}
           onSignIn={handleSignIn}
-          onGoogleSignIn={handleVisitor}
           showEmail={true}
           emailType="text"
           emailLabel="Usuário"
@@ -113,8 +98,7 @@ export default function Login() {
           passwordLabel="Senha"
           passwordPlaceholder="Digite a senha de acesso..."
           submitLabel="Entrar"
-          secondaryButtonLabel="Entrar como Visitante"
-          secondaryButtonIcon={<VisitorIcon />}
+          showSecondaryButton={false}
           showRememberMe={false}
           showResetPassword={false}
           showFooter={false}

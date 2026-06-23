@@ -31,12 +31,6 @@ export function AuthProvider({ children }) {
     return s;
   }
 
-  function loginVisitor() {
-    const s = { role: 'visitor', nome: 'Visitante', username: null };
-    setSessao(s);
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
-  }
-
   function logout() {
     setSessao(null);
     sessionStorage.removeItem(SESSION_KEY);
@@ -45,7 +39,7 @@ export function AuthProvider({ children }) {
   const role      = sessao?.role ?? null;
   const isMaster  = role === 'master';
   const isAdmin   = role === 'master' || role === 'admin';
-  const isVisitor = role === 'viewer'  || role === 'visitor';
+  const isVisitor = role === 'viewer';
   const isLoggedIn = role !== null;
 
   return (
@@ -58,7 +52,6 @@ export function AuthProvider({ children }) {
       isLoggedIn,
       loading: false,
       loginUser,
-      loginVisitor,
       logout,
     }}>
       {children}
