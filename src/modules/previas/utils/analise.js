@@ -206,10 +206,13 @@ export function parsePosicional(texto) {
       return;
     }
 
-    const areaMatricula  = linha.substring(2, 8).trim();
+    const matriculaRaw   = linha.substring(2, 8).trim();
     const areaData       = linha.substring(10, 20).trim();
     const areaCodigo     = linha.substring(21, 24).trim();
     const areaPercentual = linha.substring(26, 29).trim();
+    // Remove zeros à esquerda: '012607' → '12607', '004321' → '4321'
+    const matriculaNum   = parseInt(matriculaRaw, 10);
+    const areaMatricula  = !isNaN(matriculaNum) && matriculaNum > 0 ? String(matriculaNum) : matriculaRaw;
 
     if (!/^\d{2}\/\d{2}\/\d{4}$/.test(areaData)) {
       // Linhas sem data = outras rubricas/verbas — não são faltas/atrasos, ignora silenciosamente
@@ -249,8 +252,10 @@ export function parseDelimitado(texto) {
       return;
     }
 
-    const matricula = partes[0]?.trim();
+    const matriculaRaw = partes[0]?.trim();
     const pct = parseFloat(partes[1]?.trim().replace(',', '.'));
+    const matriculaNum = parseInt(matriculaRaw, 10);
+    const matricula = !isNaN(matriculaNum) && matriculaNum > 0 ? String(matriculaNum) : matriculaRaw;
 
     if (!matricula || matricula.length < 3) {
       descartados.push({ linha: idx + 1, motivo: 'Matrícula inválida', raw: t });

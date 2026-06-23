@@ -272,16 +272,18 @@ AS $$
   WITH periodo AS (
     SELECT to_char(p_competencia, 'YYYY-MM') AS mes
   ),
-  -- Agrega ocorrências de ponto para o período (sem filtro de secretaria — ponto não tem essa info)
+  -- Agrega ocorrências de ponto para o período.
+  -- REGEXP_REPLACE remove zeros à esquerda da matrícula para garantir JOIN correto
+  -- com folha_previas (que armazena matrícula como inteiro, sem zeros).
   ponto AS (
     SELECT
-      pf.matricula AS mat,
+      REGEXP_REPLACE(pf.matricula, '^0+', '') AS mat,
       COUNT(*) FILTER (WHERE pf.codigo_ocorrencia = '171') AS faltas,
       COUNT(*) FILTER (WHERE pf.codigo_ocorrencia = '335') AS atrasos
     FROM previas_frequencia pf
     CROSS JOIN periodo pr
     WHERE pf.periodo_referencia = pr.mes
-    GROUP BY pf.matricula
+    GROUP BY REGEXP_REPLACE(pf.matricula, '^0+', '')
   ),
   -- Secretarias que têm pelo menos um servidor com registro de ponto no período.
   -- Usada para excluir da análise "Todas" as secretarias sem prévia de ponto.
