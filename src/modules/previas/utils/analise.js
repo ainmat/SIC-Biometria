@@ -1,5 +1,6 @@
 export const CODIGO_FALTA  = '171';
 export const CODIGO_ATRASO = '335';
+export const CODIGO_DSR    = '504';
 
 export function calcularMedia(valores) {
   if (!valores.length) return 0;
@@ -123,10 +124,10 @@ export function detectarAnomalias(registros, historico) {
   const anomalias = [];
   const totalAtual = registros.length;
 
+  // Critério 1: número de ocorrências muito acima da média histórica (z-score)
   if (historico.length >= 2) {
     const analise = analisarComHistorico(totalAtual, historico);
     const { classificacao, deltaPct3m, media3m } = analise;
-
     if (classificacao === 'anomalia_critica' || classificacao === 'atencao') {
       anomalias.push({
         nivel: classificacao,
@@ -135,38 +136,26 @@ export function detectarAnomalias(registros, historico) {
     }
   }
 
-  const contagem = {};
+  // Critério 2: ≥ 60% dos servidores com falta/atraso possuem mais de 20 dias de ocorrência
+  const diasPorServidor = {};
   registros.forEach(r => {
-    contagem[r.matricula] = (contagem[r.matricula] || 0) + 1;
+    if (r.codigo_ocorrencia !== CODIGO_FALTA && r.codigo_ocorrencia !== CODIGO_ATRASO) return;
+    if (!diasPorServidor[r.matricula]) diasPorServidor[r.matricula] = new Set();
+    diasPorServidor[r.matricula].add(r.data_ocorrencia ?? `_${diasPorServidor[r.matricula].size}`);
   });
-  const comMultiplas = Object.entries(contagem)
-    .filter(([, c]) => c >= 3)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5);
 
-  if (comMultiplas.length > 0) {
-    anomalias.push({
-      nivel: 'atencao',
-      mensagem: `${comMultiplas.length} matrícula(s) com 3 ou mais ocorrências`,
-      detalhe: comMultiplas.map(([m, c]) => `${m}: ${c} ocorrências`).join(' · '),
-    });
-  }
-
-  const descontos = {};
-  registros.forEach(r => {
-    descontos[r.matricula] = (descontos[r.matricula] || 0) + (r.percentual_desconto || 0);
-  });
-  const altoDesconto = Object.entries(descontos)
-    .filter(([, d]) => d >= 50)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3);
-
-  if (altoDesconto.length > 0) {
-    anomalias.push({
-      nivel: 'atencao',
-      mensagem: `${altoDesconto.length} matrícula(s) com 50% ou mais de desconto acumulado`,
-      detalhe: altoDesconto.map(([m, d]) => `${m}: ${d}%`).join(' · '),
-    });
+  const servidores = Object.entries(diasPorServidor);
+  const totalComDesconto = servidores.length;
+  if (totalComDesconto > 0) {
+    const comMais20 = servidores.filter(([, dias]) => dias.size > 20);
+    const pct = Math.round((comMais20.length / totalComDesconto) * 100);
+    if (pct >= 60) {
+      anomalias.push({
+        nivel: 'anomalia_critica',
+        mensagem: `${comMais20.length} de ${totalComDesconto} servidores (${pct}%) com mais de 20 dias de falta ou atraso`,
+        detalhe: comMais20.slice(0, 5).map(([m, dias]) => `${m}: ${dias.size} dias`).join(' · '),
+      });
+    }
   }
 
   return anomalias;
@@ -176,13 +165,22 @@ export function classificarOcorrencias(registros) {
   const temCodigo = registros.some(r => r.codigo_ocorrencia);
 
   if (!temCodigo) {
-    return { faltas: 0, atrasos: 0, outros: 0, outrosCodigos: [], semCodigo: true };
+    return { faltas: 0, atrasos: 0, dsrs: 0, dsrDesconto: 0, outros: 0, outrosCodigos: [], semCodigo: true };
   }
 
-  const faltas     = registros.filter(r => r.codigo_ocorrencia === CODIGO_FALTA).length;
-  const atrasos    = registros.filter(r => r.codigo_ocorrencia === CODIGO_ATRASO).length;
-  const outrosRegs = registros.filter(r => r.codigo_ocorrencia !== CODIGO_FALTA && r.codigo_ocorrencia !== CODIGO_ATRASO);
-  const outros     = outrosRegs.length;
+  const faltas  = registros.filter(r => r.codigo_ocorrencia === CODIGO_FALTA).length;
+  const atrasos = registros.filter(r => r.codigo_ocorrencia === CODIGO_ATRASO).length;
+  const dsrs    = registros.filter(r => r.codigo_ocorrencia === CODIGO_DSR).length;
+  const dsrDesconto = registros
+    .filter(r => r.codigo_ocorrencia === CODIGO_DSR)
+    .reduce((s, r) => s + (r.percentual_desconto || 0), 0);
+
+  const outrosRegs = registros.filter(r =>
+    r.codigo_ocorrencia !== CODIGO_FALTA &&
+    r.codigo_ocorrencia !== CODIGO_ATRASO &&
+    r.codigo_ocorrencia !== CODIGO_DSR
+  );
+  const outros = outrosRegs.length;
 
   const porCodigo = {};
   outrosRegs.forEach(r => {
@@ -190,7 +188,24 @@ export function classificarOcorrencias(registros) {
   });
   const outrosCodigos = Object.entries(porCodigo).sort(([, a], [, b]) => b - a);
 
-  return { faltas, atrasos, outros, outrosCodigos, semCodigo: false };
+  return { faltas, atrasos, dsrs, dsrDesconto, outros, outrosCodigos, semCodigo: false };
+}
+
+export function detectarDuplicatas(registros) {
+  const mapa = {};
+  for (const r of registros) {
+    if (!r.data_ocorrencia) continue;
+    const key = `${r.matricula}|${r.data_ocorrencia}`;
+    if (!mapa[key]) mapa[key] = [];
+    mapa[key].push(r);
+  }
+  return Object.entries(mapa)
+    .filter(([, ocorrs]) => ocorrs.length > 1)
+    .map(([key, ocorrs]) => {
+      const [matricula, data] = key.split('|');
+      return { matricula, data, codigos: ocorrs.map(o => o.codigo_ocorrencia).join(' + ') };
+    })
+    .sort((a, b) => a.matricula.localeCompare(b.matricula));
 }
 
 export function parsePosicional(texto) {

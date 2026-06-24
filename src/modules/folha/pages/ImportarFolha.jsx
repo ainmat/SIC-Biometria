@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, FileSpreadsheet, AlertTriangle, Info,
   ChevronRight, Table, Trash2, Calendar, Users, RefreshCw,
 } from 'lucide-react';
-import { lerArquivoXLS, analisarArquivo, processarLinhas } from '@/modules/folha/utils/processarXLS';
+import { lerArquivoXLS, analisarArquivo, processarLinhas, processarLinhasMovimento } from '@/modules/folha/utils/processarXLS';
 import { VERBAS, IDENTIFICADORES, normalizarNome } from '@/modules/folha/utils/colunas';
 import {
   upsertFolha, verificarCompetenciaExistente,
@@ -36,15 +36,22 @@ const VERBA_LABELS = {
   falta: 'Falta (VB171)', hora_extra_100: 'Hora Extra 100% (VB5)',
 };
 const FORMATO_LABELS = {
-  VB: 'Formato VB (códigos de verba)',
-  extenso: 'Formato por extenso',
-  misto: 'Formato misto (VB + extenso)',
-  sem_verbas: 'Sem verbas reconhecidas',
+  VB:        'Formato VB (códigos de verba)',
+  extenso:   'Formato por extenso',
+  misto:     'Formato misto (VB + extenso)',
+  sem_verbas:'Sem verbas reconhecidas',
+  movimento: 'Movimento de Variáveis (Lançamento)',
+};
+
+const ID_LABELS_EXTRA = {
+  verba_mov:      'Verba (código)',
+  quantidade_mov: 'Quantidade',
+  local_trabalho: 'Local de Trabalho',
 };
 
 function defLabel(def) {
   if (!def) return '—';
-  if (def.tipo === 'id')    return ID_LABELS[def.id]    || def.id;
+  if (def.tipo === 'id')    return ID_LABELS[def.id] || ID_LABELS_EXTRA[def.id] || def.id;
   if (def.tipo === 'verba') return VERBA_LABELS[def.id] || def.id;
   return '—';
 }
@@ -175,36 +182,43 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
           </div>
 
           {/* Verbas detectadas / ausentes */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            <div>
-              <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
-                Verbas detectadas ({verbasDetectadas.length})
+          {formato === 'movimento' ? (
+            <div style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(99,102,241,.06)', border: '1px solid rgba(99,102,241,.18)', fontSize: 12, color: '#a5b4fc' }}>
+              <strong>Verbas por código numérico:</strong> 171 = Falta · 335 = Atraso · 504 = DSR · 4 = HE 50% · 5 = HE 100% · 24 = Ad. Noturno.
+              As verbas ausentes de cada servidor entram como zero automaticamente.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
+                  Verbas detectadas ({verbasDetectadas.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {verbasDetectadas.length === 0
+                    ? <span style={{ fontSize: 11, color: '#475569' }}>Nenhuma</span>
+                    : verbasDetectadas.map(b => (
+                      <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(16,185,129,.12)', color: '#34d399', fontWeight: 600 }}>
+                        {b.label}
+                      </span>
+                    ))}
+                </div>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                {verbasDetectadas.length === 0
-                  ? <span style={{ fontSize: 11, color: '#475569' }}>Nenhuma</span>
-                  : verbasDetectadas.map(b => (
-                    <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(16,185,129,.12)', color: '#34d399', fontWeight: 600 }}>
-                      {b.label}
-                    </span>
-                  ))}
+              <div>
+                <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
+                  Verbas ausentes → 0
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {verbasAusentes.length === 0
+                    ? <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                    : verbasAusentes.map(b => (
+                      <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(100,116,139,.12)', color: '#64748b' }}>
+                        {b.label}
+                      </span>
+                    ))}
+                </div>
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
-                Verbas ausentes → 0
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                {verbasAusentes.length === 0
-                  ? <span style={{ fontSize: 11, color: '#475569' }}>—</span>
-                  : verbasAusentes.map(b => (
-                    <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(100,116,139,.12)', color: '#64748b' }}>
-                      {b.label}
-                    </span>
-                  ))}
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Colunas não reconhecidas */}
           {naoReconhecidas.length > 0 && (
@@ -563,7 +577,9 @@ export default function ImportarFolha() {
 
       setEtapa('Processando linhas...');
       setProgresso(20);
-      const { registros, ignorados, ambiguos } = processarLinhas(rows, competencia, analiseFinal);
+      const { registros, ignorados, ambiguos } = analiseFinal.formato === 'movimento'
+        ? processarLinhasMovimento(rows, competencia, analiseFinal)
+        : processarLinhas(rows, competencia, analiseFinal);
 
       if (registros.length === 0) {
         throw new Error('Nenhum registro válido encontrado no arquivo.');
@@ -729,10 +745,10 @@ export default function ImportarFolha() {
               )}
             </div>
 
-            {/* Instruções dos dois formatos */}
+            {/* Instruções dos formatos */}
             <div className="chart-card" style={{ marginTop: 16 }}>
               <div className="chart-title" style={{ marginBottom: 14 }}>Formatos suportados</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 {[
                   {
                     titulo: 'Formato VB (códigos)',
@@ -760,6 +776,22 @@ export default function ImportarFolha() {
                     <div style={{ marginTop: 8, fontSize: 10, color: '#475569' }}>{obs}</div>
                   </div>
                 ))}
+              </div>
+              {/* Formato C — Movimento de Variáveis */}
+              <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(20,184,166,.06)', border: '1px solid rgba(20,184,166,.2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#2dd4bf' }}>Lançamento do Movimento de Variáveis</div>
+                  <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 3, background: 'rgba(20,184,166,.18)', color: '#2dd4bf', fontFamily: 'monospace' }}>.xls</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                  {['Matrícula', 'Nome Funcionário', 'Verba', 'Descrição Verba', 'Quantidade', 'Descrição Contrato', 'Lotação', 'Descrição Lotação', 'Descrição Local Trabalho'].map(col => (
+                    <div key={col} style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,.03)' }}>{col}</div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 10, color: '#475569' }}>
+                  Layout longo: uma linha por verba por servidor. Verbas identificadas por código (171=Falta, 335=Atraso, 504=DSR…).
+                  Cabeçalho detectado automaticamente — funciona mesmo com linhas em branco acima.
+                </div>
               </div>
             </div>
           </>

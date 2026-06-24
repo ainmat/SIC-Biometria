@@ -160,6 +160,56 @@ export function classificarFormato(mapeamento) {
   return 'misto';
 }
 
+// ── Formato C: Lançamento do Movimento de Variáveis (layout fixo, long format) ──
+
+const _COLS_MOV = [
+  { campo: 'matricula',  aliases: ['MATRICULA'] },
+  { campo: 'nome',       aliases: ['NOME FUNCIONARIO'] },
+  { campo: 'verba',      aliases: ['VERBA'] },
+  { campo: 'descVerba',  aliases: ['DESCRICAO VERBA'] },
+  { campo: 'quantidade', aliases: ['QUANTIDADE'] },
+  { campo: 'cargo',      aliases: ['DESCRICAO CONTRATO'] },
+  { campo: 'lotacao',    aliases: ['LOTACAO'] },
+  { campo: 'secretaria', aliases: ['DESCRICAO LOTACAO'] },
+  { campo: 'unidade',    aliases: ['DESCRICAO LOCAL TRABALHO'] },
+];
+
+/**
+ * Tenta mapear as 9 colunas fixas do formato "Lançamento do Movimento de Variáveis".
+ * Retorna um objeto { matricula, nome, verba, ... } com os índices de coluna, ou null
+ * se as 3 colunas essenciais (matricula, verba, quantidade) não forem encontradas.
+ *
+ * @param {any[]} headerRow
+ * @returns {{ matricula?: number, nome?: number, verba?: number,
+ *             quantidade?: number, cargo?: number, lotacao?: number,
+ *             secretaria?: number, unidade?: number } | null}
+ */
+export function detectarColunasMovimento(headerRow) {
+  const norm = headerRow.map(c => normalizarNome(String(c ?? '')));
+  const result = {};
+  for (const { campo, aliases } of _COLS_MOV) {
+    for (const alias of aliases) {
+      const idx = norm.indexOf(normalizarNome(alias));
+      if (idx >= 0) { result[campo] = idx; break; }
+    }
+  }
+  const essenciais = ['matricula', 'verba', 'quantidade'];
+  if (essenciais.every(c => result[c] !== undefined)) return result;
+  return null;
+}
+
+/**
+ * Valida as colunas obrigatórias do formato movimento.
+ * @returns {string[]}
+ */
+export function validarColunasMovimento(cols) {
+  const erros = [];
+  if (cols.matricula  === undefined) erros.push('Coluna "Matrícula" não encontrada no arquivo.');
+  if (cols.verba      === undefined) erros.push('Coluna "Verba" não encontrada no arquivo.');
+  if (cols.quantidade === undefined) erros.push('Coluna "Quantidade" não encontrada no arquivo.');
+  return erros;
+}
+
 /**
  * Valida que o mapeamento contém o mínimo necessário para processar:
  * matrícula + nome + ao menos uma verba.

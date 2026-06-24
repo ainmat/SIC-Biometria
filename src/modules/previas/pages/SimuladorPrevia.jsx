@@ -12,11 +12,13 @@ import {
   analisarComHistorico,
   analisarComHistoricoTipado,
   detectarAnomalias,
+  detectarDuplicatas,
   classificarOcorrencias,
   labelClassificacao,
   corClassificacao,
   CODIGO_FALTA,
   CODIGO_ATRASO,
+  CODIGO_DSR,
 } from '@/modules/previas/utils/analise';
 import { fetchHistoricoSecretaria, publicarPrevia, verificarPublicacaoExistente } from '@/modules/previas/services/previasService';
 import { baixarCSV } from '@/lib/exportar';
@@ -125,6 +127,8 @@ export default function SimuladorPrevia() {
   const [anomalias, setAnomalias]         = useState([]);
   const [classificacao, setClassificacao] = useState(null);
 
+  const [duplicatas, setDuplicatas] = useState([]);
+
   const [publicando, setPublicando] = useState(false);
   const [publicado, setPublicado]   = useState(false);
   const [jaExiste, setJaExiste]     = useState(false);
@@ -158,6 +162,7 @@ export default function SimuladorPrevia() {
     const { validos: v, descartados: d } = parseArquivo(texto);
     setValidos(v);
     setDescartados(d);
+    setDuplicatas(detectarDuplicatas(v));
   }, []);
 
   const simular = useCallback(async () => {
@@ -214,7 +219,7 @@ export default function SimuladorPrevia() {
     setStep('config'); setArquivo(null); setValidos([]); setDescartados([]);
     setHistorico([]); setAnalise(null); setAnaliseTipada(null);
     setAnomalias([]); setClassificacao(null); setPublicado(false);
-    setMesVazio(false); setJaExiste(false); setErro(null);
+    setMesVazio(false); setJaExiste(false); setErro(null); setDuplicatas([]);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -239,7 +244,10 @@ export default function SimuladorPrevia() {
         const texto = await item.file.text();
         const { validos: v, descartados: d } = parseArquivo(texto);
         const existe = await verificarPublicacaoExistente(item.secretaria.codigo, competencia);
-        return { ...item, validos: v, descartados: d, status: 'pendente', jaExiste: existe };
+        const classif    = classificarOcorrencias(v);
+        const duplicatas = detectarDuplicatas(v);
+        const anomalias  = detectarAnomalias(v, []);
+        return { ...item, validos: v, descartados: d, status: 'pendente', jaExiste: existe, classif, duplicatas, anomalias };
       } catch (e) {
         return { ...item, status: 'rejeitado', erroNome: e.message };
       }
@@ -424,10 +432,25 @@ export default function SimuladorPrevia() {
                           {loteItems.filter(i => i.status === 'rejeitado' || i.status === 'erro').length} rejeitados
                         </div>
                       </div>
-                      {loteItems.some(i => i.status === 'pendente') && !isVisitor && (
-                        <button
-                          onClick={publicarLote}
-                          disabled={lotePublicando}
+                      {loteItems.some(i => i.status === 'pendente') && !isVisitor && (() => {
+                        const comDups  = loteItems.filter(i => (i.duplicatas?.length ?? 0) > 0);
+                        const comAnoms = loteItems.filter(i => (i.anomalias?.length  ?? 0) > 0);
+                        const temProblema = comDups.length > 0 || comAnoms.length > 0;
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                            {temProblema && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.25)', maxWidth: 420 }}>
+                                <AlertTriangle size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
+                                <span style={{ fontSize: 11, color: '#fbbf24' }}>
+                                  {comDups.length > 0 && <><strong>{comDups.length}</strong> arquivo(s) com duplicatas{comAnoms.length > 0 ? ' · ' : ''}</>}
+                                  {comAnoms.length > 0 && <><strong>{comAnoms.length}</strong> arquivo(s) com anomalias</>}
+                                  {' '}— verifique a coluna Alertas antes de publicar.
+                                </span>
+                              </div>
+                            )}
+                            <button
+                              onClick={publicarLote}
+                              disabled={lotePublicando}
                           style={{
                             padding: '8px 18px', borderRadius: 8, border: 'none', fontWeight: 600, fontSize: 12,
                             background: lotePublicando ? 'rgba(59,130,246,.4)' : '#3b82f6',
@@ -439,8 +462,10 @@ export default function SimuladorPrevia() {
                           {lotePublicando
                             ? 'Publicando...'
                             : `Publicar Todos (${loteItems.filter(i => i.status === 'pendente').length})`}
-                        </button>
-                      )}
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                       <table>
@@ -448,7 +473,8 @@ export default function SimuladorPrevia() {
                           <tr>
                             <th>Arquivo</th>
                             <th style={{ textAlign: 'center' }}>Secretaria</th>
-                            <th style={{ textAlign: 'center' }}>Válidos</th>
+                            <th style={{ textAlign: 'center' }}>Composição</th>
+                            <th style={{ textAlign: 'center' }}>Alertas</th>
                             <th style={{ textAlign: 'center' }}>Já publicado?</th>
                             <th style={{ textAlign: 'center' }}>Status</th>
                           </tr>
@@ -477,10 +503,46 @@ export default function SimuladorPrevia() {
                                     <span style={{ fontSize: 11, color: '#475569' }}>—</span>
                                   )}
                                 </td>
-                                <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 700 }}>
-                                  {item.status === 'lendo'    ? <span style={{ color: '#64748b' }}>...</span>
-                                  : item.status === 'rejeitado' ? <span style={{ color: '#475569' }}>—</span>
-                                  : <span style={{ color: item.validos.length > 0 ? '#60a5fa' : '#64748b' }}>{item.validos.length}</span>}
+                                {/* Composição */}
+                                <td style={{ textAlign: 'center' }}>
+                                  {item.status === 'lendo' ? (
+                                    <span style={{ fontSize: 11, color: '#64748b' }}>...</span>
+                                  ) : item.status === 'rejeitado' ? (
+                                    <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                                  ) : item.classif && !item.classif.semCodigo ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                                      <span style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa' }}>{item.validos.length} total</span>
+                                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        {item.classif.faltas  > 0 && <span style={{ fontSize: 10, color: '#ef4444', fontWeight: 600 }}>{item.classif.faltas}F</span>}
+                                        {item.classif.atrasos > 0 && <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 600 }}>{item.classif.atrasos}A</span>}
+                                        {(item.classif.dsrs ?? 0) > 0 && <span style={{ fontSize: 10, color: '#06b6d4', fontWeight: 600 }}>{item.classif.dsrs}D</span>}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: item.validos.length > 0 ? '#60a5fa' : '#64748b' }}>{item.validos.length}</span>
+                                  )}
+                                </td>
+                                {/* Alertas */}
+                                <td style={{ textAlign: 'center', minWidth: 100 }}>
+                                  {item.status === 'lendo' || item.status === 'rejeitado' ? (
+                                    <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                                  ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
+                                      {(item.duplicatas?.length ?? 0) > 0 && (
+                                        <span title={item.duplicatas.map(d => `Mat.${d.matricula} ${d.data}`).join(', ')} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(245,158,11,.15)', color: '#fbbf24', fontWeight: 700, cursor: 'help' }}>
+                                          <AlertTriangle size={9} />{item.duplicatas.length} dup.
+                                        </span>
+                                      )}
+                                      {(item.anomalias?.length ?? 0) > 0 && (
+                                        <span title={item.anomalias.map(a => a.mensagem).join(' | ')} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(239,68,68,.12)', color: '#f87171', fontWeight: 700, cursor: 'help' }}>
+                                          <AlertTriangle size={9} />{item.anomalias.length} anom.
+                                        </span>
+                                      )}
+                                      {(item.duplicatas?.length ?? 0) === 0 && (item.anomalias?.length ?? 0) === 0 && (
+                                        <span style={{ fontSize: 10, color: '#10b981' }}>✓ OK</span>
+                                      )}
+                                    </div>
+                                  )}
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
                                   {item.status === 'rejeitado' || item.status === 'lendo'
@@ -760,6 +822,14 @@ export default function SimuladorPrevia() {
                         <CheckCircle size={24} color="#10b981" style={{ margin: '0 auto 8px' }} />
                         <div style={{ fontSize: 13, color: '#f1f5f9', fontWeight: 600 }}>{arquivo.name}</div>
                         <div style={{ fontSize: 11, color: '#10b981', marginTop: 4 }}>{validos.length} registros válidos · {descartados.length} descartados</div>
+                        {duplicatas.length > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.25)' }}>
+                            <AlertTriangle size={13} color="#f59e0b" style={{ flexShrink: 0 }} />
+                            <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 600 }}>
+                              {duplicatas.length} matrícula{duplicatas.length > 1 ? 's' : ''} com 2 ocorrências na mesma data
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div>
@@ -881,7 +951,7 @@ export default function SimuladorPrevia() {
             </div>
 
             {/* KPIs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
               <div className="kpi-card">
                 <div className="kpi-accent" style={{ background: '#3b82f6' }} />
                 <div className="kpi-label"><Activity size={13} />Total de Ocorrências</div>
@@ -889,7 +959,7 @@ export default function SimuladorPrevia() {
               </div>
               <div className="kpi-card">
                 <div className="kpi-accent" style={{ background: '#ef4444' }} />
-                <div className="kpi-label"><XCircle size={13} />Faltas <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(cód. 171)</span></div>
+                <div className="kpi-label"><XCircle size={13} />Faltas <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(171)</span></div>
                 <div className="kpi-value" style={{ color: '#ef4444', fontSize: 26 }}>
                   {classificacao?.semCodigo ? <span style={{ fontSize: 14, color: '#64748b' }}>N/D</span> : fmt(classificacao?.faltas ?? 0)}
                 </div>
@@ -903,7 +973,7 @@ export default function SimuladorPrevia() {
               </div>
               <div className="kpi-card">
                 <div className="kpi-accent" style={{ background: '#f59e0b' }} />
-                <div className="kpi-label"><AlertTriangle size={13} />Atrasos <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(cód. 335)</span></div>
+                <div className="kpi-label"><AlertTriangle size={13} />Atrasos <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(335)</span></div>
                 <div className="kpi-value" style={{ color: '#f59e0b', fontSize: 26 }}>
                   {classificacao?.semCodigo ? <span style={{ fontSize: 14, color: '#64748b' }}>N/D</span> : fmt(classificacao?.atrasos ?? 0)}
                 </div>
@@ -915,6 +985,20 @@ export default function SimuladorPrevia() {
                   </div>
                 )}
               </div>
+              {!classificacao?.semCodigo && (classificacao?.dsrs ?? 0) > 0 && (
+                <div className="kpi-card">
+                  <div className="kpi-accent" style={{ background: '#06b6d4' }} />
+                  <div className="kpi-label"><Activity size={13} />DSR <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(504)</span></div>
+                  <div className="kpi-value" style={{ color: '#06b6d4', fontSize: 26 }}>{fmt(classificacao.dsrs)}</div>
+                  {classificacao.dsrDesconto > 0 && (
+                    <div className="kpi-footer">
+                      <span className="kpi-tag" style={{ background: 'rgba(6,182,212,.12)', color: '#06b6d4' }}>
+                        {classificacao.dsrDesconto}% desconto total
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="kpi-card">
                 <div className="kpi-accent" style={{ background: '#8b5cf6' }} />
                 <div className="kpi-label"><Users size={13} />Servidores Impactados</div>
@@ -943,12 +1027,14 @@ export default function SimuladorPrevia() {
                     <div style={{ display: 'flex', height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,.06)', marginBottom: 8 }}>
                       {classificacao.faltas  > 0 && <div style={{ width: `${(classificacao.faltas  / validos.length) * 100}%`, background: '#ef4444' }} />}
                       {classificacao.atrasos > 0 && <div style={{ width: `${(classificacao.atrasos / validos.length) * 100}%`, background: '#f59e0b' }} />}
+                      {(classificacao.dsrs ?? 0) > 0 && <div style={{ width: `${(classificacao.dsrs / validos.length) * 100}%`, background: '#06b6d4' }} />}
                       {classificacao.outros  > 0 && <div style={{ flex: 1, background: '#334155' }} />}
                     </div>
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                       {[
                         { label: 'Faltas (171)',  value: classificacao.faltas,  cor: '#ef4444' },
                         { label: 'Atrasos (335)', value: classificacao.atrasos, cor: '#f59e0b' },
+                        ...((classificacao.dsrs ?? 0) > 0 ? [{ label: 'DSR (504)', value: classificacao.dsrs, cor: '#06b6d4' }] : []),
                         ...(classificacao.outros > 0 ? [{ label: 'Outros', value: classificacao.outros, cor: '#64748b' }] : []),
                       ].map(({ label, value, cor }) => (
                         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -1061,6 +1147,29 @@ export default function SimuladorPrevia() {
                     <span style={{ fontSize: 12, color: '#fbbf24' }}>
                       Já existe uma prévia publicada para {secretariaNome} em {formatarCompetencia(competencia)}. Publicar irá substituí-la.
                     </span>
+                  </div>
+                )}
+                {duplicatas.length > 0 && (
+                  <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.25)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <AlertTriangle size={14} color="#f59e0b" />
+                      <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>
+                        {duplicatas.length} matrícula{duplicatas.length > 1 ? 's' : ''} com 2 ou mais ocorrências na mesma data
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 120, overflowY: 'auto' }}>
+                      {duplicatas.slice(0, 10).map((d, i) => (
+                        <div key={i} style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>
+                          Mat. <strong style={{ color: '#fbbf24' }}>{d.matricula}</strong> — {d.data} — códigos: {d.codigos}
+                        </div>
+                      ))}
+                      {duplicatas.length > 10 && (
+                        <div style={{ fontSize: 11, color: '#64748b' }}>+ {duplicatas.length - 10} mais...</div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 8 }}>
+                      Verifique o arquivo antes de publicar. Duplicatas podem indicar lançamentos incorretos no sistema de biometria.
+                    </div>
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: 12 }}>

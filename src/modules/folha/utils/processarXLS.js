@@ -5,6 +5,8 @@ import {
   mapearColunas,
   classificarFormato,
   validarMapeamento,
+  detectarColunasMovimento,
+  validarColunasMovimento,
 } from './colunas';
 
 function limparUnidade(raw) {
@@ -43,7 +45,7 @@ export function decomposeVB335(valor) {
 
   return {
     atrasos_fracao: best.c,
-    atrasos_dia:    best.l,
+    atrasos_dia:    best.l + 0, // normaliza -0 → 0 (Math.round retorna -0 para rem < 0)
     ambiguo:        candidates.length > 1,
     inconsistente:  false,
   };
@@ -73,6 +75,128 @@ export async function lerArquivoXLS(arquivo) {
   });
 }
 
+// ── Formato C: Lançamento do Movimento de Variáveis ──────────────────────────
+
+// Código numérico da verba → campo canônico do DTO
+const VERBA_CODE_TO_FIELD = {
+  171: 'falta',
+  335: 'atraso',
+  504: 'dsr',
+  4:   'hora_extra_50',
+  5:   'hora_extra_100',
+  24:  'adicional_noturno',
+};
+
+// Parse de decimal pt-BR: "1.500,33" → 1500.33, "5,00" → 5, "0,33" → 0.33
+function parseQuantidadePtBR(val) {
+  const s = String(val ?? '').trim().replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+/**
+ * Processa o formato "Lançamento do Movimento de Variáveis" (long format).
+ * Cada linha é uma (matrícula, verba); agrupa por matrícula e produz o
+ * mesmo DTO que processarLinhas.
+ *
+ * @param {any[][]} rows
+ * @param {string}  competencia — 'YYYY-MM-DD'
+ * @param {{ headerIdx: number, movimentoCols: Object }} analise
+ */
+export function processarLinhasMovimento(rows, competencia, { headerIdx, movimentoCols }) {
+  const cols = movimentoCols;
+  const byMatricula = {};
+  let ignorados = 0;
+
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || row.every(c => c === '' || c === null || c === undefined)) {
+      ignorados++;
+      continue;
+    }
+
+    const matriculaRaw = cols.matricula !== undefined ? row[cols.matricula] : undefined;
+    if (matriculaRaw === '' || matriculaRaw === null || matriculaRaw === undefined) {
+      ignorados++;
+      continue;
+    }
+    const matriculaNum = parseInt(String(matriculaRaw), 10);
+    if (isNaN(matriculaNum) || matriculaNum <= 0) { ignorados++; continue; }
+
+    const verbaRaw = cols.verba !== undefined ? row[cols.verba] : undefined;
+    if (verbaRaw === '' || verbaRaw === null || verbaRaw === undefined) {
+      console.warn(`[movimento] Verba nula na linha ${i + 1} (mat=${matriculaNum})`);
+      ignorados++;
+      continue;
+    }
+    const verbaCode = parseInt(String(verbaRaw), 10);
+    if (isNaN(verbaCode) || !VERBA_CODE_TO_FIELD[verbaCode]) {
+      // Verba desconhecida: loga mas não descarta o servidor inteiro
+      console.warn(`[movimento] Verba desconhecida ${verbaCode} na linha ${i + 1} (mat=${matriculaNum})`);
+      ignorados++;
+      continue;
+    }
+
+    const quantidadeRaw = cols.quantidade !== undefined ? row[cols.quantidade] : undefined;
+    if (quantidadeRaw === '' || quantidadeRaw === null || quantidadeRaw === undefined) {
+      console.warn(`[movimento] Quantidade nula na linha ${i + 1} (mat=${matriculaNum}, verba=${verbaCode})`);
+      ignorados++;
+      continue;
+    }
+    const quantidade = parseQuantidadePtBR(quantidadeRaw);
+
+    if (!byMatricula[matriculaNum]) {
+      // Lotação vem como código ("59.00.00") — preserva como string, não persiste
+      byMatricula[matriculaNum] = {
+        nome:      cols.nome       !== undefined ? String(row[cols.nome]       ?? '').trim() : null,
+        cargo:     cols.cargo      !== undefined ? String(row[cols.cargo]      ?? '').trim() : null,
+        secretaria:cols.secretaria !== undefined ? String(row[cols.secretaria] ?? '').trim() : null,
+        unidade:   cols.unidade    !== undefined ? String(row[cols.unidade]    ?? '').trim() : '',
+        verbas: {},
+      };
+    }
+
+    const field = VERBA_CODE_TO_FIELD[verbaCode];
+    byMatricula[matriculaNum].verbas[field] =
+      (byMatricula[matriculaNum].verbas[field] || 0) + quantidade;
+  }
+
+  const registros = [];
+  let ambiguos = 0;
+
+  for (const [matStr, dados] of Object.entries(byMatricula)) {
+    const matriculaNum = Number(matStr);
+    const { verbas } = dados;
+
+    const decomp = decomposeVB335(verbas.atraso ?? 0);
+    if (decomp.ambiguo) ambiguos++;
+
+    const faltasRaw = Math.round(verbas.falta ?? 0);
+    const faltas    = faltasRaw >= 0 && faltasRaw <= 31 ? faltasRaw : 0;
+
+    const secretariaNome = dados.secretaria || '';
+
+    registros.push({
+      competencia,
+      matricula:         matriculaNum,
+      nome:              dados.nome       || null,
+      cargo:             dados.cargo      || null,
+      secretaria:        secretariaNome   || null,
+      secretaria_sigla:  resolverSigla(secretariaNome),
+      unidade:           dados.unidade    || '',
+      atrasos_fracao:    decomp.atrasos_fracao,
+      atrasos_dia:       decomp.atrasos_dia,
+      dsr:               toNum(verbas.dsr),
+      adicional_noturno: toNum(verbas.adicional_noturno),
+      hora_extra_50:     Math.floor(toNum(verbas.hora_extra_50)),
+      faltas,
+      hora_extra_100:    Math.floor(toNum(verbas.hora_extra_100)),
+    });
+  }
+
+  return { registros, ignorados, ambiguos };
+}
+
 /**
  * Analisa as linhas já lidas e retorna o resultado do mapeamento de colunas.
  * Ponto de entrada único para o fluxo de importação.
@@ -96,10 +220,42 @@ export function analisarArquivo(rows, mapeamentosCustom = {}) {
   }
 
   const { linhaIdx, row: headerRow } = cabecalho;
+  const linhasDados = Math.max(0, rows.length - linhaIdx - 1);
+
+  // Detecta Formato C antes de tentar o mapeamento dinâmico
+  const movimentoCols = detectarColunasMovimento(headerRow);
+  if (movimentoCols) {
+    const erros = validarColunasMovimento(movimentoCols);
+    // Mapeamento compatível com ModalPrevia: colIdx → def
+    const mapeamento = {};
+    const _add = (campo, tipo, id) => {
+      if (movimentoCols[campo] !== undefined)
+        mapeamento[movimentoCols[campo]] = { tipo, id, fonte: 'auto', nomeOriginal: String(headerRow[movimentoCols[campo]] ?? '') };
+    };
+    _add('matricula',  'id',    'matricula');
+    _add('nome',       'id',    'nome');
+    _add('verba',      'id',    'verba_mov');
+    _add('quantidade', 'id',    'quantidade_mov');
+    _add('cargo',      'id',    'cargo');
+    _add('lotacao',    'id',    'local');
+    _add('secretaria', 'id',    'subunidade');
+    _add('unidade',    'id',    'local_trabalho');
+    return {
+      ok: erros.length === 0,
+      erros,
+      headerIdx: linhaIdx,
+      headerRow,
+      mapeamento,
+      naoReconhecidas: [],
+      formato: 'movimento',
+      linhasDados,
+      movimentoCols,
+    };
+  }
+
   const { mapeamento, naoReconhecidas } = mapearColunas(headerRow, mapeamentosCustom);
   const erros      = validarMapeamento(mapeamento);
   const formato    = classificarFormato(mapeamento);
-  const linhasDados = Math.max(0, rows.length - linhaIdx - 1);
 
   return {
     ok: erros.length === 0,
