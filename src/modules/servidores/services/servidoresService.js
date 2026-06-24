@@ -1,0 +1,84 @@
+import { supabase } from '@/lib/supabase';
+
+// Colunas para agregações (painel)
+const COLS_RESUMO = 'Matricula,Sexo,Des_GrInstrucao,Des_RegTrab,Des_CategSefip,Des_Padrao_Adm,Des_Secretaria,SiglaSec,DtAdmissao,Idade,Con';
+
+// Colunas para listagem (diretório)
+const COLS_LISTA = 'Matricula,Nome_Funcionario,Des_Cargo,Des_Secretaria,SiglaSec,Des_LocalTrab,Des_RegTrab,Des_CategSefip,DtAdmissao,Con,Pr';
+
+export async function fetchResumoServidores() {
+  const PAGE_SIZE = 1000;
+  let all = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from('funcionarios_infos')
+      .select(COLS_RESUMO)
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return all;
+}
+
+export async function fetchServidoresPaginado(filtros = {}, page = 0, perPage = 50) {
+  const { busca = '', secretaria = '', regime = '', padrao = '' } = filtros;
+
+  let q = supabase
+    .from('funcionarios_infos')
+    .select(COLS_LISTA, { count: 'exact' });
+
+  if (busca.trim()) {
+    const t = busca.trim();
+    q = q.or(`Nome_Funcionario.ilike.%${t}%,Des_Cargo.ilike.%${t}%,Matricula.eq.${parseInt(t) || 0}`);
+  }
+  if (secretaria) q = q.eq('Des_Secretaria', secretaria);
+  if (regime)     q = q.eq('Des_RegTrab', regime);
+  if (padrao)     q = q.eq('Des_Padrao_Adm', padrao);
+
+  q = q.order('Nome_Funcionario').range(page * perPage, (page + 1) * perPage - 1);
+
+  const { data, count, error } = await q;
+  if (error) throw error;
+  return { data: data || [], count: count || 0 };
+}
+
+export async function fetchServidorDetalhe(matricula) {
+  const { data, error } = await supabase
+    .from('funcionarios_infos')
+    .select('*')
+    .eq('Matricula', matricula)
+    .limit(1)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchOpcoesServidores() {
+  const PAGE_SIZE = 1000;
+  const sets = { Des_Secretaria: new Set(), Des_RegTrab: new Set(), Des_Padrao_Adm: new Set() };
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from('funcionarios_infos')
+      .select('Des_Secretaria,Des_RegTrab,Des_Padrao_Adm')
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    for (const r of data) {
+      if (r.Des_Secretaria) sets.Des_Secretaria.add(r.Des_Secretaria);
+      if (r.Des_RegTrab)    sets.Des_RegTrab.add(r.Des_RegTrab);
+      if (r.Des_Padrao_Adm) sets.Des_Padrao_Adm.add(r.Des_Padrao_Adm);
+    }
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return {
+    secretarias: [...sets.Des_Secretaria].sort(),
+    regimes:     [...sets.Des_RegTrab].sort(),
+    padroes:     [...sets.Des_Padrao_Adm].sort(),
+  };
+}

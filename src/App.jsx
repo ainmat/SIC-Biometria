@@ -24,6 +24,10 @@ import ComparativoFolha from '@/modules/folha/pages/ComparativoFolha';
 import ConferenciaFolha from '@/modules/folha/pages/ConferenciaFolha';
 import GerenciarUsuarios from '@/modules/admin/pages/GerenciarUsuarios';
 
+// Servidores
+import PainelServidores   from '@/modules/servidores/pages/PainelServidores';
+import DiretorioServidores from '@/modules/servidores/pages/DiretorioServidores';
+
 function RequireAuth({ children }) {
   const { isLoggedIn } = useAuth();
   return isLoggedIn ? children : <Navigate to="/login" replace />;
@@ -69,6 +73,13 @@ export default function App() {
           <Route path="simulador" element={<SimuladorFolha />} />
           <Route path="comparativo" element={<ComparativoFolha />} />
           <Route path="conferencia" element={<ConferenciaFolha />} />
+        </Route>
+
+        {/* Servidores */}
+        <Route path="servidores">
+          <Route index element={<Navigate to="painel" replace />} />
+          <Route path="painel"    element={<PainelServidores />} />
+          <Route path="diretorio" element={<DiretorioServidores />} />
         </Route>
 
         {/* Administração */}

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SECRETARIAS, MESES, formatarCompetencia } from '@/modules/previas/constants';
+import { competenciaArquivoPrevia } from '@/modules/previas/utils/competencia';
 import {
   parseArquivo,
   compararArquivos,
@@ -150,6 +151,9 @@ export default function SimuladorPrevia() {
   const [compSoDiff,    setCompSoDiff]    = useState(false);
 
   const competencia = `${anoComp}-${mesComp}`;
+  // Arquivo de frequência = competência da folha − 1 mês (IMP05 para folha Junho)
+  const arquivoComp = competenciaArquivoPrevia(mesComp, anoComp);
+
   const secretariaSelecionada = SECRETARIAS.find(s => s.codigo === secretariaCodigo);
   const secretariaNome = secretariaSelecionada
     ? `${secretariaSelecionada.numero} - ${secretariaSelecionada.sigla}`
@@ -227,7 +231,7 @@ export default function SimuladorPrevia() {
     const arr = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.txt'));
     if (!arr.length) return;
     const inicial = arr.map(file => {
-      const parse = parsearNomeArquivo(file.name, mesComp, anoComp);
+      const parse = parsearNomeArquivo(file.name, arquivoComp.mes, arquivoComp.ano);
       return {
         file, nome: file.name,
         secretaria: parse.valido ? parse.secretaria : null,
@@ -370,9 +374,13 @@ export default function SimuladorPrevia() {
                         </select>
                       </div>
                       <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 6 }}>Competência: {formatarCompetencia(competencia)}</div>
-                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+                        Arquivo esperado: <span style={{ fontFamily: 'monospace', color: '#60a5fa' }}>{arquivoComp.prefixo}</span>
+                        {' '}<span style={{ color: '#64748b' }}>({MESES[parseInt(arquivoComp.mes, 10) - 1]}/{arquivoComp.ano})</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 8, lineHeight: 1.6 }}>
                         A secretaria é detectada automaticamente pelo nome do arquivo.<br />
-                        Padrão: <span style={{ fontFamily: 'monospace', color: '#94a3b8' }}>IMP{mesComp}{anoComp} - {'{código}'} {'{nome}'}.TXT</span>
+                        Padrão: <span style={{ fontFamily: 'monospace', color: '#94a3b8' }}>{arquivoComp.prefixo} - {'{código}'} {'{nome}'}.TXT</span>
                       </div>
                     </div>
                     <div>
@@ -806,6 +814,10 @@ export default function SimuladorPrevia() {
                     </select>
                   </div>
                   <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 6 }}>Competência: {formatarCompetencia(competencia)}</div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
+                    Arquivo esperado: <span style={{ fontFamily: 'monospace', color: '#60a5fa' }}>{arquivoComp.prefixo}</span>
+                    {' '}<span style={{ color: '#64748b' }}>({MESES[parseInt(arquivoComp.mes, 10) - 1]}/{arquivoComp.ano})</span>
+                  </div>
                 </div>
 
                 <div>
