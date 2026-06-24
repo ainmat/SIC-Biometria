@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   Cell, CartesianGrid,
 } from 'recharts';
-import { X, Plus, TrendingUp, TrendingDown, Minus, Filter } from 'lucide-react';
+import { X, Plus, TrendingUp, TrendingDown, Minus, Filter, LayoutList, LayoutGrid } from 'lucide-react';
 import { baixarCSV } from '@/lib/exportar';
 import { SearchSelect } from '@/components/ui/search-select';
 import {
@@ -17,13 +17,27 @@ import { fmtCompetencia } from '@/modules/folha/constants';
 
 /* ─────────────────────────── constants ─────────────────────────── */
 
+// Secretarias que não devem aparecer no comparativo
+const SECRETARIAS_EXCLUIDAS = new Set(['PENSIONISTAS']);
+const filtrarSecretaria = (nome) => !SECRETARIAS_EXCLUIDAS.has(String(nome).toUpperCase().trim());
+
 const METRICAS = [
-  { id: 'faltas',         label: 'Faltas',          short: 'Faltas',   cor: '#ef4444' },
-  { id: 'atrasos_dia',    label: 'Atrasos ≥ 1h',    short: 'Atr ≥1h', cor: '#f97316' },
-  { id: 'atrasos_fracao', label: 'Atrasos < 1h',    short: 'Atr <1h', cor: '#eab308' },
-  { id: 'dsr',            label: 'DSR',              short: 'DSR',      cor: '#a855f7' },
-  { id: 'hora_extra_50',  label: 'HE 50%',          short: 'HE 50%',  cor: '#3b82f6' },
-  { id: 'hora_extra_100', label: 'HE 100%',         short: 'HE 100%', cor: '#10b981' },
+  { id: 'faltas',            label: 'Faltas',          short: 'Faltas',    cor: '#ef4444' },
+  { id: 'atrasos_total',     label: 'Atrasos',         short: 'Atrasos',   cor: '#f97316' },
+  { id: 'atrasos_dia',       label: 'Atrasos ≥ 1h',    short: 'Atr ≥1h',  cor: '#fb923c' },
+  { id: 'atrasos_fracao',    label: 'Atrasos < 1h',    short: 'Atr <1h',  cor: '#eab308' },
+  { id: 'dsr',               label: 'DSR',              short: 'DSR',       cor: '#a855f7' },
+  { id: 'hora_extra_total',  label: 'H.E. Total',      short: 'H.E.',      cor: '#22d3ee' },
+  { id: 'hora_extra_50',     label: 'HE 50%',          short: 'HE 50%',   cor: '#3b82f6' },
+  { id: 'hora_extra_100',    label: 'HE 100%',         short: 'HE 100%',  cor: '#10b981' },
+];
+
+// Métricas agrupadas usadas na view Resumida (secundárias nos cards)
+const METRICAS_RESUMIDAS = [
+  { id: 'faltas',           label: 'Faltas',  cor: '#ef4444' },
+  { id: 'atrasos_total',    label: 'Atrasos', cor: '#f97316' },
+  { id: 'dsr',              label: 'DSR',     cor: '#a855f7' },
+  { id: 'hora_extra_total', label: 'H.E.',    cor: '#22d3ee' },
 ];
 
 const MES_CORES = ['#6366f1', '#3b82f6', '#10b981', '#f97316', '#ec4899', '#a855f7'];
@@ -35,6 +49,12 @@ const fmtK = (n) => n >= 10000 ? (n / 1000).toFixed(0) + 'k'
                    : Math.round(n).toString();
 
 /* ─────────────────────────── helpers ───────────────────────────── */
+
+function getVal(dados, id) {
+  if (id === 'atrasos_total')    return N(dados?.atrasos_dia) + N(dados?.atrasos_fracao);
+  if (id === 'hora_extra_total') return N(dados?.hora_extra_50) + N(dados?.hora_extra_100);
+  return N(dados?.[id]);
+}
 
 function deltaInfo(from, to) {
   if (from === 0 && to === 0) return { pct: 0,    color: '#475569', Icon: Minus };
@@ -80,12 +100,14 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-function PeriodCard({ comp, dados, prevDados, cor, metrica }) {
-  const val     = N(dados?.[metrica.id]);
-  const prevVal = N(prevDados?.[metrica.id]);
+function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) {
+  const val     = getVal(dados,     metrica.id);
+  const prevVal = getVal(prevDados, metrica.id);
   const { pct, color: dColor, Icon: DIcon } = deltaInfo(prevVal, val);
   const hasDelta  = prevDados !== null;
-  const secondary = METRICAS.filter(m => m.id !== metrica.id);
+  const secondary = detalhada
+    ? METRICAS.filter(m => m.id !== metrica.id && m.id !== 'atrasos_total' && m.id !== 'hora_extra_total')
+    : METRICAS_RESUMIDAS.filter(m => m.id !== metrica.id);
 
   return (
     <div style={{
@@ -93,10 +115,10 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica }) {
       background: 'linear-gradient(160deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.015) 100%)',
       border: '1px solid rgba(255,255,255,.08)',
       borderTop: `3px solid ${cor}`,
-      borderRadius: 14, padding: '20px 22px',
+      borderRadius: 14, padding: detalhada ? '20px 22px' : '16px 18px',
       display: 'flex', flexDirection: 'column',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <span style={{ fontSize: 10, fontWeight: 800, color: cor, textTransform: 'uppercase', letterSpacing: '.12em' }}>
           {fmtCompetencia(comp)}
         </span>
@@ -109,10 +131,10 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica }) {
       </div>
 
       <div style={{ marginBottom: 4 }}>
-        <div style={{ fontSize: 42, fontWeight: 800, color: '#f8fafc', lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em' }}>
+        <div style={{ fontSize: detalhada ? 42 : 36, fontWeight: 800, color: '#f8fafc', lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em' }}>
           {fmt(val)}
         </div>
-        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{metrica.label}</span>
           {hasDelta && pct !== null && (
             <span style={{
@@ -130,41 +152,43 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica }) {
         </div>
       </div>
 
-      <div style={{ height: 1, background: 'rgba(255,255,255,.06)', margin: '14px 0' }} />
+      <>
+        <div style={{ height: 1, background: 'rgba(255,255,255,.06)', margin: '14px 0' }} />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {secondary.map(m => {
-          const sv  = N(dados?.[m.id]);
-          const spv = N(prevDados?.[m.id]);
-          const { pct: sp, color: sc } = deltaInfo(spv, sv);
-          return (
-            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: m.cor, display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ fontSize: 11, color: '#475569' }}>{m.label}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {hasDelta && sp !== null && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: sc }}>
-                    {sp > 0 ? '+' : ''}{sp.toFixed(0)}%
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {secondary.map(m => {
+            const sv  = getVal(dados,     m.id);
+            const spv = getVal(prevDados, m.id);
+            const { pct: sp, color: sc } = deltaInfo(spv, sv);
+            return (
+              <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: m.cor, display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: '#475569' }}>{m.label}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {hasDelta && sp !== null && (
+                    <span style={{ fontSize: 10, fontWeight: 600, color: sc }}>
+                      {sp > 0 ? '+' : ''}{sp.toFixed(0)}%
+                    </span>
+                  )}
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>
+                    {fmtK(sv)}
                   </span>
-                )}
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>
-                  {fmtK(sv)}
-                </span>
+                </div>
               </div>
-            </div>
-          );
-        })}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,.04)' }}>
-          <span style={{ fontSize: 10, color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>
-            servidores c/ oc.
-          </span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', fontVariantNumeric: 'tabular-nums' }}>
-            {fmt(N(dados?.servidores ?? 0))}
-          </span>
+            );
+          })}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,.04)' }}>
+            <span style={{ fontSize: 10, color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>
+              servidores c/ oc.
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', fontVariantNumeric: 'tabular-nums' }}>
+              {fmt(N(dados?.servidores ?? 0))}
+            </span>
+          </div>
         </div>
-      </div>
+      </>
     </div>
   );
 }
@@ -176,6 +200,7 @@ export default function ComparativoFolha() {
   const [selecionadas, setSelecionadas] = useState([]);
   const [nivel,        setNivel]        = useState('geral');
   const [metrica,      setMetrica]      = useState(METRICAS[0]);
+  const [detalhada,    setDetalhada]    = useState(true);
 
   // filtros de escopo (como no DashboardFolha)
   const [filtroSec,    setFiltroSec]    = useState('');
@@ -248,19 +273,18 @@ export default function ComparativoFolha() {
 
   /* fonte para o ranking (secretarias ou unidades, conforme filtro) */
   const rankingSource = useMemo(() => {
-    if (filtroSec) return dadosUnd;       // dentro de uma secretaria → mostra unidades
-    if (nivel === 'secretaria') return dadosSec;
-    return dadosSec;                      // default
-  }, [filtroSec, nivel, dadosSec, dadosUnd]);
+    const source = filtroSec ? dadosUnd : dadosSec;
+    return Object.fromEntries(Object.entries(source).filter(([k]) => filtrarSecretaria(k)));
+  }, [filtroSec, dadosSec, dadosUnd]);
 
   const rankingLabel = filtroSec ? 'Unidade' : 'Secretaria';
 
   const secOptions = useMemo(
-    () => Object.keys(dadosSec).sort().map(s => ({ value: s, label: s })),
+    () => Object.keys(dadosSec).filter(filtrarSecretaria).sort().map(s => ({ value: s, label: s })),
     [dadosSec]
   );
   const undOptions = useMemo(
-    () => Object.keys(dadosUnd).sort().map(u => ({ value: u, label: u })),
+    () => Object.keys(dadosUnd).filter(filtrarSecretaria).sort().map(u => ({ value: u, label: u })),
     [dadosUnd]
   );
 
@@ -269,29 +293,30 @@ export default function ComparativoFolha() {
     if (nivel === 'geral') {
       return compsOrdenadas.map((c, i) => ({
         name: fmtCompetencia(c),
-        value: N(dadosGeralVis[c]?.[metrica.id]),
+        value: getVal(dadosGeralVis[c], metrica.id),
         fill: MES_CORES[i % MES_CORES.length],
       }));
     }
     const source   = rankingSource;
     const lastComp = compsOrdenadas[compsOrdenadas.length - 1];
     return Object.entries(source)
-      .sort((a, b) => N(b[1][lastComp]?.[metrica.id]) - N(a[1][lastComp]?.[metrica.id]))
+      .sort((a, b) => getVal(b[1][lastComp], metrica.id) - getVal(a[1][lastComp], metrica.id))
       .slice(0, 8)
       .map(([nome, data]) => {
         const row = { name: nome.length > 24 ? nome.slice(0, 22) + '…' : nome };
-        compsOrdenadas.forEach(c => { row[fmtCompetencia(c)] = N(data[c]?.[metrica.id]); });
+        compsOrdenadas.forEach(c => { row[fmtCompetencia(c)] = getVal(data[c], metrica.id); });
         return row;
       });
   }, [nivel, dadosGeralVis, rankingSource, compsOrdenadas, metrica]);
 
   /* ── table rows ── */
+  const METRICAS_TABELA = METRICAS.filter(m => m.id !== 'atrasos_total' && m.id !== 'hora_extra_total');
   const tableRows = useMemo(() => {
     if (nivel === 'geral' || filtroUnd) {
-      // métricas como linhas
-      return METRICAS.map(m => ({
+      // métricas como linhas (exclui virtuais para evitar duplicidade)
+      return METRICAS_TABELA.map(m => ({
         key: m.id, nome: m.label, cor: m.cor, isMetric: true,
-        meses: compsOrdenadas.map(c => N(dadosGeralVis[c]?.[m.id])),
+        meses: compsOrdenadas.map(c => getVal(dadosGeralVis[c], m.id)),
       }));
     }
     const source  = rankingSource;
@@ -299,7 +324,7 @@ export default function ComparativoFolha() {
     return Object.entries(source)
       .map(([nome, data]) => ({
         key: nome, nome, cor: null, isMetric: false,
-        meses: compsOrdenadas.map(c => N(data[c]?.[metrica.id])),
+        meses: compsOrdenadas.map(c => getVal(data[c], metrica.id)),
       }))
       .sort((a, b) => (b.meses[lastIdx] || 0) - (a.meses[lastIdx] || 0));
   }, [nivel, filtroUnd, dadosGeralVis, rankingSource, compsOrdenadas, metrica]);
@@ -430,6 +455,28 @@ export default function ComparativoFolha() {
                 </button>
               ))}
             </div>
+
+            {/* visão dos cards: resumida / detalhada */}
+            <div style={{
+              display: 'inline-flex', background: 'rgba(0,0,0,.3)',
+              borderRadius: 10, padding: 3, gap: 2, flexShrink: 0,
+            }}>
+              {[
+                { val: false, label: 'Resumida', Icon: LayoutGrid },
+                { val: true,  label: 'Detalhada', Icon: LayoutList },
+              ].map(({ val, label, Icon }) => (
+                <button key={label} type="button" onClick={() => setDetalhada(val)} style={{
+                  padding: '6px 13px', borderRadius: 7, border: 'none', cursor: 'pointer',
+                  fontSize: 12, fontWeight: 600, transition: 'all .15s',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: detalhada === val ? 'rgba(99,102,241,.35)' : 'transparent',
+                  color: detalhada === val ? '#a5b4fc' : '#64748b',
+                }}>
+                  <Icon size={13} />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Linha 2: métrica + secretaria + unidade */}
@@ -546,6 +593,7 @@ export default function ComparativoFolha() {
                   prevDados={i === 0 ? null : (dadosGeralVis[compsOrdenadas[i - 1]] ?? null)}
                   cor={MES_CORES[i % MES_CORES.length]}
                   metrica={metrica}
+                  detalhada={detalhada}
                 />
               ))}
             </div>
