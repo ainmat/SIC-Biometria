@@ -25,8 +25,16 @@ import ConferenciaFolha from '@/modules/folha/pages/ConferenciaFolha';
 import GerenciarUsuarios from '@/modules/admin/pages/GerenciarUsuarios';
 
 // Servidores
-import PainelServidores   from '@/modules/servidores/pages/PainelServidores';
-import DiretorioServidores from '@/modules/servidores/pages/DiretorioServidores';
+import PainelServidores      from '@/modules/servidores/pages/PainelServidores';
+import DiretorioServidores   from '@/modules/servidores/pages/DiretorioServidores';
+import RadarAposentadoria    from '@/modules/servidores/pages/RadarAposentadoria';
+import ComissionadosEfetivos from '@/modules/servidores/pages/ComissionadosEfetivos';
+import AuditoriaServidores   from '@/modules/servidores/pages/AuditoriaServidores';
+import DescompassoEscolaridade from '@/modules/servidores/pages/DescompassoEscolaridade';
+import PerfilQuadro          from '@/modules/servidores/pages/PerfilQuadro';
+import IndiceSaude           from '@/modules/servidores/pages/IndiceSaude';
+import SimuladorCenarios     from '@/modules/servidores/pages/SimuladorCenarios';
+import ImportarPonto         from '@/modules/previas/pages/ImportarPonto';
 
 function RequireAuth({ children }) {
   const { isLoggedIn } = useAuth();
@@ -63,6 +71,7 @@ export default function App() {
           <Route path="simulador" element={<SimuladorPrevia />} />
           <Route path="historico" element={<HistoricoPrevias />} />
           <Route path="bi" element={<BiPrevias />} />
+          <Route path="ponto" element={<RequireAdmin><ImportarPonto /></RequireAdmin>} />
         </Route>
 
         {/* Folha de Pagamento */}
@@ -78,8 +87,18 @@ export default function App() {
         {/* Servidores */}
         <Route path="servidores">
           <Route index element={<Navigate to="painel" replace />} />
-          <Route path="painel"    element={<PainelServidores />} />
-          <Route path="diretorio" element={<DiretorioServidores />} />
+          <Route path="cockpit"       element={<Navigate to="/servidores/painel" replace />} />
+          <Route path="painel"        element={<PainelServidores />} />
+          <Route path="diretorio"     element={<DiretorioServidores />} />
+          <Route path="aposentadoria" element={<RadarAposentadoria />} />
+          <Route path="comissionados" element={<ComissionadosEfetivos />} />
+          <Route path="auditoria"     element={<AuditoriaServidores />} />
+          <Route path="escolaridade"  element={<DescompassoEscolaridade />} />
+          <Route path="perfil"        element={<PerfilQuadro />} />
+          <Route path="genero"        element={<Navigate to="/servidores/perfil" replace />} />
+          <Route path="ondas"         element={<Navigate to="/servidores/perfil" replace />} />
+          <Route path="saude"         element={<IndiceSaude />} />
+          <Route path="simulador"     element={<SimuladorCenarios />} />
         </Route>
 
         {/* Administração */}

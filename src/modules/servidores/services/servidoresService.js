@@ -1,27 +1,50 @@
 import { supabase } from '@/lib/supabase';
 
-// Colunas para agregações (painel)
-const COLS_RESUMO = 'Matricula,Sexo,Des_GrInstrucao,Des_RegTrab,Des_CategSefip,Des_Padrao_Adm,Des_Secretaria,SiglaSec,DtAdmissao,Idade,Con';
+const COLS_RESUMO = [
+  'Matricula','Nome_Funcionario','Sexo','Des_GrInstrucao',
+  'Des_RegTrab','Des_CategSefip','Des_Padrao_Adm',
+  'Des_Secretaria','SiglaSec','DtAdmissao','DtNomeacao',
+  'Idade','Tempo_Contrato_Anos','Des_Cargo','Des_LocalTrab',
+].join(',');
 
-// Colunas para listagem (diretório)
-const COLS_LISTA = 'Matricula,Nome_Funcionario,Des_Cargo,Des_Secretaria,SiglaSec,Des_LocalTrab,Des_RegTrab,Des_CategSefip,DtAdmissao,Con,Pr';
+const COLS_LISTA = [
+  'Matricula','Nome_Funcionario','Des_Cargo','Des_Secretaria',
+  'SiglaSec','Des_LocalTrab','Des_RegTrab','Des_CategSefip',
+  'Des_Padrao_Adm','DtAdmissao','Con','Pr',
+].join(',');
+
+// Cache de sessão — evita repetir 19 requisições ao navegar entre telas
+let _resumoCache   = null;
+let _resumoPromise = null;
 
 export async function fetchResumoServidores() {
-  const PAGE_SIZE = 1000;
-  let all = [];
-  let from = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from('funcionarios_infos')
-      .select(COLS_RESUMO)
-      .range(from, from + PAGE_SIZE - 1);
-    if (error) throw error;
-    if (!data || data.length === 0) break;
-    all = all.concat(data);
-    if (data.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
+  if (_resumoCache) return _resumoCache;
+  if (!_resumoPromise) {
+    _resumoPromise = (async () => {
+      try {
+        const PAGE_SIZE = 1000;
+        let all = [];
+        let from = 0;
+        while (true) {
+          const { data, error } = await supabase
+            .from('funcionarios_infos')
+            .select(COLS_RESUMO)
+            .range(from, from + PAGE_SIZE - 1);
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          all = all.concat(data);
+          if (data.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+        _resumoCache = all;
+        return all;
+      } catch (e) {
+        _resumoPromise = null; // permite retry
+        throw e;
+      }
+    })();
   }
-  return all;
+  return _resumoPromise;
 }
 
 export async function fetchServidoresPaginado(filtros = {}, page = 0, perPage = 50) {
