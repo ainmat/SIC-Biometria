@@ -1,4 +1,5 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
+import { ImportarPontoContent } from '@/modules/previas/pages/ImportarPonto';
 import { useState, useRef, useCallback } from 'react';
 import {
   Upload, FileText, Play, CheckCircle, XCircle, AlertTriangle, TrendingUp, TrendingDown,
@@ -338,9 +339,10 @@ export default function SimuladorPrevia() {
             {/* Tabs de modo */}
             <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
               {[
-                { id: 'unico',    label: 'Arquivo Único', sub: 'Uma secretaria por vez' },
-                { id: 'lote',     label: 'Lote',           sub: 'Todas as secretarias de uma vez' },
-                { id: 'comparar', label: 'Comparar TXT',   sub: 'Diferenças entre dois arquivos' },
+                { id: 'importar', label: 'Ponto Unificado',  sub: 'Arquivo único — todas as secretarias' },
+                { id: 'unico',    label: 'Por Secretaria',   sub: 'Um arquivo por secretaria' },
+                { id: 'lote',     label: 'Lote',             sub: 'Múltiplos arquivos de uma vez' },
+                { id: 'comparar', label: 'Comparar TXT',     sub: 'Diferenças entre dois arquivos' },
               ].map(({ id, label, sub }) => (
                 <button
                   key={id}
@@ -777,6 +779,9 @@ export default function SimuladorPrevia() {
                 </div>
               );
             })()}
+
+            {/* ── MODO PONTO UNIFICADO ── */}
+            {modo === 'importar' && <ImportarPontoContent />}
 
             {/* ── MODO ARQUIVO ÚNICO (original) ── */}
             {modo === 'unico' && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>

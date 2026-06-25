@@ -34,7 +34,6 @@ import DescompassoEscolaridade from '@/modules/servidores/pages/DescompassoEscol
 import PerfilQuadro          from '@/modules/servidores/pages/PerfilQuadro';
 import IndiceSaude           from '@/modules/servidores/pages/IndiceSaude';
 import SimuladorCenarios     from '@/modules/servidores/pages/SimuladorCenarios';
-import ImportarPonto         from '@/modules/previas/pages/ImportarPonto';
 
 function RequireAuth({ children }) {
   const { isLoggedIn } = useAuth();
@@ -71,7 +70,7 @@ export default function App() {
           <Route path="simulador" element={<SimuladorPrevia />} />
           <Route path="historico" element={<HistoricoPrevias />} />
           <Route path="bi" element={<BiPrevias />} />
-          <Route path="ponto" element={<RequireAdmin><ImportarPonto /></RequireAdmin>} />
+          <Route path="ponto" element={<Navigate to="/previas/simulador" replace />} />
         </Route>
 
         {/* Folha de Pagamento */}
