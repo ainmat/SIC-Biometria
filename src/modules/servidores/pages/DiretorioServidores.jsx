@@ -17,6 +17,60 @@ function fmtData(s) {
   return s.split(' ')[0];
 }
 
+function calcularTempoServicoExtenso(dtAdmissaoStr) {
+  if (!dtAdmissaoStr) return null;
+  
+  let dia, mes, ano;
+  const dataLimpa = dtAdmissaoStr.split(' ')[0];
+  if (dataLimpa.includes('/')) {
+    const parts = dataLimpa.split('/');
+    if (parts.length !== 3) return null;
+    dia = parseInt(parts[0], 10);
+    mes = parseInt(parts[1], 10);
+    ano = parseInt(parts[2], 10);
+  } else {
+    const date = new Date(dtAdmissaoStr);
+    if (isNaN(date.getTime())) return null;
+    dia = date.getDate();
+    mes = date.getMonth() + 1;
+    ano = date.getFullYear();
+  }
+
+  const dtInicio = new Date(ano, mes - 1, dia);
+  const dtFim = new Date();
+
+  if (isNaN(dtInicio.getTime())) return null;
+  if (dtInicio > dtFim) return '0 Dia(s)';
+
+  let anos = dtFim.getFullYear() - dtInicio.getFullYear();
+  let meses = dtFim.getMonth() - dtInicio.getMonth();
+  let dias = dtFim.getDate() - dtInicio.getDate();
+
+  if (dias < 0) {
+    meses--;
+    const prevMonth = new Date(dtFim.getFullYear(), dtFim.getMonth(), 0);
+    dias += prevMonth.getDate();
+  }
+
+  if (meses < 0) {
+    anos--;
+    meses += 12;
+  }
+
+  const partes = [];
+  if (anos > 0) partes.push(`${anos} Ano(s)`);
+  if (meses > 0) partes.push(`${meses} Mese(s)`);
+  if (dias > 0 || partes.length === 0) partes.push(`${dias} Dia(s)`);
+
+  if (partes.length === 3) {
+    return `${partes[0]}, ${partes[1]} e ${partes[2]}.`;
+  } else if (partes.length === 2) {
+    return `${partes[0]} e ${partes[1]}.`;
+  } else {
+    return `${partes[0]}.`;
+  }
+}
+
 const PER_PAGE = 50;
 
 const SEL_ST = {
@@ -47,6 +101,8 @@ function ModalServidor({ matricula, onClose }) {
       </div>
     );
   }
+
+  const tempoServicoReal = dados ? (calcularTempoServicoExtenso(dados.DtAdmissao) || dados.Tempo_Contrato_Extenso) : null;
 
   return (
     <div className="modal-overlay show" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -105,11 +161,11 @@ function ModalServidor({ matricula, onClose }) {
                 {campo('Contrato',      dados.Des_Contrato)}
                 {campo('Cat. SEFIP',    dados.Des_CategSefip)}
                 {campo('Hrs/Semana',    dados.HrSem ? `${dados.HrSem}h` : null)}
-                {campo('Nomeação',      fmtData(dados.DtNomeacao))}
+                 {campo('Nomeação',      fmtData(dados.DtNomeacao))}
                 {campo('Posse',         fmtData(dados.DtPosse))}
                 {campo('Admissão',      fmtData(dados.DtAdmissao))}
                 {campo('Início Exerc.', fmtData(dados.DtIniExerc))}
-                {campo('Tempo de serviço', dados.Tempo_Contrato_Extenso)}
+                {campo('Tempo de serviço', tempoServicoReal)}
               </div>
             </div>
 
@@ -132,7 +188,7 @@ function ModalServidor({ matricula, onClose }) {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, background: 'rgba(99,102,241,.06)', border: '1px solid rgba(99,102,241,.15)' }}>
                   <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Tempo de serviço</span>
                   <span style={{ fontSize: 15, fontWeight: 800, color: '#a5b4fc', fontVariantNumeric: 'tabular-nums' }}>
-                    {dados.Tempo_Contrato_Extenso || `${dados.Tempo_Contrato_Anos} anos`}
+                    {tempoServicoReal || `${dados.Tempo_Contrato_Anos} anos`}
                   </span>
                 </div>
               </>

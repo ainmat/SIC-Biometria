@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { fetchResumoServidores } from '@/modules/servidores/services/servidoresService';
 import { isComissionado } from '@/modules/servidores/config/servidoresConfig';
+import { Info, ChevronDown, ChevronUp, Clock, GraduationCap, Shield, Calendar } from 'lucide-react';
 
 const fmt  = (n) => Math.round(n).toLocaleString('pt-BR');
 const pct  = (v, t) => (t > 0 ? ((v / t) * 100).toFixed(1) : '0.0');
@@ -62,6 +63,7 @@ export default function IndiceSaude() {
   const [loading, setLoading] = useState(true);
   const [erro,    setErro]    = useState(null);
   const [aba,     setAba]     = useState('ranking');
+  const [expandedInfo, setExpandedInfo] = useState(false);
 
   useEffect(() => {
     fetchResumoServidores().then(setDados).catch(e => setErro(e.message)).finally(() => setLoading(false));
@@ -147,10 +149,98 @@ export default function IndiceSaude() {
 
         {!loading && !erro && ranking.length > 0 && (
           <>
-            {/* Legenda de componentes */}
-            <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', marginBottom: 20, fontSize: 11, color: '#64748b', display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-              <span><b style={{ color: '#94a3b8' }}>Score 0–100</b> por secretaria (mín. 5 servidores).</span>
-              <span>Componentes: <b style={{ color: '#f1f5f9' }}>Experiência 30%</b> · <b style={{ color: '#f1f5f9' }}>Escolaridade 30%</b> · <b style={{ color: '#f1f5f9' }}>Comissionados 25%</b> · <b style={{ color: '#f1f5f9' }}>Perfil etário 15%</b>. Scores são relativos entre secretarias.</span>
+            {/* Painel Informativo sobre o Índice de Saúde */}
+            <div style={{
+              background: 'rgba(255,255,255,.01)',
+              border: '1px solid rgba(255,255,255,.06)',
+              borderRadius: 12,
+              padding: '16px 20px',
+              marginBottom: 20,
+              transition: 'all 0.3s ease',
+            }}>
+              <div 
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }} 
+                onClick={() => setExpandedInfo(!expandedInfo)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Info size={18} color="#6366f1" />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>
+                    Entenda os Critérios de Apuração do Índice de Saúde
+                  </span>
+                </div>
+                <button style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  {expandedInfo ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              </div>
+
+              {!expandedInfo ? (
+                <p style={{ margin: '8px 0 0 28px', fontSize: 11, color: '#64748b', lineHeight: '1.5' }}>
+                  O score de <b>0 a 100</b> avalia a sustentabilidade e qualificação do quadro de cada secretaria (mín. 5 servidores) com base em quatro pilares relativos. Clique para ver as regras de cálculo e faixas de risco.
+                </p>
+              ) : (
+                <div style={{ marginTop: 16, borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 16 }}>
+                  {/* Grid de Critérios */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <Clock size={14} color="#a5b4fc" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Experiência (Peso: 30%)</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                        Calculado pelo <b>tempo médio de contrato</b> (em anos). Pontua melhor as secretarias com maior retenção e permanência dos servidores.
+                      </p>
+                    </div>
+
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <GraduationCap size={14} color="#a5b4fc" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Escolaridade (Peso: 30%)</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                        Média ponderada do nível de instrução (de 0 a 4). Valoriza a qualificação formal (de Fundamental até Pós-graduação/Doutorado).
+                      </p>
+                    </div>
+
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <Shield size={14} color="#a5b4fc" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Estabilidade (Peso: 25%)</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                        Inverso da porcentagem de cargos comissionados. Menor dependência de indicações políticas gera maior estabilidade e eleva o score.
+                      </p>
+                    </div>
+
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <Calendar size={14} color="#a5b4fc" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Perfil Etário (Peso: 15%)</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                        Idade média geral do quadro. Secretarias com menor idade média pontuam melhor por apresentarem menor risco de aposentadorias em lote.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Classificação e Regra de Cálculo */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 11, color: '#64748b', borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: 12 }}>
+                    <div style={{ flex: '1 1 300px' }}>
+                      <span style={{ fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Faixas de Classificação:</span>
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} /> <b>Saudável (≥ 70):</b> Quadro qualificado, estável e equilibrado.</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} /> <b>Atenção (50-69):</b> Alerta em algum pilar específico.</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> <b>Risco (&lt; 50):</b> Alto índice de rotatividade ou envelhecimento.</span>
+                      </div>
+                    </div>
+                    <div style={{ flex: '1 1 250px' }}>
+                      <span style={{ fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Regra de Cálculo Relativo:</span>
+                      <span>
+                        Os valores são calculados relativamente entre as secretarias ativas. O município de menor desempenho no critério serve como 0 e o de maior como 100.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* KPIs */}

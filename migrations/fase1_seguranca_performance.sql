@@ -668,7 +668,7 @@ AS $$
 BEGIN
   RETURN QUERY
   SELECT 
-    f."Matricula",
+    f."Matricula"::INTEGER,
     f."Nome_Funcionario"::TEXT,
     f."Des_LocalTrab"::TEXT,
     f."Des_Secretaria"::TEXT,
