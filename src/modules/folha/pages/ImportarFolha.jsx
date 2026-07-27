@@ -11,6 +11,7 @@ import {
   listarFolhasImportadas, deletarFolha,
 } from '@/modules/folha/services/folhaService';
 import { MESES, competenciaParaDate, fmtCompetencia } from '@/modules/folha/constants';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ANOS = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - 2 + i);
 
@@ -458,6 +459,8 @@ function ProgressBar({ pct, label }) {
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function ImportarFolha() {
+  const { sessao } = useAuth();
+  const token = sessao?.token;
   const [arquivo,       setArquivo]      = useState(null);
   const [fase,          setFase]         = useState('idle');
   const [previewAberto, setPreviewAberto] = useState(false);
@@ -497,7 +500,7 @@ export default function ImportarFolha() {
     if (!confirmarDelete) return;
     setDeletando(true);
     try {
-      await deletarFolha(confirmarDelete.competencia);
+      await deletarFolha(confirmarDelete.competencia, token);
       setConfirmarDelete(null);
       await carregarFolhas();
     } catch (e) {
@@ -586,7 +589,7 @@ export default function ImportarFolha() {
       }
 
       setEtapa(`Enviando ${registros.length} registros ao banco...`);
-      const { processados } = await upsertFolha(registros, (pct) => {
+      const { processados } = await upsertFolha(registros, token, (pct) => {
         setProgresso(20 + Math.round(pct * 0.78));
       });
 

@@ -26,6 +26,7 @@ const labelSt = {
 };
 
 function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
+  const { sessao } = useAuth();
   const [form, setForm] = useState({ nome: '', username: '', senha: '', role: 'viewer' });
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,8 @@ function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
     if (form.username.includes(' ')) { setErro('Username não pode ter espaços'); return; }
     setLoading(true); setErro('');
     try {
-      const { error } = await supabase.rpc('criar_usuario', {
+      const { error } = await supabase.rpc('criar_usuario_rpc', {
+        p_token: sessao?.token,
         p_nome: form.nome, p_username: form.username,
         p_senha: form.senha, p_role: form.role,
       });
@@ -122,6 +124,7 @@ function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
 }
 
 function ModalResetSenha({ usuario, onClose, onSalvo }) {
+  const { sessao } = useAuth();
   const [senha, setSenha] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [erro, setErro] = useState('');
@@ -133,7 +136,8 @@ function ModalResetSenha({ usuario, onClose, onSalvo }) {
     if (senha !== confirmar) { setErro('Senhas não coincidem'); return; }
     setLoading(true); setErro('');
     try {
-      const { error } = await supabase.rpc('resetar_senha_usuario', {
+      const { error } = await supabase.rpc('resetar_senha_usuario_rpc', {
+        p_token: sessao?.token,
         p_username: usuario.username, p_senha_nova: senha,
       });
       if (error) throw error;
@@ -176,13 +180,17 @@ function ModalResetSenha({ usuario, onClose, onSalvo }) {
 }
 
 function ModalConfirmarExclusao({ usuario, onClose, onExcluido }) {
+  const { sessao } = useAuth();
   const [loading, setLoading] = useState(false);
   const [erro,    setErro]    = useState('');
 
   async function confirmar() {
     setLoading(true); setErro('');
     try {
-      const { error } = await supabase.rpc('excluir_usuario', { p_username: usuario.username });
+      const { error } = await supabase.rpc('excluir_usuario_rpc', {
+        p_token: sessao?.token,
+        p_username: usuario.username
+      });
       if (error) throw error;
       onExcluido();
       onClose();
@@ -242,7 +250,9 @@ export default function GerenciarUsuarios() {
   async function carregar() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('listar_usuarios');
+      const { data, error } = await supabase.rpc('listar_usuarios_rpc', {
+        p_token: sessao?.token
+      });
       if (error) throw error;
       setUsuarios(data || []);
     } catch (e) {
@@ -255,8 +265,11 @@ export default function GerenciarUsuarios() {
   useEffect(() => { carregar(); }, []);
 
   async function handleToggle(u) {
-    const fn = u.ativo ? 'desativar_usuario' : 'reativar_usuario';
-    const { error } = await supabase.rpc(fn, { p_username: u.username });
+    const fn = u.ativo ? 'desativar_usuario_rpc' : 'reativar_usuario_rpc';
+    const { error } = await supabase.rpc(fn, {
+      p_token: sessao?.token,
+      p_username: u.username
+    });
     if (!error) carregar();
   }
 

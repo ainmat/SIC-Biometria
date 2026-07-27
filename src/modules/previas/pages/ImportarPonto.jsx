@@ -10,6 +10,7 @@ import {
   publicarResumosPorSecretaria,
 } from '@/modules/previas/services/pontoService';
 import { MESES } from '@/modules/previas/constants';
+import { useAuth } from '@/contexts/AuthContext';
 
 const fmt = n => Math.round(n).toLocaleString('pt-BR');
 
@@ -112,6 +113,8 @@ const ETAPAS = ['Arquivo', 'Análise', 'Revisão', 'Importado'];
 
 // ─── Conteúdo reutilizável (sem wrapper de página) ───────────────────────────
 export function ImportarPontoContent() {
+  const { sessao } = useAuth();
+  const token = sessao?.token;
   const [etapa,       setEtapa]       = useState(0);
   const [arquivo,     setArquivo]     = useState(null);
   const [competencia, setCompetencia] = useState('');
@@ -181,7 +184,7 @@ export function ImportarPontoContent() {
 
       // ── Join com banco ──────────────────────────────────────────────────────
       setCarregando('Buscando servidores do banco...');
-      const mapa = await fetchMapaServidores();
+      const mapa = await fetchMapaServidores(p.matriculas);
 
       const orfasArq    = p.matriculas.filter(m => !mapa.has(m));
       const enriquecidos = p.matriculas
@@ -233,7 +236,7 @@ export function ImportarPontoContent() {
     if (!parsed || !competencia) return;
     setCarregando('Apagando competência anterior...'); setErro('');
     try {
-      await deletarCompetenciaPonto(competencia);
+      await deletarCompetenciaPonto(competencia, token);
 
       // Map rápido a partir dos enriquecidos (já calculado na análise)
       const enriquecidosMap = new Map(join.enriquecidos.map(e => [e.matricula, e]));
@@ -241,12 +244,12 @@ export function ImportarPontoContent() {
       setCarregando('Importando ocorrências em previas_frequencia...');
       setProgresso({ v: 0, t: parsed.tipo1.length });
       const nMarcacoes = await inserirMarcacoes(
-        parsed.tipo1, competencia, arquivo.name, enriquecidosMap,
+        parsed.tipo1, competencia, arquivo.name, enriquecidosMap, token,
         (v, t) => setProgresso({ v, t }),
       );
 
       setCarregando('Publicando resumos por secretaria...');
-      const nPublicadas = await publicarResumosPorSecretaria(parsed.tipo1, competencia, enriquecidosMap);
+      const nPublicadas = await publicarResumosPorSecretaria(parsed.tipo1, competencia, enriquecidosMap, token);
 
       setResultado({
         competencia, arquivo: arquivo.name,

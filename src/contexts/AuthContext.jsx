@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
     if (!data || data.length === 0) throw new Error('Usuário ou senha inválidos');
 
     const user = data[0];
-    const s = { id: user.id, nome: user.nome, username: user.username, role: user.role };
+    const s = { id: user.id, nome: user.nome, username: user.username, role: user.role, token: user.token };
     setSessao(s);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
     return s;

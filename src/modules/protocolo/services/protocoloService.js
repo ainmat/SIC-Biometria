@@ -2,6 +2,15 @@ import { supabase } from '@/lib/supabase';
 
 const STORAGE_KEY = 'sic_biometria_protocolos';
 
+function obterToken() {
+  try {
+    const s = sessionStorage.getItem('sic_sessao');
+    return s ? JSON.parse(s)?.token : null;
+  } catch {
+    return null;
+  }
+}
+
 // Dados simulados iniciais para quando o Supabase não tiver a tabela
 const MOCK_PROTOCOLOS = [
   {
@@ -180,11 +189,11 @@ export async function criarProtocolo(novo) {
   };
 
   try {
-    const { data, error } = await supabase
-      .from('protocolo_digital')
-      .insert([{ ...protocoloParaSalvar, numero_protocolo }])
-      .select()
-      .single();
+    const token = obterToken();
+    const { data, error } = await supabase.rpc('criar_protocolo_rpc', {
+      p_token: token,
+      p_protocolo: { ...protocoloParaSalvar, numero_protocolo }
+    });
 
     if (error) {
       throw error;
@@ -231,16 +240,13 @@ export async function atualizarStatusProtocolo(id, status, observacao, operador 
   }
 
   try {
-    const { data, error } = await supabase
-      .from('protocolo_digital')
-      .update({
-        status,
-        historico_tramitacao: novoHistorico,
-        updated_at: now
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    const token = obterToken();
+    const { data, error } = await supabase.rpc('atualizar_status_protocolo_rpc', {
+      p_token: token,
+      p_id: Number(id),
+      p_status: status,
+      p_historico: novoHistorico
+    });
 
     if (error) throw error;
     return { data, isMock: false };
@@ -277,12 +283,12 @@ export async function atualizarProtocolo(id, campos) {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('protocolo_digital')
-      .update(params)
-      .eq('id', id)
-      .select()
-      .single();
+    const token = obterToken();
+    const { data, error } = await supabase.rpc('atualizar_protocolo_rpc', {
+      p_token: token,
+      p_id: Number(id),
+      p_campos: campos
+    });
 
     if (error) throw error;
     return { data, isMock: false };
@@ -314,21 +320,19 @@ export async function importarProtocolos(lista) {
     });
 
     // 3. Atualizar ausentes para "Concluído" no Supabase
+    const token = obterToken();
     if (ausentes.length > 0) {
       for (const p of ausentes) {
         const novoHistorico = [
           ...(p.historico_tramitacao || []),
           { data: now, status: 'Concluído', observacao: 'Concluído por ausência na listagem (puxado para a mesa de trabalho).' }
         ];
-        const { error: updateErr } = await supabase
-          .from('protocolo_digital')
-          .update({
-            status: 'Concluído',
-            historico_tramitacao: novoHistorico,
-            data_conclusao: hojeData,
-            updated_at: now
-          })
-          .eq('id', p.id);
+        const { error: updateErr } = await supabase.rpc('atualizar_status_protocolo_rpc', {
+          p_token: token,
+          p_id: p.id,
+          p_status: 'Concluído',
+          p_historico: novoHistorico
+        });
 
         if (updateErr) {
           throw updateErr;
@@ -375,14 +379,14 @@ export async function importarProtocolos(lista) {
     });
 
     // Executa o upsert no Supabase
-    const { data: upsertedData, error: upsertErr } = await supabase
-      .from('protocolo_digital')
-      .upsert(paraUpsert, { onConflict: 'numero_protocolo' })
-      .select();
+    const { data: upsertedData, error: upsertErr } = await supabase.rpc('importar_protocolos_rpc', {
+      p_token: token,
+      p_rows: paraUpsert
+    });
 
     if (upsertErr) throw upsertErr;
 
-    return { data: upsertedData || [], count: paraUpsert.length, isMock: false };
+    return { data: paraUpsert, count: paraUpsert.length, isMock: false };
 
   } catch (err) {
     console.warn("Erro ao tentar salvar no Supabase (desviando para LocalStorage):", err);

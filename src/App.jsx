@@ -34,6 +34,7 @@ import DescompassoEscolaridade from '@/modules/servidores/pages/DescompassoEscol
 import PerfilQuadro          from '@/modules/servidores/pages/PerfilQuadro';
 import IndiceSaude           from '@/modules/servidores/pages/IndiceSaude';
 import SimuladorCenarios     from '@/modules/servidores/pages/SimuladorCenarios';
+import SentinelJornada       from '@/modules/servidores/pages/SentinelJornada';
 
 // Protocolo Digital
 import PainelProtocolo       from '@/modules/protocolo/pages/PainelProtocolo';
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="ondas"         element={<Navigate to="/servidores/perfil" replace />} />
           <Route path="saude"         element={<IndiceSaude />} />
           <Route path="simulador"     element={<SimuladorCenarios />} />
+          <Route path="sentinel"      element={<SentinelJornada />} />
         </Route>
 
         {/* Protocolo Digital */}

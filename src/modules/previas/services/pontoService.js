@@ -29,21 +29,20 @@ function extrairCodigo(codBruto) {
 }
 
 /**
- * Busca todos os servidores de funcionarios_infos → Map<matricula, info>.
+ * Busca os servidores correspondentes às matrículas informadas via RPC server-side.
  */
-export async function fetchMapaServidores() {
-  const campos = 'Matricula,Nome_Funcionario,Des_LocalTrab,Des_Secretaria,SiglaSec,Des_Cargo,Des_Horario';
+export async function fetchMapaServidores(p_matriculas = []) {
+  if (!p_matriculas || p_matriculas.length === 0) return new Map();
   const mapa = new Map();
-  let from = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from('funcionarios_infos')
-      .select(campos)
-      .range(from, from + 999);
+  const CHUNK_SIZE = 1000;
+
+  for (let i = 0; i < p_matriculas.length; i += CHUNK_SIZE) {
+    const chunk = p_matriculas.slice(i, i + CHUNK_SIZE);
+    const { data, error } = await supabase.rpc('get_funcionarios_por_matriculas', {
+      p_matriculas: chunk
+    });
     if (error) throw error;
-    data.forEach(r => mapa.set(String(r.Matricula), r));
-    if (data.length < 1000) break;
-    from += 1000;
+    (data || []).forEach(r => mapa.set(String(r.Matricula), r));
   }
   return mapa;
 }
@@ -60,23 +59,20 @@ export async function verificarImportacaoExistente(competencia) {
 }
 
 /**
- * Remove todos os registros da competência de previas_frequencia e previas_publicadas.
- * ⚠️ Apaga TODAS as secretarias desta competência — só usar no fluxo unificado.
+ * Remove todos os registros da competência usando a RPC protegida por token.
  */
-export async function deletarCompetenciaPonto(competencia) {
-  const [r1, r2] = await Promise.all([
-    supabase.from('previas_frequencia').delete().eq('periodo_referencia', competencia),
-    supabase.from('previas_publicadas').delete().eq('competencia', competencia),
-  ]);
-  if (r1.error) throw r1.error;
-  if (r2.error) throw r2.error;
+export async function deletarCompetenciaPonto(competencia, token) {
+  const { error } = await supabase.rpc('deletar_competencia_ponto_rpc', {
+    p_token: token,
+    p_competencia: competencia,
+  });
+  if (error) throw error;
 }
 
 /**
- * Insere os registros Tipo 1 em previas_frequencia.
- * enriquecidosMap: Map<matricula, { SiglaSec, Des_Secretaria, ... }> — resultado do join.
+ * Insere os registros Tipo 1 usando a RPC em lotes protegida por token.
  */
-export async function inserirMarcacoes(tipo1, competencia, _arquivoOrigem, enriquecidosMap, onProgress) {
+export async function inserirMarcacoes(tipo1, competencia, _arquivoOrigem, enriquecidosMap, token, onProgress) {
   const rows = tipo1
     .filter(r => enriquecidosMap.get(r.matricula)?.SiglaSec)
     .map(r => {
@@ -90,14 +86,25 @@ export async function inserirMarcacoes(tipo1, competencia, _arquivoOrigem, enriq
         percentual_desconto: 0,
       };
     });
-  return batchInsert('previas_frequencia', rows, onProgress);
+
+  let inseridos = 0;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const batch = rows.slice(i, i + CHUNK);
+    const { data, error } = await supabase.rpc('inserir_marcacoes_batch_rpc', {
+      p_token: token,
+      p_rows: batch
+    });
+    if (error) throw error;
+    inseridos += data;
+    onProgress?.(inseridos, rows.length);
+  }
+  return inseridos;
 }
 
 /**
- * Calcula e grava resumos por secretaria em previas_publicadas.
- * Chamado após inserirMarcacoes para que o Histórico e o BI reflitam os dados.
+ * Calcula e grava resumos por secretaria usando a RPC consolidada protegida por token.
  */
-export async function publicarResumosPorSecretaria(tipo1, competencia, enriquecidosMap) {
+export async function publicarResumosPorSecretaria(tipo1, competencia, enriquecidosMap, token) {
   const secStats = {};
 
   tipo1.forEach(r => {
@@ -120,24 +127,21 @@ export async function publicarResumosPorSecretaria(tipo1, competencia, enriqueci
     if (cod === '335') s.atrasos++;
   });
 
-  for (const s of Object.values(secStats)) {
-    const { error } = await supabase
-      .from('previas_publicadas')
-      .upsert({
-        secretaria_codigo:        s.secretaria_codigo,
-        competencia,
-        secretaria_nome:          s.secretaria_nome,
-        total_ocorrencias:        s.ocorrencias,
-        total_faltas:             s.faltas,
-        total_atrasos:            s.atrasos,
-        servidores_impactados:    s.matriculas.size,
-        total_desconto_acumulado: 0,
-        media_desconto:           0,
-        z_score:                  null,
-        classificacao_alerta:     'sem_historico',
-      }, { onConflict: 'secretaria_codigo,competencia' });
-    if (error) throw error;
-  }
+  const rows = Object.values(secStats).map(s => ({
+    secretaria_codigo:     s.secretaria_codigo,
+    secretaria_nome:       s.secretaria_nome,
+    total_ocorrencias:     s.ocorrencias,
+    total_faltas:          s.faltas,
+    total_atrasos:         s.atrasos,
+    servidores_impactados: s.matriculas.size,
+  }));
 
-  return Object.keys(secStats).length;
+  const { data, error } = await supabase.rpc('publicar_resumos_ponto_rpc', {
+    p_token: token,
+    p_competencia: competencia,
+    p_rows: rows
+  });
+  if (error) throw error;
+
+  return data;
 }

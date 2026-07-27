@@ -3,17 +3,18 @@ import { supabase } from '@/lib/supabase';
 const BATCH = 100;
 const MAX_ROWS = 100000;
 
-export async function upsertFolha(registros, onProgress) {
+export async function upsertFolha(registros, token, onProgress) {
   let processados = 0;
 
   for (let i = 0; i < registros.length; i += BATCH) {
     const lote = registros.slice(i, i + BATCH);
-    const { error } = await supabase
-      .from('folha_previas')
-      .upsert(lote, { onConflict: 'competencia,matricula' });
+    const { data, error } = await supabase.rpc('inserir_folha_batch_rpc', {
+      p_token: token,
+      p_rows:  lote,
+    });
     if (error) throw error;
 
-    processados += lote.length;
+    processados += data;
     onProgress && onProgress(Math.round((processados / registros.length) * 100));
 
     await new Promise(r => setTimeout(r, 0));
@@ -225,11 +226,11 @@ export async function listarFolhasImportadas() {
     .sort((a, b) => b.competencia.localeCompare(a.competencia));
 }
 
-export async function deletarFolha(competencia) {
-  const { error } = await supabase
-    .from('folha_previas')
-    .delete()
-    .eq('competencia', competencia);
+export async function deletarFolha(competencia, token) {
+  const { error } = await supabase.rpc('deletar_folha_rpc', {
+    p_token: token,
+    p_competencia: competencia,
+  });
   if (error) throw error;
 }
 

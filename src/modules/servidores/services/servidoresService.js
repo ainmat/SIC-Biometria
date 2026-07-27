@@ -5,6 +5,7 @@ const COLS_RESUMO = [
   'Des_RegTrab','Des_CategSefip','Des_Padrao_Adm',
   'Des_Secretaria','SiglaSec','DtAdmissao','DtNomeacao',
   'Idade','Tempo_Contrato_Anos','Des_Cargo','Des_LocalTrab',
+  'Des_Horario',
 ].join(',');
 
 const COLS_LISTA = [
