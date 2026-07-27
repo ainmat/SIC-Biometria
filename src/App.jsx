@@ -35,6 +35,11 @@ import PerfilQuadro          from '@/modules/servidores/pages/PerfilQuadro';
 import IndiceSaude           from '@/modules/servidores/pages/IndiceSaude';
 import SimuladorCenarios     from '@/modules/servidores/pages/SimuladorCenarios';
 
+// Protocolo Digital
+import PainelProtocolo       from '@/modules/protocolo/pages/PainelProtocolo';
+import ConsultaProtocolo     from '@/modules/protocolo/pages/ConsultaProtocolo';
+import NovoProtocolo         from '@/modules/protocolo/pages/NovoProtocolo';
+
 function RequireAuth({ children }) {
   const { isLoggedIn } = useAuth();
   return isLoggedIn ? children : <Navigate to="/login" replace />;
@@ -98,6 +103,14 @@ export default function App() {
           <Route path="ondas"         element={<Navigate to="/servidores/perfil" replace />} />
           <Route path="saude"         element={<IndiceSaude />} />
           <Route path="simulador"     element={<SimuladorCenarios />} />
+        </Route>
+
+        {/* Protocolo Digital */}
+        <Route path="protocolos">
+          <Route index element={<Navigate to="painel" replace />} />
+          <Route path="painel" element={<PainelProtocolo />} />
+          <Route path="consulta" element={<ConsultaProtocolo />} />
+          <Route path="novo" element={<NovoProtocolo />} />
         </Route>
 
         {/* Administração */}

@@ -391,6 +391,42 @@ const NAV = [
     ],
   },
   {
+    section: 'Protocolo Digital',
+    items: [
+      {
+        to: '/protocolos/painel',
+        label: 'Painel',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        ),
+      },
+      {
+        to: '/protocolos/consulta',
+        label: 'Consulta',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        ),
+      },
+      {
+        to: '/protocolos/novo',
+        label: 'Novo Protocolo',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
     section: 'Sistema',
     items: [
       {
