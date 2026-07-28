@@ -45,6 +45,12 @@ function formatarData(isoStr) {
 
 function formatarDataSimples(isoStr) {
   if (!isoStr) return '—';
+  // Datas no formato YYYY-MM-DD são interpretadas como UTC meia-noite pelo new Date(),
+  // o que em GMT-3 mostra o dia anterior. Parseamos manualmente para evitar isso.
+  if (typeof isoStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoStr)) {
+    const [ano, mes, dia] = isoStr.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
   const d = new Date(isoStr);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
@@ -601,7 +607,9 @@ export default function ConsultaProtocolo() {
                     if (!p.data_conclusao || p.status === 'Concluído') return false;
                     const hoje = new Date();
                     hoje.setHours(0, 0, 0, 0);
-                    const conclusao = new Date(p.data_conclusao);
+                    // Parsear data sem timezone shift
+                    const parts = p.data_conclusao.split('-');
+                    const conclusao = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
                     conclusao.setHours(0, 0, 0, 0);
                     return conclusao < hoje;
                   };

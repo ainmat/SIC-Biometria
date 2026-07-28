@@ -424,7 +424,11 @@ BEGIN
     status = p_status,
     historico_tramitacao = p_historico,
     updated_at = NOW(),
-    data_conclusao = CASE WHEN p_status = 'Concluído' THEN CURRENT_DATE ELSE data_conclusao END
+    data_conclusao = CASE 
+      WHEN p_status = 'Concluído' AND data_conclusao IS NOT NULL THEN data_conclusao
+      WHEN p_status = 'Concluído' AND data_conclusao IS NULL THEN CURRENT_DATE
+      ELSE NULL
+    END
   WHERE id = p_id;
 
   SELECT to_jsonb(pd) INTO v_res FROM protocolo_digital pd WHERE pd.id = p_id;
@@ -461,6 +465,10 @@ BEGIN
     prazo_estimado = CASE WHEN (p_campos->>'prazo_estimado') IS NOT NULL 
                           THEN (p_campos->>'prazo_estimado')::DATE 
                           ELSE prazo_estimado 
+                     END,
+    data_conclusao = CASE WHEN p_campos ? 'data_conclusao' 
+                          THEN (p_campos->>'data_conclusao')::DATE 
+                          ELSE data_conclusao 
                      END,
     updated_at = NOW()
   WHERE id = p_id;

@@ -233,6 +233,14 @@ export async function atualizarStatusProtocolo(id, status, observacao, operador 
     if (idx !== -1) {
       localData[idx].status = status;
       localData[idx].historico_tramitacao = novoHistorico;
+      // Lógica de data_conclusao: preservar data existente, ou usar hoje como padrão
+      if (status === 'Concluído') {
+        if (!localData[idx].data_conclusao) {
+          localData[idx].data_conclusao = now.split('T')[0];
+        }
+      } else {
+        localData[idx].data_conclusao = null;
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(localData));
       return { data: localData[idx], isMock: true };
     }
