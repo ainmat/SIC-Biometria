@@ -9,6 +9,8 @@ import {
 import { supabase } from '@/lib/supabase';
 import { COR_MOT, COR_SEC } from '@/lib/constants';
 import { contarPor } from '@/lib/utils';
+import { TrendingUp, BarChart2, Building2, AlertTriangle, Layers, Activity } from 'lucide-react';
+import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -33,18 +35,18 @@ function agruparPorDiaSemana(dados) {
   return dias.map((dia, i) => ({ dia, count: contagem[i] }));
 }
 
-const CHART_DEFAULTS = {
-  backgroundColor: 'rgba(17, 24, 39, 0.95)',
-  titleColor: '#f1f5f9',
-  bodyColor: '#94a3b8',
-  borderColor: 'rgba(59, 130, 246, 0.3)',
-  borderWidth: 1,
-  padding: 12,
-};
-
 export default function AnaliseTendencias() {
   const [dados, setDados] = useState([]);
   const [status, setStatus] = useState('Carregando...');
+
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    window.addEventListener('themechange', handleTheme);
+    return () => window.removeEventListener('themechange', handleTheme);
+  }, []);
+
+  const t = useDashboardTheme(isDark);
 
   const carregar = useCallback(async () => {
     try {
@@ -83,9 +85,12 @@ export default function AnaliseTendencias() {
 
   const motivos = contarPor(dados, 'motivo');
   const motivoPrincipal = motivos[0];
-
   const secE = contarPor(dados, 'secretaria').slice(0, 10);
   const semana = agruparPorDiaSemana(dados);
+  const maxSec = secE[0]?.[1] || 1;
+
+  const tooltip = chartTooltipStyle(isDark);
+  const scales  = chartScaleOpts(isDark);
 
   // Chart: Mensal
   const chartMensalData = {
@@ -96,23 +101,23 @@ export default function AnaliseTendencias() {
     datasets: [{
       label: 'Chamados',
       data: mensal.map(([, c]) => c),
-      borderColor: '#3b82f6',
-      backgroundColor: 'rgba(59,130,246,.08)',
+      borderColor: '#0D7C3D',
+      backgroundColor: isDark ? 'rgba(13,124,61,0.15)' : 'rgba(13,124,61,0.08)',
       fill: true,
-      tension: 0.4,
-      pointBackgroundColor: '#3b82f6',
-      pointRadius: 3,
+      tension: 0.45,
+      pointBackgroundColor: '#0D7C3D',
+      pointBorderColor: isDark ? '#0f172a' : '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
     }],
   };
 
   const chartMensalOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: CHART_DEFAULTS },
-    scales: {
-      x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' } },
-      y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' }, beginAtZero: true },
-    },
+    plugins: { legend: { display: false }, tooltip },
+    scales,
   };
 
   // Chart: Dia da semana
@@ -121,22 +126,25 @@ export default function AnaliseTendencias() {
     datasets: [{
       label: 'Chamados',
       data: semana.map((s) => s.count),
-      backgroundColor: semana.map((_, i) => i === 5 ? '#ef4444' : 'rgba(59,130,246,.7)'),
-      borderRadius: 4,
+      backgroundColor: semana.map((_, i) =>
+        i === 5 ? 'rgba(239,68,68,0.75)' : (isDark ? 'rgba(13,124,61,0.75)' : 'rgba(13,124,61,0.65)')
+      ),
+      borderColor: semana.map((_, i) => i === 5 ? '#ef4444' : '#0D7C3D'),
+      borderWidth: 1,
+      borderRadius: 6,
+      borderSkipped: false,
     }],
   };
 
   const chartSemanaOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: CHART_DEFAULTS },
+    plugins: { legend: { display: false }, tooltip },
     scales: {
-      x: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { display: false } },
-      y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' }, beginAtZero: true },
+      ...scales,
+      x: { ...scales.x, grid: { display: false } },
     },
   };
-
-  const maxSec = secE[0]?.[1] || 1;
 
   return (
     <div>
@@ -152,97 +160,95 @@ export default function AnaliseTendencias() {
       </div>
 
       <div className="content">
-        {/* KPIs */}
-        <div className="kpi-grid" style={{ marginBottom: 24 }}>
-          <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#3b82f6' }} />
-            <div className="kpi-label">Total de Chamados</div>
-            <div className="kpi-value" style={{ color: '#60a5fa' }}>{dados.length}</div>
-            <div className="kpi-footer">
-              <span className="kpi-tag tag-blue">Todos os períodos</span>
-            </div>
-          </div>
-
-          <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: crescimento >= 0 ? '#ef4444' : '#10b981' }} />
-            <div className="kpi-label">Crescimento (trimestre)</div>
-            <div className="kpi-value" style={{ color: crescimento >= 0 ? '#f87171' : '#34d399', fontSize: 28 }}>
-              {crescimento >= 0 ? '+' : ''}{crescimento}%
-            </div>
-            <div className="kpi-footer">
-              <span className={`kpi-tag ${crescimento >= 0 ? 'tag-red' : 'tag-blue'}`}>
-                vs trimestre anterior
-              </span>
-            </div>
-          </div>
-
-          <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#f59e0b' }} />
-            <div className="kpi-label">Principal Motivo</div>
-            <div className="kpi-value" style={{ color: '#fbbf24', fontSize: 16, paddingTop: 10 }}>
-              {motivoPrincipal?.[0] || '—'}
-            </div>
-            <div className="kpi-footer">
-              <span className="kpi-tag tag-amber">
-                {motivoPrincipal ? `${motivoPrincipal[1]} chamados` : '0 chamados'}
-              </span>
-            </div>
-          </div>
+        {/* KPIs — novo estilo Efferd */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16, marginBottom: 24 }}>
+          <KpiCard
+            label="Total de Chamados"
+            value={dados.length.toLocaleString('pt-BR')}
+            sub="Todos os períodos"
+            cor="#0D7C3D"
+            icon={<Activity />}
+            isDark={isDark}
+          />
+          <KpiCard
+            label="Crescimento Trimestral"
+            value={`${crescimento >= 0 ? '+' : ''}${crescimento}%`}
+            sub="vs trimestre anterior"
+            cor={crescimento >= 0 ? '#ef4444' : '#10b981'}
+            icon={crescimento >= 0 ? <AlertTriangle /> : <TrendingUp />}
+            trend={crescimento >= 0 ? 'up' : 'down'}
+            trendLabel={`${Math.abs(crescimento)}%`}
+            isDark={isDark}
+          />
+          <KpiCard
+            label="Principal Motivo"
+            value={motivoPrincipal?.[0] || '—'}
+            sub={motivoPrincipal ? `${motivoPrincipal[1]} chamados` : '0 chamados'}
+            cor="#f59e0b"
+            icon={<Layers />}
+            isDark={isDark}
+          />
         </div>
 
         {/* Charts */}
-        <div className="charts-row" style={{ marginBottom: 24 }}>
-          <div className="chart-card">
-            <div className="chart-header">
-              <div>
-                <div className="chart-title">Evolução Mensal</div>
-                <div className="chart-sub">Volume de chamados por mês</div>
-              </div>
-              <div className="chart-badge">{mensal.length} meses</div>
-            </div>
-            <div style={{ height: 220 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <ChartCard
+            title="Evolução Mensal"
+            subtitle="Volume de chamados por mês"
+            badge={`${mensal.length} meses`}
+            icon={<TrendingUp />}
+            isDark={isDark}
+          >
+            <div style={{ height: 240 }}>
               {mensal.length > 0 && <Line data={chartMensalData} options={chartMensalOptions} />}
             </div>
-          </div>
+          </ChartCard>
 
-          <div className="chart-card">
-            <div className="chart-header">
-              <div>
-                <div className="chart-title">Distribuição por Dia da Semana</div>
-                <div className="chart-sub">Padrão de abertura de chamados</div>
-              </div>
-            </div>
-            <div style={{ height: 220 }}>
+          <ChartCard
+            title="Distribuição por Dia da Semana"
+            subtitle="Padrão de abertura de chamados"
+            icon={<BarChart2 />}
+            isDark={isDark}
+          >
+            <div style={{ height: 240 }}>
               {dados.length > 0 && <Bar data={chartSemanaData} options={chartSemanaOptions} />}
             </div>
-          </div>
+          </ChartCard>
         </div>
 
-        {/* Secretarias ranking */}
-        <div className="chart-card">
-          <div className="chart-header" style={{ marginBottom: 16 }}>
-            <div>
-              <div className="chart-title">Ranking de Secretarias</div>
-              <div className="chart-sub">Top 10 por volume de chamados</div>
-            </div>
-            <div className="chart-badge">{dados.length} total</div>
-          </div>
+        {/* Ranking de Secretarias */}
+        <ChartCard
+          title="Ranking de Secretarias"
+          subtitle="Top 10 por volume de chamados"
+          badge={`${dados.length} total`}
+          icon={<Building2 />}
+          isDark={isDark}
+        >
           <div className="hbar-list">
             {secE.map(([l, v]) => {
               const pct = Math.round((v / maxSec) * 100);
               const cor = COR_SEC[l] || '#64748b';
               return (
-                <div key={l} className="hbar-row">
-                  <div className="hbar-label">{l}</div>
-                  <div className="hbar-track">
-                    <div className="hbar-fill" style={{ width: `${pct}%`, background: cor }} />
+                <div key={l} className="hbar-row" style={{ alignItems: 'center' }}>
+                  <div className="hbar-label" style={{ color: t.text }}>{l}</div>
+                  <div
+                    className="hbar-track"
+                    style={{
+                      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+                      borderRadius: 6, overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      className="hbar-fill"
+                      style={{ width: `${pct}%`, background: cor, borderRadius: 6 }}
+                    />
                   </div>
-                  <div className="hbar-val">{v}</div>
+                  <div className="hbar-val" style={{ color: t.muted, fontFamily: 'monospace' }}>{v}</div>
                 </div>
               );
             })}
           </div>
-        </div>
+        </ChartCard>
       </div>
     </div>
   );

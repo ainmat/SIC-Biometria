@@ -201,16 +201,16 @@ export function analyzeCompliance(sched, s = {}) {
 }
 
 const inputSt = {
-  background: 'rgba(255,255,255,.06)',
-  border: '1px solid rgba(255,255,255,.1)', borderRadius: 7,
-  padding: '7px 10px', color: '#f1f5f9', fontSize: 12,
+  background: 'rgba(0, 0, 0, 0.04)',
+  border: '1px solid rgba(0, 0, 0, 0.06)', borderRadius: 7,
+  padding: '7px 10px', color: 'var(--text)', fontSize: 12,
   outline: 'none',
 };
 
 const SEVERITY_COLORS = {
   critica: '#ef4444',
   grave: '#f97316',
-  moderada: '#fbbf24',
+  moderada: '#b45309',
 };
 
 const SEVERITY_LABELS = {
@@ -362,43 +362,43 @@ export default function SentinelJornada() {
       </div>
 
       <div className="content">
-        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: '#475569', fontSize: 14 }}>Carregando dados dos servidores...</div>}
-        {erro && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted-c)', fontSize: 14 }}>Carregando dados dos servidores...</div>}
+        {erro && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {!loading && !erro && dados.length > 0 && (
           <>
             {/* KPIs */}
             <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderTop: '3px solid #6366f1' }}>
-                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Servidores Analisados</div>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#f8fafc' }}>{fmt(stats.total)}</div>
-                <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>100% da folha cadastrada</div>
+              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderTop: '3px solid #0D7C3D' }}>
+                <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Servidores Analisados</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)' }}>{fmt(stats.total)}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>100% da folha cadastrada</div>
               </div>
-              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderTop: '3px solid #a855f7' }}>
+              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderTop: '3px solid #a855f7' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
                   <Clock size={14} color="#a855f7" />
-                  <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Horários Previstos</span>
+                  <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Horários Previstos</span>
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 800, color: '#c084fc' }}>{fmt(stats.totalHorariosDistintos)}</div>
-                <div style={{ fontSize: 11, color: '#475569', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={`Mais popular: ${stats.topHorarioMaisPopular.horario} (${fmt(stats.topHorarioMaisPopular.count)} servidores)`}>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={`Mais popular: ${stats.topHorarioMaisPopular.horario} (${fmt(stats.topHorarioMaisPopular.count)} servidores)`}>
                   Mais popular: <b>{stats.topHorarioMaisPopular.horario}</b> ({fmt(stats.topHorarioMaisPopular.count)} serv.)
                 </div>
               </div>
-              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderTop: '3px solid #10b981' }}>
+              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderTop: '3px solid #10b981' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
                   <ShieldCheck size={14} color="#10b981" />
-                  <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Em Conformidade</span>
+                  <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Em Conformidade</span>
                 </div>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#34d399' }}>{fmt(stats.conformes)}</div>
-                <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{pct(stats.conformes, stats.total)}% do quadro regular</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#047857' }}>{fmt(stats.conformes)}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>{pct(stats.conformes, stats.total)}% do quadro regular</div>
               </div>
-              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderTop: '3px solid #ef4444' }}>
+              <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderTop: '3px solid #ef4444' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
                   <ShieldAlert size={14} color="#ef4444" />
-                  <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Alertas de Passivo</span>
+                  <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Alertas de Passivo</span>
                 </div>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#f87171' }}>{fmt(stats.infraCount)}</div>
-                <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{pct(stats.infraCount, stats.total)}% com inconsistência</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#dc2626' }}>{fmt(stats.infraCount)}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>{pct(stats.infraCount, stats.total)}% com inconsistência</div>
               </div>
             </div>
 
@@ -406,38 +406,38 @@ export default function SentinelJornada() {
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 14, marginBottom: 16 }}>
               {/* Gráfico 1: Secretarias mais expostas */}
               <div className="chart-card">
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Top 10 Secretarias por Alertas</div>
-                <div style={{ fontSize: 11, color: '#475569', marginBottom: 14 }}>Número absoluto de escalas inconsistentes em cada pasta</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Top 10 Secretarias por Alertas</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 14 }}>Número absoluto de escalas inconsistentes em cada pasta</div>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={stats.secChart} margin={{ left: 0, right: 10, top: 0, bottom: 0 }}>
                     <XAxis dataKey="sec" tick={{ fill: '#64748b', fontSize: 9 }} tickLine={false} axisLine={false} tickFormatter={v => v.slice(0, 10) + '...'} />
                     <YAxis tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} width={30} />
-                    <Tooltip cursor={{ fill: 'rgba(255,255,255,.03)' }}
+                    <Tooltip cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }}
                       content={({ active, payload }) => {
                         if (!active || !payload?.length) return null;
                         const d = payload[0].payload;
                         return (
-                          <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
-                            <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>{d.sec}</div>
+                          <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
+                            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{d.sec}</div>
                             <div style={{ color: '#ef4444' }}>Crítica: {d.critica}</div>
                             <div style={{ color: '#f97316' }}>Grave: {d.grave}</div>
-                            <div style={{ color: '#fbbf24' }}>Moderada: {d.moderada}</div>
-                            <div style={{ fontWeight: 700, marginTop: 6, color: '#a5b4fc' }}>Total: {d.count}</div>
+                            <div style={{ color: '#b45309' }}>Moderada: {d.moderada}</div>
+                            <div style={{ fontWeight: 700, marginTop: 6, color: '#15A050' }}>Total: {d.count}</div>
                           </div>
                         );
                       }}
                     />
                     <Bar dataKey="critica" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="grave" stackId="a" fill="#f97316" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="moderada" stackId="a" fill="#fbbf24" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="moderada" stackId="a" fill="#b45309" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
               {/* Gráfico 2: Distribuição por Severidade */}
               <div className="chart-card">
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Gravidade dos Alertas</div>
-                <div style={{ fontSize: 11, color: '#475569', marginBottom: 14 }}>Classificação das jornadas irregulares</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Gravidade dos Alertas</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 14 }}>Classificação das jornadas irregulares</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 180 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -455,7 +455,7 @@ export default function SentinelJornada() {
                         ))}
                       </Pie>
                       <Tooltip formatter={v => [fmt(v), 'Servidores']} />
-                      <Legend formatter={v => <span style={{ fontSize: 11, color: '#94a3b8' }}>{v}</span>} />
+                      <Legend formatter={v => <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{v}</span>} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -466,23 +466,23 @@ export default function SentinelJornada() {
             <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: 14, marginBottom: 16 }}>
               {/* Gráfico 3: Top 5 Horários mais populares */}
               <div className="chart-card">
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Top 5 Horários Mais Utilizados</div>
-                <div style={{ fontSize: 11, color: '#475569', marginBottom: 14 }}>Escalas planejadas com maior número de servidores vinculados</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Top 5 Horários Mais Utilizados</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 14 }}>Escalas planejadas com maior número de servidores vinculados</div>
                 <div style={{ height: 200 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={stats.top5Horarios} layout="vertical" margin={{ left: 10, right: 30, top: 0, bottom: 0 }}>
                       <XAxis type="number" tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
                       <YAxis dataKey="horario" type="category" tick={{ fill: '#64748b', fontSize: 9 }} tickLine={false} axisLine={false} width={120} />
                       <Tooltip 
-                        cursor={{ fill: 'rgba(255,255,255,.03)' }} 
-                        contentStyle={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, padding: '8px 12px' }}
-                        itemStyle={{ color: '#a5b4fc', fontSize: 12 }}
-                        labelStyle={{ color: '#f1f5f9', fontSize: 12, fontWeight: 700, marginBottom: 4 }}
+                        cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} 
+                        contentStyle={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 8, padding: '8px 12px' }}
+                        itemStyle={{ color: '#15A050', fontSize: 12 }}
+                        labelStyle={{ color: 'var(--text)', fontSize: 12, fontWeight: 700, marginBottom: 4 }}
                         formatter={v => [fmt(v), 'Servidores']} 
                       />
                       <Bar dataKey="count" fill="#818cf8" radius={[0, 4, 4, 0]} barSize={18}>
                         {stats.top5Horarios.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'][index % 5]} />
+                          <Cell key={`cell-${index}`} fill={['#0D7C3D', '#0D7C3D', '#a855f7', '#d946ef', '#ec4899'][index % 5]} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -492,23 +492,23 @@ export default function SentinelJornada() {
 
               {/* Tabela/Lista de Popularidade de Escalas */}
               <div className="chart-card">
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Ranking Geral de Escalas (Top 10)</div>
-                <div style={{ fontSize: 11, color: '#475569', marginBottom: 12 }}>Distribuição total de servidores por escala prevista no cadastro</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Ranking Geral de Escalas (Top 10)</div>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 12 }}>Distribuição total de servidores por escala prevista no cadastro</div>
                 <div style={{ overflowY: 'auto', maxHeight: 200, paddingRight: 4 }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                     <thead>
-                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,.06)', background: 'rgba(0,0,0,.15)' }}>
-                        <th style={{ padding: '6px 8px', color: '#64748b', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }}>Pos.</th>
-                        <th style={{ padding: '6px 8px', color: '#64748b', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }}>Horário Previsto</th>
-                        <th style={{ padding: '6px 8px', color: '#64748b', textAlign: 'right', fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }}>Servidores</th>
+                      <tr style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.04)', background: 'rgba(0,0,0,.15)' }}>
+                        <th style={{ padding: '6px 8px', color: 'var(--muted-c)', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }}>Pos.</th>
+                        <th style={{ padding: '6px 8px', color: 'var(--muted-c)', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }}>Horário Previsto</th>
+                        <th style={{ padding: '6px 8px', color: 'var(--muted-c)', textAlign: 'right', fontWeight: 700, fontSize: 10, textTransform: 'uppercase' }}>Servidores</th>
                       </tr>
                     </thead>
                     <tbody>
                       {stats.horariosOrdenados.slice(0, 10).map((h, i) => (
-                        <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,.03)' }}>
-                          <td style={{ padding: '6px 8px', color: i === 0 ? '#fbbf24' : '#64748b', fontWeight: 700 }}>#{i + 1}</td>
-                          <td style={{ padding: '6px 8px', color: '#f1f5f9', fontWeight: 600 }}>{h.horario}</td>
-                          <td style={{ padding: '6px 8px', color: '#a5b4fc', textAlign: 'right', fontWeight: 700 }}>{fmt(h.count)}</td>
+                        <tr key={i} style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}>
+                          <td style={{ padding: '6px 8px', color: i === 0 ? '#b45309' : '#64748b', fontWeight: 700 }}>#{i + 1}</td>
+                          <td style={{ padding: '6px 8px', color: 'var(--text)', fontWeight: 600 }}>{h.horario}</td>
+                          <td style={{ padding: '6px 8px', color: '#15A050', textAlign: 'right', fontWeight: 700 }}>{fmt(h.count)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -521,23 +521,23 @@ export default function SentinelJornada() {
             <div className="chart-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Listagem de Irregularidades Detectadas</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>Visualização de todas as escalas fora da conformidade legal</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Listagem de Irregularidades Detectadas</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>Visualização de todas as escalas fora da conformidade legal</div>
                 </div>
-                <span style={{ fontSize: 11, background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.2)', padding: '4px 10px', borderRadius: 6, color: '#f87171', fontWeight: 600 }}>
+                <span style={{ fontSize: 11, background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.2)', padding: '4px 10px', borderRadius: 6, color: '#dc2626', fontWeight: 600 }}>
                   {fmt(filtrados.length)} pendência(s) encontrada(s)
                 </span>
               </div>
 
               {/* Filtros da tabela */}
               <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 7, padding: '0 10px', flex: 1, minWidth: 200 }}>
+                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)', borderRadius: 7, padding: '0 10px', flex: 1, minWidth: 200 }}>
                   <Search size={14} color="#64748b" style={{ marginRight: 8 }} />
                   <input
                     value={busca}
                     onChange={e => setBusca(e.target.value)}
                     placeholder="Buscar por nome, matrícula ou cargo..."
-                    style={{ background: 'none', border: 'none', color: '#f1f5f9', fontSize: 12, outline: 'none', width: '100%', padding: '7px 0' }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text)', fontSize: 12, outline: 'none', width: '100%', padding: '7px 0' }}
                   />
                 </div>
                 <select value={filtroSec} onChange={e => setFiltroSec(e.target.value)} style={{ ...inputSt, minWidth: 160 }}>
@@ -554,7 +554,7 @@ export default function SentinelJornada() {
 
               {/* Tabela de Inconformidades */}
               {filtrados.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#475569' }}>
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted-c)' }}>
                   Nenhuma jornada irregular encontrada com os filtros aplicados.
                 </div>
               ) : (
@@ -563,7 +563,7 @@ export default function SentinelJornada() {
                     <thead>
                       <tr style={{ background: 'rgba(0,0,0,.15)' }}>
                         {['Matrícula', 'Servidor', 'Secretaria', 'Horário Previsto', 'Duração', 'Intervalo', 'Severidade', 'Alertas'].map(h => (
-                          <th key={h} style={{ padding: '10px 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: '#475569', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,.06)' }}>{h}</th>
+                          <th key={h} style={{ padding: '10px 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--muted-c)', textAlign: 'left', borderBottom: '1px solid rgba(0, 0, 0, 0.04)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -575,16 +575,16 @@ export default function SentinelJornada() {
                         const iv = s.parsedHorario?.interval || 0;
 
                         return (
-                          <tr key={s.Matricula} style={{ borderBottom: '1px solid rgba(255,255,255,.03)' }}>
-                            <td style={{ padding: '10px 12px', fontFamily: 'monospace', color: '#a5b4fc', fontWeight: 700 }}>{s.Matricula}</td>
+                          <tr key={s.Matricula} style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}>
+                            <td style={{ padding: '10px 12px', fontFamily: 'monospace', color: '#15A050', fontWeight: 700 }}>{s.Matricula}</td>
                             <td style={{ padding: '10px 12px' }}>
-                              <div style={{ fontWeight: 600, color: '#f1f5f9' }}>{s.Nome_Funcionario}</div>
-                              <div style={{ fontSize: 10, color: '#475569', marginTop: 1 }}>{s.Des_Cargo}</div>
+                              <div style={{ fontWeight: 600, color: 'var(--text)' }}>{s.Nome_Funcionario}</div>
+                              <div style={{ fontSize: 10, color: 'var(--muted-c)', marginTop: 1 }}>{s.Des_Cargo}</div>
                             </td>
-                            <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{s.SiglaSec || s.Des_Secretaria}</td>
-                            <td style={{ padding: '10px 12px', color: '#f1f5f9', fontWeight: 600 }}>{s.Des_Horario}</td>
-                            <td style={{ padding: '10px 12px', color: '#f1f5f9' }}>{dur.toFixed(1)}h</td>
-                            <td style={{ padding: '10px 12px', color: hasInterval ? '#fbbf24' : '#ef4444' }}>
+                            <td style={{ padding: '10px 12px', color: 'var(--muted-c)' }}>{s.SiglaSec || s.Des_Secretaria}</td>
+                            <td style={{ padding: '10px 12px', color: 'var(--text)', fontWeight: 600 }}>{s.Des_Horario}</td>
+                            <td style={{ padding: '10px 12px', color: 'var(--text)' }}>{dur.toFixed(1)}h</td>
+                            <td style={{ padding: '10px 12px', color: hasInterval ? '#b45309' : '#ef4444' }}>
                               {hasInterval ? `${Math.round(iv * 60)} min` : 'Inexistente'}
                             </td>
                             <td style={{ padding: '10px 12px' }}>
@@ -595,7 +595,7 @@ export default function SentinelJornada() {
                             <td style={{ padding: '10px 12px' }}>
                               <button
                                 onClick={() => setModalDetalhe(s)}
-                                style={{ background: 'rgba(99,102,241,.12)', border: '1px solid rgba(99,102,241,.25)', borderRadius: 5, padding: '4px 10px', color: '#a5b4fc', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
+                                style={{ background: 'rgba(13,124,61,.12)', border: '1px solid rgba(13,124,61,.25)', borderRadius: 5, padding: '4px 10px', color: '#15A050', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}
                               >
                                 Ver Detalhes
                               </button>
@@ -623,33 +623,33 @@ export default function SentinelJornada() {
             <div style={{ padding: '20px 24px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Matrícula</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#a5b4fc', fontFamily: 'monospace' }}>{modalDetalhe.Matricula}</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Matrícula</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{modalDetalhe.Matricula}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Vínculo</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9' }}>{modalDetalhe.Des_RegTrab}</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Vínculo</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{modalDetalhe.Des_RegTrab}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Cargo</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9' }}>{modalDetalhe.Des_Cargo}</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Cargo</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{modalDetalhe.Des_Cargo}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Secretaria</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9' }}>{modalDetalhe.Des_Secretaria}</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Secretaria</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{modalDetalhe.Des_Secretaria}</div>
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Escala Prevista</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#f8fafc' }}>{modalDetalhe.Des_Horario}</div>
-                <div style={{ display: 'flex', gap: 14, marginTop: 10, fontSize: 11, color: '#94a3b8' }}>
+              <div style={{ background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Escala Prevista</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{modalDetalhe.Des_Horario}</div>
+                <div style={{ display: 'flex', gap: 14, marginTop: 10, fontSize: 11, color: 'var(--muted-c)' }}>
                   <span>Jornada Total: <b>{modalDetalhe.parsedHorario?.totalDuration.toFixed(1)}h</b></span>
                   <span>Intervalo: <b>{modalDetalhe.parsedHorario?.period2 ? `${modalDetalhe.parsedHorario.interval.toFixed(1)}h` : 'Nenhum'}</b></span>
                 </div>
               </div>
 
-              <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Inconformidades CLT / RJSP ({modalDetalhe.infractions.length})</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Inconformidades CLT / RJSP ({modalDetalhe.infractions.length})</div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
                 {modalDetalhe.infractions.map((inf, idx) => {
@@ -658,10 +658,10 @@ export default function SentinelJornada() {
                     <div key={idx} style={{ display: 'flex', gap: 12, background: 'rgba(0,0,0,.15)', borderLeft: `4px solid ${cor}`, padding: '12px 14px', borderRadius: '0 8px 8px 0' }}>
                       <AlertTriangle size={16} color={cor} style={{ flexShrink: 0, marginTop: 1 }} />
                       <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>
                           {inf.title} <span style={{ fontSize: 9, color: cor, fontWeight: 800, marginLeft: 6 }}>({inf.severity.toUpperCase()})</span>
                         </div>
-                        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 }}>{inf.desc}</div>
+                        <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4, lineHeight: 1.5 }}>{inf.desc}</div>
                       </div>
                     </div>
                   );
@@ -671,7 +671,7 @@ export default function SentinelJornada() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
                 <button
                   onClick={() => setModalDetalhe(null)}
-                  style={{ padding: '8px 18px', borderRadius: 7, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#64748b', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
+                  style={{ padding: '8px 18px', borderRadius: 7, background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}
                 >
                   Fechar
                 </button>

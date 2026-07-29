@@ -38,7 +38,7 @@ function ChamadoModal({ chamado, onClose }) {
         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={() => { onClose(); navigate('/chamado-detalhe', { state: { chamado } }); }}
-            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(59,130,246,.12)', border: '1px solid rgba(59,130,246,.25)', color: '#60a5fa', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
+            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(13,124,61,.12)', border: '1px solid rgba(13,124,61,.25)', color: '#15A050', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
           >
             Ver página completa →
           </button>
@@ -129,14 +129,14 @@ export default function UnidadesMultiplosChamados() {
         {/* KPI */}
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(2,1fr)', marginBottom: 24 }}>
           <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#3b82f6' }} />
+            <div className="kpi-accent" style={{ background: '#0D7C3D' }} />
             <div className="kpi-label">Unidades com múltiplos chamados</div>
-            <div className="kpi-value" style={{ color: '#60a5fa' }}>{unidades.length}</div>
+            <div className="kpi-value" style={{ color: '#15A050' }}>{unidades.length}</div>
           </div>
           <div className="kpi-card">
             <div className="kpi-accent" style={{ background: '#ef4444' }} />
             <div className="kpi-label">Total de chamados nestas unidades</div>
-            <div className="kpi-value" style={{ color: '#f87171' }}>
+            <div className="kpi-value" style={{ color: '#dc2626' }}>
               {unidades.reduce((s, u) => s + u.totalChamados, 0)}
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function UnidadesMultiplosChamados() {
                           const st = c.status || 'Aguardando Atendimento';
                           return (
                             <tr key={c.ticket} className="clickable-row" onClick={() => setModal(c)}>
-                              <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#60a5fa', fontWeight: 600 }}>
+                              <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#15A050', fontWeight: 600 }}>
                                 #{c.ticket}
                               </td>
                               <td style={{ fontSize: 11 }}>{c.motivo}</td>

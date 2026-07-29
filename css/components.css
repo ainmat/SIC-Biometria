@@ -13,7 +13,7 @@
   left: -1px;
   right: -1px;
   bottom: -1px;
-  background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.05));
+  background: linear-gradient(45deg, rgba(13, 124, 61, 0.04), rgba(21, 160, 80, 0.02));
   border-radius: 12px;
   z-index: -1;
   opacity: 0.5;
@@ -27,8 +27,8 @@
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 20% 20%, rgba(13, 124, 61, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(21, 160, 80, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -48,7 +48,7 @@
 }
 
 .chart-card:hover canvas {
-  filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.2));
+  filter: drop-shadow(0 6px 12px rgba(13, 124, 61, 0.1));
   transform: scale(1.02);
 }
 
@@ -56,9 +56,9 @@
 #mot-legend {
   margin-top: 16px;
   padding: 12px;
-  background: rgba(13, 20, 36, 0.6);
+  background: var(--bg);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-c);
   position: relative;
   z-index: 2;
 }
@@ -79,7 +79,7 @@
 .spinner-circle {
   width: 100%;
   height: 100%;
-  border: 2px solid rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(13, 124, 61, 0.2);
   border-top: 2px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -196,7 +196,7 @@
 }
 
 .toast-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.06);
   color: var(--text);
 }
 
@@ -281,7 +281,7 @@
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.06);
   color: var(--text);
 }
 
@@ -316,7 +316,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(13, 124, 61, 0.08);
   border-radius: 8px;
 }
 
@@ -390,7 +390,7 @@
 .filter-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(13, 124, 61, 0.08);
 }
 
 .filter-input::placeholder {
@@ -418,7 +418,7 @@
 }
 
 .virtual-table-header th {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg);
   padding: 12px;
   text-align: left;
   font-weight: 600;
@@ -461,7 +461,7 @@
 }
 
 .virtual-table-row:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .virtual-table-row td {

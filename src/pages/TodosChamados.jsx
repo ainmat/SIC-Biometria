@@ -57,7 +57,7 @@ function ChamadoModal({ chamado, onClose }) {
         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={() => { onClose(); navigate('/chamado-detalhe', { state: { chamado } }); }}
-            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(59,130,246,.12)', border: '1px solid rgba(59,130,246,.25)', color: '#60a5fa', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
+            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(13,124,61,.12)', border: '1px solid rgba(13,124,61,.25)', color: '#15A050', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
           >
             Ver página completa →
           </button>
@@ -191,10 +191,10 @@ export default function TodosChamados() {
                   const cor = COR_SEC[r.secretaria] || '#64748b';
                   return (
                     <tr key={r.ticket} className="clickable-row" onClick={() => setModal(r)}>
-                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, color: '#60a5fa', fontSize: 11 }}>
+                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, color: '#15A050', fontSize: 11 }}>
                         #{r.ticket}
                       </td>
-                      <td style={{ color: '#f1f5f9', fontWeight: 500, fontSize: 11 }}>{r.unidade || 'N/A'}</td>
+                      <td style={{ color: 'var(--text)', fontWeight: 500, fontSize: 11 }}>{r.unidade || 'N/A'}</td>
                       <td style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: `${cor}20`, color: cor, fontWeight: 500 }}>
                           {r.secretaria}

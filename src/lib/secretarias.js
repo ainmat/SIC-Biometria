@@ -24,13 +24,13 @@ export const SECRETARIAS = [
   {
     numero: '56', sigla: 'GP', codigo: 'GP',
     nome: 'Gabinete do Prefeito',
-    cor: '#8b5cf6',
+    cor: '#0D7C3D',
     nomesXLS: ['GABINETE DO PREFEITO'],
   },
   {
     numero: '57', sigla: 'SED', codigo: 'SED',
     nome: 'Secretaria de Educação',
-    cor: '#3b82f6',
+    cor: '#0D7C3D',
     nomesXLS: ['SECRETARIA DE EDUCAÇÃO'],
   },
   {
@@ -72,7 +72,7 @@ export const SECRETARIAS = [
   {
     numero: '66', sigla: 'SEGOV', codigo: 'SEGOV',
     nome: 'Secretaria de Governo',
-    cor: '#6366f1',
+    cor: '#0D7C3D',
     nomesXLS: ['SECRETARIA DE GOVERNO'],
   },
   {
@@ -102,7 +102,7 @@ export const SECRETARIAS = [
   {
     numero: '71', sigla: 'SSO', codigo: 'SSO',
     nome: 'Secretaria de Serviços e Obras',
-    cor: '#fb923c',
+    cor: '#c2410c',
     nomesXLS: ['SECRETARIA DE SERVIÇOS E OBRAS'],
   },
   {
@@ -150,7 +150,7 @@ export const SECRETARIAS = [
   {
     numero: '79', sigla: 'PGM', codigo: 'PGM',
     nome: 'Procuradoria Geral do Município',
-    cor: '#94a3b8',
+    cor: '#64748b',
     nomesXLS: ['PROCURADORIA GERAL DO MUNICÍPIO'],
   },
   {
@@ -168,7 +168,7 @@ export const SECRETARIAS = [
   {
     numero: '84', sigla: 'SETIDE', codigo: 'SETIDE',
     nome: 'Secretaria de Tecnologia, Inovação e Desenvolvimento Econômico',
-    cor: '#34d399',
+    cor: '#047857',
     nomesXLS: ['SECRETARIA DE TECNOLOGIA, INOVAÇÃO E DESENVOLVIMENTO ECONÔMICO'],
   },
 ];

@@ -9,7 +9,7 @@ const fmt = (n) => Math.round(n).toLocaleString('pt-BR');
 const pct = (v, t) => (t > 0 ? ((v / t) * 100).toFixed(1) : '0.0');
 
 const ORDEM_ESCOL = ['Pós-graduação', 'Superior', 'Ensino Médio', 'Fund. / Básico', 'Não informado'];
-const CORES_ESCOL = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#475569'];
+const CORES_ESCOL = ['#0D7C3D', '#0D7C3D', '#10b981', '#f59e0b', '#475569'];
 
 function categoriaEscol(s) {
   if (!s) return 'Não informado';
@@ -30,8 +30,8 @@ function Tooltip_({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   const total = payload.reduce((s, p) => s + (p.value || 0), 0);
   return (
-    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '8px 14px', fontSize: 12 }}>
-      <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>{label}</div>
+    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 10, padding: '8px 14px', fontSize: 12 }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{label}</div>
       {payload.map((p, i) => p.value > 0 && (
         <div key={i} style={{ color: p.fill, marginBottom: 2 }}>
           {p.name}: {fmt(p.value)} ({pct(p.value, total)}%)
@@ -90,33 +90,33 @@ export default function DescompassoEscolaridade() {
       </div>
 
       <div className="content">
-        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: '#475569', fontSize: 14 }}>Carregando...</div>}
-        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted-c)', fontSize: 14 }}>Carregando...</div>}
+        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {!loading && !erro && dados.length > 0 && (
           <>
             {/* KPIs de escolaridade */}
             <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
               {totalPorEscol.map(({ cat, count, pct: p, cor }) => (
-                <div key={cat} style={{ flex: 1, minWidth: 130, padding: '14px 18px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderTop: `3px solid ${cor}` }}>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>{cat}</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: '#f8fafc', fontVariantNumeric: 'tabular-nums' }}>{fmt(count)}</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{p}% do quadro</div>
+                <div key={cat} style={{ flex: 1, minWidth: 130, padding: '14px 18px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderTop: `3px solid ${cor}` }}>
+                  <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>{cat}</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{fmt(count)}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>{p}% do quadro</div>
                 </div>
               ))}
             </div>
 
             {/* Distribuição por padrão */}
             <div className="chart-card" style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Escolaridade por padrão funcional</div>
-              <div style={{ fontSize: 11, color: '#475569', marginBottom: 14 }}>Composição do nível de formação em cada padrão — revela concentração de alta escolaridade em funções rotineiras</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Escolaridade por padrão funcional</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 14 }}>Composição do nível de formação em cada padrão — revela concentração de alta escolaridade em funções rotineiras</div>
 
               {/* Legenda */}
               <div style={{ display: 'flex', gap: 14, marginBottom: 12, flexWrap: 'wrap' }}>
                 {ORDEM_ESCOL.map((cat, i) => (
                   <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 2, background: CORES_ESCOL[i], flexShrink: 0 }} />
-                    <span style={{ fontSize: 10, color: '#64748b' }}>{cat}</span>
+                    <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>{cat}</span>
                   </div>
                 ))}
               </div>
@@ -125,7 +125,7 @@ export default function DescompassoEscolaridade() {
                 <BarChart data={porPadrao} layout="vertical" margin={{ left: 8, right: 20, top: 0, bottom: 0 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="pad" width={180} tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(255,255,255,.04)' }} />
+                  <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
                   {ORDEM_ESCOL.map((cat, i) => (
                     <Bar key={cat} dataKey={cat} name={cat} stackId="a" fill={CORES_ESCOL[i]} maxBarSize={22}
                       radius={i === ORDEM_ESCOL.length - 1 ? [0, 4, 4, 0] : [0, 0, 0, 0]} />
@@ -137,16 +137,16 @@ export default function DescompassoEscolaridade() {
             {/* Links para Diretório */}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {[
-                { to: '/servidores/diretorio', label: 'Potencial subaproveitado', desc: `${fmt(nSub)} servidores com Superior/Pós em cargos efetivos`, cor: '#6366f1' },
+                { to: '/servidores/diretorio', label: 'Potencial subaproveitado', desc: `${fmt(nSub)} servidores com Superior/Pós em cargos efetivos`, cor: '#0D7C3D' },
                 { to: '/servidores/diretorio', label: 'Cargo acima da formação', desc: `${fmt(nAcima)} comissionados com escolaridade até Ensino Médio`, cor: '#f97316' },
               ].map(({ to, label, desc, cor }) => (
                 <Link key={label} to={to} style={{ flex: 1, minWidth: 240, textDecoration: 'none' }}>
-                  <div style={{ padding: '16px 20px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color .15s, background .15s' }}
+                  <div style={{ padding: '16px 20px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color .15s, background .15s' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = `${cor}50`; e.currentTarget.style.background = `${cor}08`; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,.07)'; e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}>
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,.07)'; e.currentTarget.style.background = 'rgba(0,0,0,.02)'; }}>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: cor }}>{label}</div>
-                      <div style={{ fontSize: 11, color: '#475569', marginTop: 3 }}>{desc}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 3 }}>{desc}</div>
                     </div>
                     <span style={{ fontSize: 18, color: cor }}>→</span>
                   </div>

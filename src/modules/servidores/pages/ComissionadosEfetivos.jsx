@@ -15,8 +15,8 @@ function Tooltip_({ active, payload, label }) {
   const co = payload.find(p => p.dataKey === 'comissionados');
   const total = (ef?.value || 0) + (co?.value || 0);
   return (
-    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '8px 14px', fontSize: 12 }}>
-      <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>{label}</div>
+    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 10, padding: '8px 14px', fontSize: 12 }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{label}</div>
       {ef && <div style={{ color: '#10b981', marginBottom: 2 }}>Efetivos: {fmt(ef.value)} ({pct(ef.value, total)}%)</div>}
       {co && <div style={{ color: '#f97316' }}>Comissionados: {fmt(co.value)} ({pct(co.value, total)}%)</div>}
     </div>
@@ -80,12 +80,12 @@ export default function ComissionadosEfetivos() {
       </div>
 
       <div className="content">
-        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: '#475569', fontSize: 14 }}>Carregando dados...</div>}
-        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted-c)', fontSize: 14 }}>Carregando dados...</div>}
+        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {!loading && !erro && total > 0 && (
           <>
-            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,.07)', border: '1px solid rgba(245,158,11,.2)', color: '#fbbf24', fontSize: 11, marginBottom: 20, display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,.07)', border: '1px solid rgba(245,158,11,.2)', color: '#b45309', fontSize: 11, marginBottom: 20, display: 'flex', gap: 8, alignItems: 'center' }}>
               <AlertTriangle size={13} />
               Classificação por texto em Des_CategSefip / Des_Padrao_Adm (padrões configuráveis). Confirme com RH a lista definitiva de cargos em comissão.
             </div>
@@ -93,22 +93,22 @@ export default function ComissionadosEfetivos() {
             {/* KPIs */}
             <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
               {[
-                { label: 'Total de servidores', val: fmt(total),     sub: '100% do quadro',               cor: '#6366f1' },
+                { label: 'Total de servidores', val: fmt(total),     sub: '100% do quadro',               cor: '#0D7C3D' },
                 { label: 'Efetivos',            val: fmt(nEfetivos), sub: `${pct(nEfetivos, total)}% do quadro`, cor: '#10b981' },
                 { label: 'Comissionados',        val: fmt(nComiss),   sub: `${pct(nComiss, total)}% do quadro`,  cor: alerta ? '#ef4444' : '#f97316' },
               ].map(({ label, val, sub, cor }) => (
-                <div key={label} style={{ flex: 1, minWidth: 180, background: 'linear-gradient(160deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.015) 100%)', border: '1px solid rgba(255,255,255,.08)', borderTop: `3px solid ${cor}`, borderRadius: 14, padding: '18px 20px' }}>
-                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>{label}</div>
-                  <div style={{ fontSize: 36, fontWeight: 800, color: '#f8fafc', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{val}</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>{sub}</div>
+                <div key={label} style={{ flex: 1, minWidth: 180, background: 'linear-gradient(160deg, rgba(0, 0, 0, 0.02) 0%, rgba(0,0,0,.015) 100%)', border: '1px solid rgba(0, 0, 0, 0.05)', borderTop: `3px solid ${cor}`, borderRadius: 14, padding: '18px 20px' }}>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>{label}</div>
+                  <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{val}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 6 }}>{sub}</div>
                 </div>
               ))}
               {alerta && (
                 <div style={{ flex: 1, minWidth: 180, padding: '16px 20px', borderRadius: 14, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.3)', display: 'flex', alignItems: 'center', gap: 12 }}>
                   <AlertTriangle size={22} color="#ef4444" style={{ flexShrink: 0 }} />
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#f87171' }}>Limite excedido</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Acima do limiar configurado de {ALERTAS.maxPctComissionados}%</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#dc2626' }}>Limite excedido</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>Acima do limiar configurado de {ALERTAS.maxPctComissionados}%</div>
                   </div>
                 </div>
               )}
@@ -116,13 +116,13 @@ export default function ComissionadosEfetivos() {
 
             {/* Gráfico de barras empilhadas */}
             <div className="chart-card" style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Composição por secretaria</div>
-              <div style={{ fontSize: 11, color: '#475569', marginBottom: 14 }}>Efetivos × comissionados — ordenado por número de comissionados</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Composição por secretaria</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 14 }}>Efetivos × comissionados — ordenado por número de comissionados</div>
               <ResponsiveContainer width="100%" height={porSecretaria.length * 34 + 20}>
                 <BarChart data={porSecretaria} layout="vertical" margin={{ left: 8, right: 60, top: 0, bottom: 0 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="sec" width={200} tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(255,255,255,.04)' }} />
+                  <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
                   <Bar dataKey="efetivos"      name="Efetivos"      stackId="a" fill="#10b981" maxBarSize={22} />
                   <Bar dataKey="comissionados" name="Comissionados" stackId="a" fill="#f97316" maxBarSize={22} radius={[0, 4, 4, 0]}
                     label={{
@@ -143,14 +143,14 @@ export default function ComissionadosEfetivos() {
 
             {/* Link para Diretório */}
             <Link to="/servidores/diretorio" style={{ textDecoration: 'none' }}>
-              <div style={{ padding: '16px 20px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color .15s, background .15s' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,.4)'; e.currentTarget.style.background = 'rgba(99,102,241,.06)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,.07)'; e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}>
+              <div style={{ padding: '16px 20px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'border-color .15s, background .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(13,124,61,.4)'; e.currentTarget.style.background = 'rgba(13,124,61,.06)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,.07)'; e.currentTarget.style.background = 'rgba(0,0,0,.02)'; }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc' }}>Ver lista completa de comissionados no Diretório</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 3 }}>{fmt(nComiss)} registros — busca com filtro por padrão administrativo</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#15A050' }}>Ver lista completa de comissionados no Diretório</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 3 }}>{fmt(nComiss)} registros — busca com filtro por padrão administrativo</div>
                 </div>
-                <span style={{ fontSize: 18, color: '#6366f1' }}>→</span>
+                <span style={{ fontSize: 18, color: '#0D7C3D' }}>→</span>
               </div>
             </Link>
           </>

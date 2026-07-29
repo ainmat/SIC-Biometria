@@ -24,11 +24,11 @@ const filtrarSecretaria = (nome) => !SECRETARIAS_EXCLUIDAS.has(String(nome).toUp
 const METRICAS = [
   { id: 'faltas',            label: 'Faltas',          short: 'Faltas',    cor: '#ef4444' },
   { id: 'atrasos_total',     label: 'Atrasos',         short: 'Atrasos',   cor: '#f97316' },
-  { id: 'atrasos_dia',       label: 'Atrasos ≥ 1h',    short: 'Atr ≥1h',  cor: '#fb923c' },
+  { id: 'atrasos_dia',       label: 'Atrasos ≥ 1h',    short: 'Atr ≥1h',  cor: '#c2410c' },
   { id: 'atrasos_fracao',    label: 'Atrasos < 1h',    short: 'Atr <1h',  cor: '#eab308' },
   { id: 'dsr',               label: 'DSR',              short: 'DSR',       cor: '#a855f7' },
   { id: 'hora_extra_total',  label: 'H.E. Total',      short: 'H.E.',      cor: '#22d3ee' },
-  { id: 'hora_extra_50',     label: 'HE 50%',          short: 'HE 50%',   cor: '#3b82f6' },
+  { id: 'hora_extra_50',     label: 'HE 50%',          short: 'HE 50%',   cor: '#0D7C3D' },
   { id: 'hora_extra_100',    label: 'HE 100%',         short: 'HE 100%',  cor: '#10b981' },
 ];
 
@@ -40,7 +40,7 @@ const METRICAS_RESUMIDAS = [
   { id: 'hora_extra_total', label: 'H.E.',    cor: '#22d3ee' },
 ];
 
-const MES_CORES = ['#6366f1', '#3b82f6', '#10b981', '#f97316', '#ec4899', '#a855f7'];
+const MES_CORES = ['#0D7C3D', '#0D7C3D', '#10b981', '#f97316', '#ec4899', '#a855f7'];
 
 const N    = (v) => Number(v || 0);
 const fmt  = (n) => Math.round(n).toLocaleString('pt-BR');
@@ -57,12 +57,12 @@ function getVal(dados, id) {
 }
 
 function deltaInfo(from, to) {
-  if (from === 0 && to === 0) return { pct: 0,    color: '#475569', Icon: Minus };
-  if (from === 0)             return { pct: null,  color: '#f87171', Icon: TrendingUp };
+  if (from === 0 && to === 0) return { pct: 0,    color: 'var(--muted-c)', Icon: Minus };
+  if (from === 0)             return { pct: null,  color: '#dc2626', Icon: TrendingUp };
   const pct = ((to - from) / from) * 100;
   return {
     pct,
-    color: pct > 0 ? '#f87171' : pct < 0 ? '#34d399' : '#475569',
+    color: pct > 0 ? '#dc2626' : pct < 0 ? '#047857' : '#475569',
     Icon:  pct > 0 ? TrendingUp : pct < 0 ? TrendingDown : Minus,
   };
 }
@@ -71,8 +71,8 @@ function thSt(extra = {}) {
   return {
     padding: '10px 10px', fontWeight: 700, fontSize: 10,
     textTransform: 'uppercase', letterSpacing: '.06em',
-    borderBottom: '1px solid rgba(255,255,255,.08)',
-    color: '#475569', whiteSpace: 'nowrap',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+    color: 'var(--muted-c)', whiteSpace: 'nowrap',
     ...extra,
   };
 }
@@ -83,17 +83,17 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)',
+      background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)',
       borderRadius: 10, padding: '10px 14px', fontSize: 12,
       boxShadow: '0 8px 32px rgba(0,0,0,.6)',
     }}>
-      <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 8, fontSize: 11, letterSpacing: '.04em' }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 8, fontSize: 11, letterSpacing: '.04em' }}>
         {label}
       </div>
       {payload.map((p, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 20, padding: '2px 0' }}>
           <span style={{ color: p.fill || p.color, fontWeight: 600 }}>{p.dataKey || p.name}</span>
-          <span style={{ color: '#f1f5f9', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{fmt(p.value)}</span>
+          <span style={{ color: 'var(--text)', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{fmt(p.value)}</span>
         </div>
       ))}
     </div>
@@ -112,8 +112,8 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) 
   return (
     <div style={{
       flex: 1, minWidth: 0,
-      background: 'linear-gradient(160deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.015) 100%)',
-      border: '1px solid rgba(255,255,255,.08)',
+      background: 'linear-gradient(160deg, rgba(0, 0, 0, 0.02) 0%, rgba(0,0,0,.015) 100%)',
+      border: '1px solid rgba(0, 0, 0, 0.05)',
       borderTop: `3px solid ${cor}`,
       borderRadius: 14, padding: detalhada ? '20px 22px' : '16px 18px',
       display: 'flex', flexDirection: 'column',
@@ -131,11 +131,11 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) 
       </div>
 
       <div style={{ marginBottom: 4 }}>
-        <div style={{ fontSize: detalhada ? 42 : 36, fontWeight: 800, color: '#f8fafc', lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em' }}>
+        <div style={{ fontSize: detalhada ? 42 : 36, fontWeight: 800, color: 'var(--text)', lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em' }}>
           {fmt(val)}
         </div>
         <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{metrica.label}</span>
+          <span style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 500 }}>{metrica.label}</span>
           {hasDelta && pct !== null && (
             <span style={{
               fontSize: 11, fontWeight: 700, color: dColor,
@@ -147,13 +147,13 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) 
             </span>
           )}
           {hasDelta && pct === null && (
-            <span style={{ fontSize: 10, color: '#f87171', fontWeight: 600 }}>novo</span>
+            <span style={{ fontSize: 10, color: '#dc2626', fontWeight: 600 }}>novo</span>
           )}
         </div>
       </div>
 
       <>
-        <div style={{ height: 1, background: 'rgba(255,255,255,.06)', margin: '14px 0' }} />
+        <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)', margin: '14px 0' }} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {secondary.map(m => {
@@ -164,7 +164,7 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) 
               <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: m.cor, display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, color: '#475569' }}>{m.label}</span>
+                  <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{m.label}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   {hasDelta && sp !== null && (
@@ -172,18 +172,18 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) 
                       {sp > 0 ? '+' : ''}{sp.toFixed(0)}%
                     </span>
                   )}
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted-c)', fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>
                     {fmtK(sv)}
                   </span>
                 </div>
               </div>
             );
           })}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,.04)' }}>
-            <span style={{ fontSize: 10, color: '#334155', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingTop: 6, borderTop: '1px solid rgba(0, 0, 0, 0.02)' }}>
+            <span style={{ fontSize: 10, color: 'var(--text)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>
               servidores c/ oc.
             </span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', fontVariantNumeric: 'tabular-nums' }}>
               {fmt(N(dados?.servidores ?? 0))}
             </span>
           </div>
@@ -378,9 +378,9 @@ export default function ComparativoFolha() {
 
         {/* ══════════ FILTROS ══════════ */}
         <div className="no-print" style={{
-          background: 'rgba(15,23,42,.7)', border: '1px solid rgba(255,255,255,.07)',
+          background: 'var(--surface)', border: '1px solid var(--border-c)',
           borderRadius: 14, padding: '18px 22px', marginBottom: 20,
-          backdropFilter: 'blur(12px)',
+          boxShadow: '0 1px 3px rgba(0,0,0,.04)',
         }}>
 
           {/* Linha 1: competências + nível */}
@@ -408,23 +408,23 @@ export default function ComparativoFolha() {
                   <button type="button" onClick={() => setAddOpen(v => !v)} style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '5px 12px', borderRadius: 20, cursor: 'pointer',
-                    background: 'rgba(255,255,255,.04)', border: '1px dashed rgba(255,255,255,.15)',
-                    color: '#64748b', fontSize: 12,
+                    background: 'rgba(0, 0, 0, 0.02)', border: '1px dashed rgba(0, 0, 0, 0.08)',
+                    color: 'var(--muted-c)', fontSize: 12,
                   }}>
                     <Plus size={10} /> Adicionar
                   </button>
                   {addOpen && (
                     <div style={{
                       position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 30,
-                      background: '#0f172a', border: '1px solid rgba(255,255,255,.12)',
+                      background: 'var(--surface)', border: '1px solid var(--border-c)',
                       borderRadius: 10, overflow: 'hidden',
-                      boxShadow: '0 12px 40px rgba(0,0,0,.7)', minWidth: 140,
+                      boxShadow: '0 8px 32px rgba(0,0,0,.08)', minWidth: 140,
                     }}>
                       {naoSelecionadas.map(c => (
                         <div key={c}
                           onClick={() => { toggleComp(c); setAddOpen(false); }}
-                          style={{ padding: '8px 14px', fontSize: 12, color: '#f1f5f9', cursor: 'pointer' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,.15)'; }}
+                          style={{ padding: '8px 14px', fontSize: 12, color: 'var(--text)', cursor: 'pointer' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(13,124,61,.08)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                         >
                           {fmtCompetencia(c)}
@@ -438,7 +438,7 @@ export default function ComparativoFolha() {
 
             {/* level toggle */}
             <div style={{
-              display: 'inline-flex', background: 'rgba(0,0,0,.3)',
+              display: 'inline-flex', background: '#f1f5f9',
               borderRadius: 10, padding: 3, gap: 2, flexShrink: 0,
             }}>
               {[
@@ -448,8 +448,8 @@ export default function ComparativoFolha() {
                 <button key={key} type="button" onClick={() => setNivel(key)} style={{
                   padding: '6px 16px', borderRadius: 7, border: 'none', cursor: 'pointer',
                   fontSize: 12, fontWeight: 600, transition: 'all .15s',
-                  background: nivel === key ? 'rgba(99,102,241,.35)' : 'transparent',
-                  color: nivel === key ? '#a5b4fc' : '#64748b',
+                  background: nivel === key ? '#0D7C3D' : 'transparent',
+                  color: nivel === key ? '#ffffff' : '#64748b',
                 }}>
                   {label}
                 </button>
@@ -458,7 +458,7 @@ export default function ComparativoFolha() {
 
             {/* visão dos cards: resumida / detalhada */}
             <div style={{
-              display: 'inline-flex', background: 'rgba(0,0,0,.3)',
+              display: 'inline-flex', background: '#f1f5f9',
               borderRadius: 10, padding: 3, gap: 2, flexShrink: 0,
             }}>
               {[
@@ -469,8 +469,8 @@ export default function ComparativoFolha() {
                   padding: '6px 13px', borderRadius: 7, border: 'none', cursor: 'pointer',
                   fontSize: 12, fontWeight: 600, transition: 'all .15s',
                   display: 'inline-flex', alignItems: 'center', gap: 5,
-                  background: detalhada === val ? 'rgba(99,102,241,.35)' : 'transparent',
-                  color: detalhada === val ? '#a5b4fc' : '#64748b',
+                  background: detalhada === val ? '#0D7C3D' : 'transparent',
+                  color: detalhada === val ? '#ffffff' : '#64748b',
                 }}>
                   <Icon size={13} />
                   {label}
@@ -483,14 +483,14 @@ export default function ComparativoFolha() {
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
             {/* métricas */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1, alignItems: 'center' }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '.08em', marginRight: 2 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '.08em', marginRight: 2 }}>
                 Métrica
               </span>
               {METRICAS.map(m => (
                 <button key={m.id} type="button" onClick={() => setMetrica(m)} style={{
                   padding: '5px 13px', borderRadius: 20, border: 'none', cursor: 'pointer',
                   fontSize: 11, fontWeight: 700, transition: 'all .15s',
-                  background: metrica.id === m.id ? m.cor : 'rgba(255,255,255,.05)',
+                  background: metrica.id === m.id ? m.cor : 'rgba(0, 0, 0, 0.03)',
                   color: metrica.id === m.id ? '#fff' : '#64748b',
                   boxShadow: metrica.id === m.id ? `0 0 12px ${m.cor}55` : 'none',
                 }}>
@@ -500,7 +500,7 @@ export default function ComparativoFolha() {
             </div>
 
             {/* separador */}
-            <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,.08)', flexShrink: 0 }} />
+            <div style={{ width: 1, height: 28, background: 'rgba(0, 0, 0, 0.05)', flexShrink: 0 }} />
 
             {/* filtros de escopo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -526,7 +526,7 @@ export default function ComparativoFolha() {
                   onClick={() => { setFiltroSec(''); setFiltroUnd(''); }}
                   style={{
                     background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.25)',
-                    color: '#f87171', borderRadius: 6, padding: '4px 10px',
+                    color: '#dc2626', borderRadius: 6, padding: '4px 10px',
                     fontSize: 11, fontWeight: 600, cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 4,
                   }}
@@ -540,23 +540,23 @@ export default function ComparativoFolha() {
           {/* breadcrumb de escopo ativo */}
           {(filtroSec || filtroUnd) && (
             <div style={{
-              marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.06)',
-              display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748b',
+              marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0, 0, 0, 0.04)',
+              display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--muted-c)',
             }}>
-              <span style={{ color: '#334155' }}>Escopo:</span>
-              <span style={{ color: '#a5b4fc', fontWeight: 600 }}>Todos os meses</span>
+              <span style={{ color: 'var(--text)' }}>Escopo:</span>
+              <span style={{ color: '#15A050', fontWeight: 600 }}>Todos os meses</span>
               {filtroSec && (
                 <>
-                  <span style={{ color: '#334155' }}>›</span>
+                  <span style={{ color: 'var(--text)' }}>›</span>
                   <span style={{
-                    color: '#6366f1', fontWeight: 700, padding: '1px 8px',
-                    borderRadius: 8, background: 'rgba(99,102,241,.12)',
+                    color: '#0D7C3D', fontWeight: 700, padding: '1px 8px',
+                    borderRadius: 8, background: 'rgba(13,124,61,.12)',
                   }}>{filtroSec}</span>
                 </>
               )}
               {filtroUnd && (
                 <>
-                  <span style={{ color: '#334155' }}>›</span>
+                  <span style={{ color: 'var(--text)' }}>›</span>
                   <span style={{
                     color: '#10b981', fontWeight: 700, padding: '1px 8px',
                     borderRadius: 8, background: 'rgba(16,185,129,.1)',
@@ -570,13 +570,13 @@ export default function ComparativoFolha() {
 
         {/* ══════════ LOADING ══════════ */}
         {loading && (
-          <div style={{ textAlign: 'center', padding: 80, color: '#334155', fontSize: 13 }}>
+          <div style={{ textAlign: 'center', padding: 80, color: 'var(--text)', fontSize: 13 }}>
             Carregando dados...
           </div>
         )}
 
         {!loading && selecionadas.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 80, color: '#334155', fontSize: 13 }}>
+          <div style={{ textAlign: 'center', padding: 80, color: 'var(--text)', fontSize: 13 }}>
             Selecione ao menos uma competência
           </div>
         )}
@@ -616,7 +616,7 @@ export default function ComparativoFolha() {
                 {showRanking && (
                   <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
                     {compsOrdenadas.map((c, i) => (
-                      <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#64748b' }}>
+                      <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--muted-c)' }}>
                         <span style={{ width: 10, height: 10, borderRadius: 3, background: MES_CORES[i % MES_CORES.length], display: 'inline-block' }} />
                         {fmtCompetencia(c)}
                       </div>
@@ -627,7 +627,7 @@ export default function ComparativoFolha() {
 
               <ResponsiveContainer width="100%" height={showRanking ? 300 : 180}>
                 <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: showRanking ? 70 : 0 }} barGap={4}>
-                  <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,.04)" vertical={false} />
+                  <CartesianGrid strokeDasharray="2 4" stroke="rgba(0, 0, 0, 0.02)" vertical={false} />
                   <XAxis
                     dataKey="name"
                     tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
@@ -637,7 +637,7 @@ export default function ComparativoFolha() {
                     interval={0} dy={showRanking ? 6 : 0}
                   />
                   <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} width={46} />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,.03)' }} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
                   {showRanking ? (
                     compsOrdenadas.map((c, i) => (
                       <Bar key={c} dataKey={fmtCompetencia(c)} fill={MES_CORES[i % MES_CORES.length]}
@@ -669,10 +669,10 @@ export default function ComparativoFolha() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
                   {compsOrdenadas.length > 1 && (
-                    <div style={{ fontSize: 11, color: '#475569', textAlign: 'right' }}>
-                      <span style={{ color: '#f87171', fontWeight: 700 }}>▲ aumento</span>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)', textAlign: 'right' }}>
+                      <span style={{ color: '#dc2626', fontWeight: 700 }}>▲ aumento</span>
                       {' · '}
-                      <span style={{ color: '#34d399', fontWeight: 700 }}>▼ redução</span>
+                      <span style={{ color: '#047857', fontWeight: 700 }}>▼ redução</span>
                       {' · Δ% = 1º→último'}
                     </div>
                   )}
@@ -680,7 +680,7 @@ export default function ComparativoFolha() {
                     <button onClick={exportarTabela} style={{
                       padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
                       background: 'rgba(16,185,129,.12)', border: '1px solid rgba(16,185,129,.25)',
-                      color: '#34d399', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                      color: '#047857', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
                     }}>⬇ CSV</button>
                   )}
                 </div>
@@ -689,7 +689,7 @@ export default function ComparativoFolha() {
               <div className="print-table-wrap" style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
-                    <tr style={{ background: 'rgba(255,255,255,.03)' }}>
+                    <tr style={{ background: 'rgba(0, 0, 0, 0.02)' }}>
                       {!tableRows[0]?.isMetric && (
                         <th style={thSt({ width: 32, textAlign: 'center' })}>#</th>
                       )}
@@ -714,8 +714,8 @@ export default function ComparativoFolha() {
 
                       return (
                         <tr key={row.key}
-                          style={{ borderBottom: '1px solid rgba(255,255,255,.04)' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.03)'; }}
+                          style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.02)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                         >
                           {/* rank */}
@@ -731,7 +731,7 @@ export default function ComparativoFolha() {
                                   {ri + 1}
                                 </span>
                               ) : (
-                                <span style={{ fontSize: 10, color: '#334155' }}>{ri + 1}</span>
+                                <span style={{ fontSize: 10, color: 'var(--text)' }}>{ri + 1}</span>
                               )}
                             </td>
                           )}
@@ -742,7 +742,7 @@ export default function ComparativoFolha() {
                               {row.cor && (
                                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: row.cor, flexShrink: 0, display: 'inline-block' }} />
                               )}
-                              <span style={{ color: row.cor || '#e2e8f0' }}>{row.nome}</span>
+                              <span style={{ color: row.cor || '#334155' }}>{row.nome}</span>
                             </div>
                           </td>
 
@@ -756,7 +756,7 @@ export default function ComparativoFolha() {
                               <td key={mi} style={{
                                 textAlign: 'right', padding: '9px 12px',
                                 fontVariantNumeric: 'tabular-nums', fontWeight: 600,
-                                color: '#e2e8f0', background: heat, transition: 'background .2s',
+                                color: 'var(--text)', background: heat, transition: 'background .2s',
                               }}>
                                 {fmt(v)}
                               </td>
@@ -767,9 +767,9 @@ export default function ComparativoFolha() {
                           {compsOrdenadas.length > 1 && (
                             <td style={{ textAlign: 'right', padding: '9px 12px' }}>
                               {dp === null ? (
-                                <span style={{ fontSize: 11, color: '#f87171', fontWeight: 700 }}>novo</span>
+                                <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 700 }}>novo</span>
                               ) : dp === 0 ? (
-                                <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                                <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>—</span>
                               ) : (
                                 <span style={{
                                   fontSize: 11, fontWeight: 700, color: dc,
@@ -793,13 +793,13 @@ export default function ComparativoFolha() {
                       );
                       const { pct: tp, color: tc, Icon: TI } = deltaInfo(totais[0], totais[totais.length - 1]);
                       return (
-                        <tr style={{ background: 'rgba(255,255,255,.04)', borderTop: '2px solid rgba(255,255,255,.1)' }}>
+                        <tr style={{ background: 'rgba(0, 0, 0, 0.02)', borderTop: '2px solid rgba(0, 0, 0, 0.06)' }}>
                           <td style={{ padding: '10px 4px' }} />
-                          <td style={{ padding: '10px 10px', fontWeight: 800, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                          <td style={{ padding: '10px 10px', fontWeight: 800, color: 'var(--muted-c)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em' }}>
                             Total
                           </td>
                           {totais.map((t, i) => (
-                            <td key={i} style={{ textAlign: 'right', padding: '10px 12px', fontWeight: 800, color: '#f1f5f9', fontVariantNumeric: 'tabular-nums', fontSize: 13 }}>
+                            <td key={i} style={{ textAlign: 'right', padding: '10px 12px', fontWeight: 800, color: 'var(--text)', fontVariantNumeric: 'tabular-nums', fontSize: 13 }}>
                               {fmt(t)}
                             </td>
                           ))}
@@ -823,7 +823,7 @@ export default function ComparativoFolha() {
 
                     {tableRows.length === 0 && (
                       <tr>
-                        <td colSpan={compsOrdenadas.length + 3} style={{ padding: 40, textAlign: 'center', color: '#334155' }}>
+                        <td colSpan={compsOrdenadas.length + 3} style={{ padding: 40, textAlign: 'center', color: 'var(--text)' }}>
                           Nenhum dado encontrado
                         </td>
                       </tr>

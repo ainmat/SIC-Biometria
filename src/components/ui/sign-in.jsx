@@ -11,7 +11,7 @@ const GoogleIcon = () => (
 );
 
 const GlassInputWrapper = ({ children }) => (
-  <div className="rounded-2xl border border-border bg-foreground/5 backdrop-blur-sm transition-colors focus-within:border-violet-400/70 focus-within:bg-violet-500/10">
+  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm transition-all focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-600/10">
     {children}
   </div>
 );
@@ -63,42 +63,42 @@ export const SignInPage = ({
       <section className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="flex flex-col gap-6">
-            <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-semibold leading-tight">{title}</h1>
-            <p className="animate-element animate-delay-200 text-muted-foreground">{description}</p>
+            <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-bold leading-tight text-[#0D7C3D]">{title}</h1>
+            <p className="animate-element animate-delay-200 text-slate-600 font-medium">{description}</p>
 
             <form className="space-y-5" onSubmit={onSignIn}>
               {showEmail && (
                 <div className="animate-element animate-delay-300">
-                  <label className="text-sm font-medium text-muted-foreground">{emailLabel}</label>
+                  <label className="text-sm font-semibold text-slate-700">{emailLabel}</label>
                   <GlassInputWrapper>
                     <input
                       name="email"
                       type={emailType}
                       placeholder={emailPlaceholder}
-                      className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none"
+                      className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none text-slate-800 placeholder-slate-400 font-medium"
                     />
                   </GlassInputWrapper>
                 </div>
               )}
 
               <div className={`animate-element ${showEmail ? 'animate-delay-400' : 'animate-delay-300'}`}>
-                <label className="text-sm font-medium text-muted-foreground">{passwordLabel}</label>
+                <label className="text-sm font-semibold text-slate-700">{passwordLabel}</label>
                 <GlassInputWrapper>
                   <div className="relative">
                     <input
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder={passwordPlaceholder}
-                      className="w-full bg-transparent text-sm p-4 pr-12 rounded-2xl focus:outline-none"
+                      className="w-full bg-transparent text-sm p-4 pr-12 rounded-2xl focus:outline-none text-slate-800 placeholder-slate-400 font-medium"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-3 flex items-center"
+                      className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                     >
                       {showPassword
-                        ? <EyeOff className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
-                        : <Eye className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
+                        ? <EyeOff className="w-5 h-5" />
+                        : <Eye className="w-5 h-5" />
                       }
                     </button>
                   </div>
@@ -109,12 +109,12 @@ export const SignInPage = ({
                 <div className="animate-element animate-delay-500 flex items-center justify-between text-sm">
                   {showRememberMe && (
                     <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" name="rememberMe" className="custom-checkbox" />
-                      <span className="text-foreground/90">Manter conectado</span>
+                      <input type="checkbox" name="rememberMe" className="custom-checkbox border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                      <span className="text-slate-700 font-medium">Manter conectado</span>
                     </label>
                   )}
                   {showResetPassword && onResetPassword && (
-                    <a href="#" onClick={(e) => { e.preventDefault(); onResetPassword?.(); }} className="hover:underline text-violet-400 transition-colors">
+                    <a href="#" onClick={(e) => { e.preventDefault(); onResetPassword?.(); }} className="hover:underline text-emerald-600 transition-colors font-medium">
                       Esqueceu a senha?
                     </a>
                   )}
@@ -122,14 +122,14 @@ export const SignInPage = ({
               )}
 
               {errorMessage && (
-                <div className="animate-element rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <div className="animate-element rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 font-medium">
                   {errorMessage}
                 </div>
               )}
 
               <button
                 type="submit"
-                className="animate-element animate-delay-600 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="animate-element animate-delay-600 w-full rounded-2xl bg-[#0D7C3D] py-4 font-semibold text-white hover:bg-[#0D7C3D]/90 active:scale-[0.98] transition-all shadow-md shadow-emerald-900/10"
               >
                 {submitLabel}
               </button>
@@ -155,7 +155,7 @@ export const SignInPage = ({
             {showFooter && onCreateAccount && (
               <p className="animate-element animate-delay-900 text-center text-sm text-muted-foreground">
                 {footerText}{' '}
-                <a href="#" onClick={(e) => { e.preventDefault(); onCreateAccount?.(); }} className="text-violet-400 hover:underline transition-colors">
+                <a href="#" onClick={(e) => { e.preventDefault(); onCreateAccount?.(); }} className="text-emerald-600 hover:underline transition-colors">
                   {footerLinkText}
                 </a>
               </p>

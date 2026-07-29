@@ -24,8 +24,8 @@ function AlertCard({ icon: Icon, label, value, sub, status = 'ok', link }) {
   const card = (
     <div style={{
       flex: 1, minWidth: 200,
-      background: 'linear-gradient(160deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.015) 100%)',
-      border: `1px solid ${status === 'alert' ? 'rgba(239,68,68,.3)' : status === 'warn' ? 'rgba(245,158,11,.3)' : 'rgba(255,255,255,.08)'}`,
+      background: 'linear-gradient(160deg, rgba(0, 0, 0, 0.02) 0%, rgba(0,0,0,.015) 100%)',
+      border: `1px solid ${status === 'alert' ? 'rgba(239,68,68,.3)' : status === 'warn' ? 'rgba(245,158,11,.3)' : 'rgba(0, 0, 0, 0.05)'}`,
       borderTop: `3px solid ${cor}`, borderRadius: 14, padding: '18px 20px',
       cursor: link ? 'pointer' : 'default', textDecoration: 'none',
     }}>
@@ -34,12 +34,12 @@ function AlertCard({ icon: Icon, label, value, sub, status = 'ok', link }) {
           <div style={{ width: 32, height: 32, borderRadius: 9, background: `${cor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon size={16} color={cor} />
           </div>
-          <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em' }}>{label}</span>
+          <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em' }}>{label}</span>
         </div>
         <span style={{ width: 9, height: 9, borderRadius: '50%', background: cor, display: 'block' }} />
       </div>
-      <div style={{ fontSize: 36, fontWeight: 800, color: '#f8fafc', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>{sub}</div>}
+      <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 6 }}>{sub}</div>}
       {link && <div style={{ fontSize: 10, color: cor, marginTop: 8, fontWeight: 600 }}>Ver detalhes →</div>}
     </div>
   );
@@ -94,12 +94,12 @@ export default function CockpitExecutivo() {
       </div>
 
       <div className="content">
-        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: '#475569', fontSize: 14 }}>Carregando dados...</div>}
-        {erro    && <div style={{ padding: '14px 18px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted-c)', fontSize: 14 }}>Carregando dados...</div>}
+        {erro    && <div style={{ padding: '14px 18px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {kpis && (
           <>
-            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,.07)', border: '1px solid rgba(245,158,11,.2)', color: '#fbbf24', fontSize: 11, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,.07)', border: '1px solid rgba(245,158,11,.2)', color: '#b45309', fontSize: 11, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
               <AlertTriangle size={13} />
               Indicadores de aposentadoria são estimativas (EC 103/2019, parâmetros configuráveis). Confirme com RH/Jurídico antes de usar para decisões formais.
             </div>
@@ -113,17 +113,17 @@ export default function CockpitExecutivo() {
               <AlertCard icon={Database}    label="Dados incompletos"           value={fmt(kpis.incompletos)} sub="campos críticos vazios" status={kpis.incompletos > 0 ? 'warn' : 'ok'} link="/servidores/auditoria" />
             </div>
 
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12 }}>Navegação rápida</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12 }}>Navegação rápida</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10 }}>
               {QUICK_LINKS.map(({ to, label, desc }) => (
                 <Link key={to} to={to} style={{ textDecoration: 'none' }}>
                   <div
-                    style={{ padding: '14px 18px', borderRadius: 10, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', transition: 'border-color .15s, background .15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,.4)'; e.currentTarget.style.background = 'rgba(99,102,241,.06)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,.07)'; e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}
+                    style={{ padding: '14px 18px', borderRadius: 10, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', transition: 'border-color .15s, background .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(13,124,61,.4)'; e.currentTarget.style.background = 'rgba(13,124,61,.06)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,.07)'; e.currentTarget.style.background = 'rgba(0,0,0,.02)'; }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', marginBottom: 4 }}>{label}</div>
-                    <div style={{ fontSize: 11, color: '#475569' }}>{desc}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#15A050', marginBottom: 4 }}>{label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>{desc}</div>
                   </div>
                 </Link>
               ))}

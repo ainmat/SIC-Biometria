@@ -12,16 +12,16 @@ import { baixarCSV } from '@/lib/exportar';
 function statusDivergencia(r) {
   const temPonto = r.faltas_ponto > 0 || r.atrasos_ponto > 0;
   const temFolha = r.faltas_folha > 0 || r.atrasos_fracao_folha > 0 || r.atrasos_dia_folha > 0;
-  if (!temPonto && !temFolha) return { key: 'semOc',    label: 'Sem oc.',   color: '#475569', bg: 'rgba(71,85,105,.12)'   };
-  if (temPonto && temFolha)   return { key: 'concordam',label: 'Concordam', color: '#34d399', bg: 'rgba(52,211,153,.12)'  };
-  if (temPonto)               return { key: 'soPonto',  label: 'Só Ponto',  color: '#fbbf24', bg: 'rgba(251,191,36,.12)'  };
+  if (!temPonto && !temFolha) return { key: 'semOc',    label: 'Sem oc.',   color: 'var(--muted-c)', bg: 'rgba(71,85,105,.12)'   };
+  if (temPonto && temFolha)   return { key: 'concordam',label: 'Concordam', color: '#047857', bg: 'rgba(52,211,153,.12)'  };
+  if (temPonto)               return { key: 'soPonto',  label: 'Só Ponto',  color: '#b45309', bg: 'rgba(251,191,36,.12)'  };
   return                             { key: 'soFolha',  label: 'Só Folha',  color: '#a78bfa', bg: 'rgba(167,139,250,.12)' };
 }
 
 const STATUS_OPTS = [
-  { key: '',          label: 'Todos',     color: '#94a3b8', bg: 'rgba(148,163,184,.12)' },
-  { key: 'concordam', label: 'Concordam', color: '#34d399', bg: 'rgba(52,211,153,.12)'  },
-  { key: 'soPonto',   label: 'Só Ponto',  color: '#fbbf24', bg: 'rgba(251,191,36,.12)'  },
+  { key: '',          label: 'Todos',     color: 'var(--muted-c)', bg: 'rgba(148,163,184,.12)' },
+  { key: 'concordam', label: 'Concordam', color: '#047857', bg: 'rgba(52,211,153,.12)'  },
+  { key: 'soPonto',   label: 'Só Ponto',  color: '#b45309', bg: 'rgba(251,191,36,.12)'  },
   { key: 'soFolha',   label: 'Só Folha',  color: '#a78bfa', bg: 'rgba(167,139,250,.12)' },
 ];
 
@@ -134,7 +134,7 @@ export default function ConferenciaFolha() {
               value={filtroComp}
               onChange={e => setFiltroComp(e.target.value)}
               className="sel-dark"
-              style={{ minWidth: 140, borderRadius: 6, border: '1px solid rgba(255,255,255,.1)', color: filtroComp ? '#f1f5f9' : '#64748b', fontSize: 13 }}
+              style={{ minWidth: 140, borderRadius: 6, border: '1px solid rgba(0, 0, 0, 0.06)', color: filtroComp ? '#1e293b' : '#64748b', fontSize: 13 }}
             >
               <option value="">Selecione...</option>
               {competencias.map(c => <option key={c} value={c}>{fmtCompetencia(c)}</option>)}
@@ -153,7 +153,7 @@ export default function ConferenciaFolha() {
             <button onClick={exportar} style={{
               padding: '7px 14px', borderRadius: 7, cursor: 'pointer',
               background: 'rgba(16,185,129,.12)', border: '1px solid rgba(16,185,129,.25)',
-              color: '#34d399', fontSize: 12, fontWeight: 600, alignSelf: 'flex-end',
+              color: '#047857', fontSize: 12, fontWeight: 600, alignSelf: 'flex-end',
             }}>
               ⬇ Exportar CSV
             </button>
@@ -161,7 +161,7 @@ export default function ConferenciaFolha() {
         </div>
 
         {!filtroComp && (
-          <div className="chart-card" style={{ textAlign: 'center', padding: 60, color: '#475569' }}>
+          <div className="chart-card" style={{ textAlign: 'center', padding: 60, color: 'var(--muted-c)' }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
             <div style={{ fontSize: 15, fontWeight: 600 }}>Selecione uma competência</div>
             <div style={{ fontSize: 12, marginTop: 4 }}>
@@ -173,14 +173,14 @@ export default function ConferenciaFolha() {
         {erro && (
           <div style={{
             background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)',
-            borderRadius: 10, padding: '14px 18px', color: '#f87171', fontSize: 13, marginBottom: 20,
+            borderRadius: 10, padding: '14px 18px', color: '#dc2626', fontSize: 13, marginBottom: 20,
           }}>
             {erro}
           </div>
         )}
 
         {loading && (
-          <div style={{ textAlign: 'center', padding: 60, color: '#475569' }}>Carregando dados...</div>
+          <div style={{ textAlign: 'center', padding: 60, color: 'var(--muted-c)' }}>Carregando dados...</div>
         )}
 
         {filtroComp && !loading && !erro && (
@@ -188,11 +188,11 @@ export default function ConferenciaFolha() {
             {/* KPIs */}
             <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(5,1fr)', marginBottom: 20 }}>
               {[
-                { label: 'Servidores',  value: kpis.total,     color: '#60a5fa', bg: '#3b82f6' },
-                { label: 'Concordam',   value: kpis.concordam, color: '#34d399', bg: '#10b981' },
-                { label: 'Divergem',    value: kpis.divergem,  color: '#f87171', bg: '#ef4444' },
-                { label: 'Só no Ponto', value: kpis.soPonto,   color: '#fbbf24', bg: '#f59e0b' },
-                { label: 'Só na Folha', value: kpis.soFolha,   color: '#a78bfa', bg: '#8b5cf6' },
+                { label: 'Servidores',  value: kpis.total,     color: '#15A050', bg: '#0D7C3D' },
+                { label: 'Concordam',   value: kpis.concordam, color: '#047857', bg: '#10b981' },
+                { label: 'Divergem',    value: kpis.divergem,  color: '#dc2626', bg: '#ef4444' },
+                { label: 'Só no Ponto', value: kpis.soPonto,   color: '#b45309', bg: '#f59e0b' },
+                { label: 'Só na Folha', value: kpis.soFolha,   color: '#a78bfa', bg: '#0D7C3D' },
               ].map(({ label, value, color, bg }) => (
                 <div key={label} className="kpi-card">
                   <div className="kpi-accent" style={{ background: bg }} />
@@ -233,9 +233,9 @@ export default function ConferenciaFolha() {
                         title={isActive ? 'Remover filtro' : `Filtrar: ${opt.label}`}
                         style={{
                           fontSize: 10, padding: '3px 9px', borderRadius: 8, cursor: 'pointer',
-                          background: isActive ? opt.bg : 'rgba(255,255,255,.04)',
+                          background: isActive ? opt.bg : 'rgba(0, 0, 0, 0.02)',
                           color: isActive ? opt.color : '#64748b',
-                          border: `1px solid ${isActive ? opt.color + '55' : 'rgba(255,255,255,.08)'}`,
+                          border: `1px solid ${isActive ? opt.color + '55' : 'rgba(0, 0, 0, 0.05)'}`,
                           fontWeight: isActive ? 700 : 500,
                           transition: 'all .15s',
                         }}
@@ -259,11 +259,11 @@ export default function ConferenciaFolha() {
                       <th>Matrícula</th>
                       <th>Nome</th>
                       <th>Sec.</th>
-                      <th style={{ textAlign: 'center', color: '#60a5fa' }}>Faltas<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Ponto</span></th>
-                      <th style={{ textAlign: 'center', color: '#60a5fa' }}>Atrasos<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Ponto</span></th>
-                      <th style={{ textAlign: 'center', color: '#fbbf24' }}>Faltas<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Folha</span></th>
-                      <th style={{ textAlign: 'center', color: '#fbbf24' }}>Atr. &lt;1h<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Folha</span></th>
-                      <th style={{ textAlign: 'center', color: '#fbbf24' }}>Atr. ≥1h<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Folha</span></th>
+                      <th style={{ textAlign: 'center', color: '#15A050' }}>Faltas<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Ponto</span></th>
+                      <th style={{ textAlign: 'center', color: '#15A050' }}>Atrasos<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Ponto</span></th>
+                      <th style={{ textAlign: 'center', color: '#b45309' }}>Faltas<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Folha</span></th>
+                      <th style={{ textAlign: 'center', color: '#b45309' }}>Atr. &lt;1h<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Folha</span></th>
+                      <th style={{ textAlign: 'center', color: '#b45309' }}>Atr. ≥1h<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Folha</span></th>
                       <th style={{ textAlign: 'center' }}>Status</th>
                     </tr>
                   </thead>
@@ -272,18 +272,18 @@ export default function ConferenciaFolha() {
                       const st = statusDivergencia(r);
                       return (
                         <tr key={r.matricula}>
-                          <td style={{ fontFamily: 'monospace', fontSize: 11, color: '#60a5fa', fontWeight: 600 }}>{r.matricula}</td>
-                          <td style={{ fontSize: 11, color: '#f1f5f9', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nome || '—'}</td>
+                          <td style={{ fontFamily: 'monospace', fontSize: 11, color: '#15A050', fontWeight: 600 }}>{r.matricula}</td>
+                          <td style={{ fontSize: 11, color: 'var(--text)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nome || '—'}</td>
                           <td style={{ textAlign: 'center' }}>
-                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(99,102,241,.15)', color: '#a5b4fc', fontWeight: 700 }}>
+                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(13,124,61,.15)', color: '#15A050', fontWeight: 700 }}>
                               {r.secretaria_sigla || '—'}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.faltas_ponto > 0 ? '#60a5fa' : '#374151' }}>{r.faltas_ponto}</td>
-                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.atrasos_ponto > 0 ? '#60a5fa' : '#374151' }}>{r.atrasos_ponto}</td>
-                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.faltas_folha > 0 ? '#fbbf24' : '#374151' }}>{r.faltas_folha}</td>
-                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.atrasos_fracao_folha > 0 ? '#fbbf24' : '#374151' }}>{r.atrasos_fracao_folha}</td>
-                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.atrasos_dia_folha > 0 ? '#fbbf24' : '#374151' }}>{r.atrasos_dia_folha}</td>
+                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.faltas_ponto > 0 ? '#15A050' : '#374151' }}>{r.faltas_ponto}</td>
+                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.atrasos_ponto > 0 ? '#15A050' : '#374151' }}>{r.atrasos_ponto}</td>
+                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.faltas_folha > 0 ? '#b45309' : '#374151' }}>{r.faltas_folha}</td>
+                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.atrasos_fracao_folha > 0 ? '#b45309' : '#374151' }}>{r.atrasos_fracao_folha}</td>
+                          <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: 11, color: r.atrasos_dia_folha > 0 ? '#b45309' : '#374151' }}>{r.atrasos_dia_folha}</td>
                           <td style={{ textAlign: 'center' }}>
                             <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 8, background: st.bg, color: st.color, fontWeight: 700 }}>
                               {st.label}
@@ -294,7 +294,7 @@ export default function ConferenciaFolha() {
                     })}
                     {dadosFiltrados.length === 0 && (
                       <tr>
-                        <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: '#475569' }}>
+                        <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--muted-c)' }}>
                           {filtroStatus
                             ? `Nenhum servidor com status "${STATUS_OPTS.find(o => o.key === filtroStatus)?.label}"${filtroSec ? ` em ${filtroSec}` : ''}`
                             : 'Nenhum servidor com divergência encontrado'}

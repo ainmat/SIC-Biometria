@@ -20,19 +20,19 @@ function HeroPainel() {
       <div style={{
         width: '60%',
         height: 1,
-        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+        background: 'linear-gradient(90deg, transparent, rgba(13, 124, 61, 0.12), transparent)',
       }} />
       <img
         src={logoDarh}
         alt="DARH"
-        style={{ width: '50%', maxWidth: 260, filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.5))' }}
+        style={{ width: '50%', maxWidth: 260, filter: 'drop-shadow(0 2px 12px rgba(13,124,61,0.08))' }}
       />
       <div style={{
         width: '60%',
         height: 1,
-        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+        background: 'linear-gradient(90deg, transparent, rgba(13, 124, 61, 0.12), transparent)',
       }} />
-      <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.45)', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+      <div style={{ textAlign: 'center', color: '#0D7C3D', fontWeight: 600, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
         Sistema de Informações e Controle · Biometria
       </div>
     </div>
@@ -63,17 +63,17 @@ export default function Login() {
   }
 
   return (
-    <div style={{ position: 'relative', width: '100dvw', height: '100dvh', overflow: 'hidden', background: '#080d1a' }}>
+    <div style={{ position: 'relative', width: '100dvw', height: '100dvh', overflow: 'hidden', background: '#F5F7FA' }}>
       {/* Partículas de fundo */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
         <SparklesCore
-          id="login-sparkles"
+          id="login-sparkles-active-green"
           background="transparent"
-          minSize={0.4}
-          maxSize={1.2}
-          particleDensity={80}
-          particleColor="#FFFFFF"
-          speed={0.6}
+          minSize={1.0}
+          maxSize={2.5}
+          particleDensity={70}
+          particleColor="#0D7C3D"
+          speed={0.4}
           className="w-full h-full"
         />
       </div>
@@ -82,7 +82,7 @@ export default function Login() {
       <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%' }}>
         <SignInPage
           title={
-            <span>
+            <span className="text-[#0D7C3D] font-bold">
               SIC{' '}
               <span style={{ fontWeight: 300, opacity: 0.7 }}>·</span>{' '}
               <span style={{ fontWeight: 300 }}>Biometria</span>

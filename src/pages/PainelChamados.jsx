@@ -13,11 +13,17 @@ import {
   Heart,
   GraduationCap,
   Filter,
+  ClipboardList,
+  AlertTriangle,
+  HelpCircle,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react';
 import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
 import { supabase, fetchChamados } from '@/lib/supabase';
 import { fmtDate, contarPor } from '@/lib/utils';
-import { COR_MOT, COR_SEC, CATEGORIAS_MOTIVO, CHART_DEFAULTS } from '@/lib/constants';
+import { COR_MOT, COR_SEC, CATEGORIAS_MOTIVO } from '@/lib/constants';
+import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle } from '@/components/ui/dashboard-card';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -43,15 +49,23 @@ export default function PainelChamados() {
   const [modal, setModal] = useState(null);
   const hbarRef = useRef(null);
 
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    window.addEventListener('themechange', handleTheme);
+    return () => window.removeEventListener('themechange', handleTheme);
+  }, []);
+
+  const t = useDashboardTheme(isDark);
+  const tooltip = chartTooltipStyle(isDark);
+
   const carregar = useCallback(async () => {
     try {
       const data = await fetchChamados();
       setDados(data);
       setStatus(
         `Atualizado em ${new Date().toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
+          day: '2-digit', month: 'long', year: 'numeric',
         })} · ${data.length} registros`
       );
     } catch (err) {
@@ -62,12 +76,10 @@ export default function PainelChamados() {
 
   useEffect(() => {
     carregar();
-
     const channel = supabase
       .channel('sic-rt')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, carregar)
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [carregar]);
 
@@ -98,11 +110,11 @@ export default function PainelChamados() {
       {
         data: valoresFinais,
         backgroundColor: labelsFinais.map((c) => COR_MOT[c]),
-        borderColor: '#0d1424',
+        borderColor: isDark ? '#0F1423' : '#ffffff',
         borderWidth: 2,
         hoverOffset: 8,
         hoverBorderWidth: 3,
-        hoverBorderColor: '#3b82f6',
+        hoverBorderColor: '#0D7C3D',
       },
     ],
   };
@@ -110,14 +122,14 @@ export default function PainelChamados() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '60%',
+    cutout: '62%',
     spacing: 3,
     plugins: {
       legend: {
         position: 'bottom',
         labels: {
-          color: '#f1f5f9',
-          padding: 15,
+          color: t.text,
+          padding: 14,
           font: { size: 11, family: 'Inter', weight: '500' },
           usePointStyle: true,
           pointStyle: 'circle',
@@ -125,13 +137,11 @@ export default function PainelChamados() {
         },
       },
       tooltip: {
-        ...CHART_DEFAULTS,
-        displayColors: true,
-        usePointStyle: true,
+        ...tooltip,
         callbacks: {
           label(ctx) {
-            const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
-            const pct = Math.round((ctx.parsed / t) * 100);
+            const tot = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            const pct = Math.round((ctx.parsed / tot) * 100);
             return `${ctx.label}: ${ctx.parsed} chamados (${pct}%)`;
           },
         },
@@ -142,7 +152,6 @@ export default function PainelChamados() {
 
   const maxSec = secE[0]?.[1] || 1;
 
-  // Período: do mês do primeiro chamado ao mês do mais recente
   const periodoTag = (() => {
     const datas = arr
       .map(d => d.data_abertura)
@@ -180,99 +189,68 @@ export default function PainelChamados() {
       </div>
 
       <div className="content">
-        {/* Filters – IconBar animado */}
+        {/* Filters */}
         <div className="filters">
           <span className="filter-label">Filtrar por</span>
-          <IconBar
-            value={filtro}
-            onValueChange={(v) => setFiltro(v ?? 'Todos')}
-          >
+          <IconBar value={filtro} onValueChange={(v) => setFiltro(v ?? 'Todos')}>
             {FILTROS.map(({ value, label, icon }) => (
               <IconBarItem key={value} value={value} label={label} icon={icon} />
             ))}
           </IconBar>
         </div>
 
-        {/* KPIs */}
-        <div className="kpi-grid">
-          <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#3b82f6' }} />
-            <div className="kpi-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-              </svg>
-              Total de chamados
-            </div>
-            <div className="kpi-value" style={{ color: '#60a5fa' }}>{total}</div>
-            <div className="kpi-footer">
-              {periodoTag && <span className="kpi-tag tag-blue">{periodoTag}</span>}
-            </div>
-          </div>
-
-          <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#ef4444' }} />
-            <div className="kpi-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-              </svg>
-              Secretaria crítica
-            </div>
-            <div className="kpi-value" style={{ color: '#f87171', fontSize: 22, paddingTop: 6 }}>
-              {secE[0]?.[0] || '—'}
-            </div>
-            <div className="kpi-footer">
-              <span className="kpi-tag tag-red">{secE[0] ? `${secE[0][1]} chamados` : '0 chamados'}</span>
-            </div>
-          </div>
-
-          <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#f59e0b' }} />
-            <div className="kpi-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              Principal Motivo
-            </div>
-            <div className="kpi-value" style={{ color: '#fbbf24', fontSize: 16, paddingTop: 10 }}>
-              {motE[0]?.[0] || '—'}
-            </div>
-            <div className="kpi-footer">
-              <span className="kpi-tag tag-amber">
-                {motE[0] ? `${Math.round(motE[0][1] / total * 100)}% do total` : '0%'}
-              </span>
-            </div>
-          </div>
+        {/* KPIs — estilo Efferd */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16, marginBottom: 24 }}>
+          <KpiCard
+            label="Total de Chamados"
+            value={total.toLocaleString('pt-BR')}
+            sub={periodoTag || 'Todos os períodos'}
+            cor="#0D7C3D"
+            icon={<ClipboardList />}
+            isDark={isDark}
+          />
+          <KpiCard
+            label="Secretaria Crítica"
+            value={secE[0]?.[0] || '—'}
+            sub={secE[0] ? `${secE[0][1]} chamados` : '0 chamados'}
+            cor="#ef4444"
+            icon={<AlertTriangle />}
+            isDark={isDark}
+          />
+          <KpiCard
+            label="Principal Motivo"
+            value={motE[0]?.[0] || '—'}
+            sub={motE[0] ? `${Math.round(motE[0][1] / (total || 1) * 100)}% do total` : '0%'}
+            cor="#f59e0b"
+            icon={<HelpCircle />}
+            isDark={isDark}
+          />
         </div>
 
         {/* Charts Row */}
-        <div className="charts-row">
-          <div className="chart-card">
-            <div className="chart-header">
-              <div>
-                <div className="chart-title">Distribuição por motivo</div>
-                <div className="chart-sub">Categorias de incidente</div>
-              </div>
-              <div className="chart-badge">{total} total</div>
-            </div>
-            <div style={{ position: 'relative', height: 200 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <ChartCard
+            title="Distribuição por Motivo"
+            subtitle="Categorias de incidente"
+            badge={`${total} total`}
+            isDark={isDark}
+          >
+            <div style={{ position: 'relative', height: 220 }}>
               {total > 0 && <Doughnut data={chartData} options={chartOptions} />}
             </div>
-          </div>
+          </ChartCard>
 
-          <div className="chart-card">
-            <div className="chart-header">
-              <div>
-                <div className="chart-title">Legendas dos Motivos</div>
-                <div className="chart-sub">Descrição detalhada das categorias</div>
-              </div>
-            </div>
+          <ChartCard
+            title="Legendas dos Motivos"
+            subtitle="Descrição detalhada das categorias"
+            isDark={isDark}
+          >
             <div className="motivos-compact-grid">
               {[
-                { cor: '#ef4444', nome: 'EQUIPAMENTO', desc: 'Problema físico no aparelho: quebrado, solto, caiu, não liga, suporte frouxo/quebrado.' },
-                { cor: '#3b82f6', nome: 'RECONHECIMENTO', desc: 'Equipamento não reconhece rosto, enquadramento vermelho, não registra ponto.' },
-                { cor: '#f59e0b', nome: 'ESPELHO DE PONTO', desc: 'O ponto foi registrado mas não apareceu no sistema, espelho de ponto ou integração.' },
-                { cor: '#10b981', nome: 'CADASTRO', desc: 'Servidor não cadastrado, problema de horário, regra de ponto, permissão ou configuração.' },
+                { cor: '#ef4444', nome: 'EQUIPAMENTO',    desc: 'Problema físico no aparelho: quebrado, solto, caiu, não liga, suporte frouxo/quebrado.' },
+                { cor: '#0D7C3D', nome: 'RECONHECIMENTO', desc: 'Equipamento não reconhece rosto, enquadramento vermelho, não registra ponto.' },
+                { cor: '#f59e0b', nome: 'ESPELHO DE PONTO',desc: 'O ponto foi registrado mas não apareceu no sistema, espelho de ponto ou integração.' },
+                { cor: '#10b981', nome: 'CADASTRO',        desc: 'Servidor não cadastrado, problema de horário, regra de ponto, permissão ou configuração.' },
               ].map(({ cor, nome, desc }) => (
                 <div key={nome} className="motivo-compact-card">
                   <div className="motivo-compact-header">
@@ -283,18 +261,18 @@ export default function PainelChamados() {
                 </div>
               ))}
             </div>
-          </div>
+          </ChartCard>
         </div>
 
         {/* Bottom Row */}
-        <div className="bottom-row">
-          <div className="table-card">
-            <div className="chart-header" style={{ marginBottom: 16 }}>
-              <div>
-                <div className="chart-title">Últimas ocorrências</div>
-                <div className="chart-sub">Registros mais recentes</div>
-              </div>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+          {/* Tabela de últimas ocorrências */}
+          <ChartCard
+            title="Últimas Ocorrências"
+            subtitle="Registros mais recentes"
+            icon={<CheckCircle2 />}
+            isDark={isDark}
+          >
             <table>
               <thead>
                 <tr>
@@ -310,7 +288,7 @@ export default function PainelChamados() {
                   const st = r.status || 'Aguardando Atendimento';
                   return (
                     <tr key={r.ticket} className="clickable-row" onClick={() => abrirModal(r)}>
-                      <td style={{ color: '#f1f5f9', fontSize: 11, fontWeight: 500 }}>
+                      <td style={{ color: t.text, fontSize: 11, fontWeight: 500 }}>
                         {r.unidade?.split(' ').slice(0, 4).join(' ') || 'N/A'}
                       </td>
                       <td style={{ fontSize: 11 }}>{r.secretaria}</td>
@@ -320,7 +298,7 @@ export default function PainelChamados() {
                           {st}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#60a5fa' }}>
+                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#15A050' }}>
                         #{r.ticket}
                       </td>
                     </tr>
@@ -328,32 +306,32 @@ export default function PainelChamados() {
                 })}
               </tbody>
             </table>
-          </div>
+          </ChartCard>
 
-          <div className="chart-card">
-            <div className="chart-header" style={{ marginBottom: 16 }}>
-              <div>
-                <div className="chart-title">Chamados por secretaria</div>
-                <div className="chart-sub">Volume de incidentes</div>
-              </div>
-              <div className="chart-badge">{total} total</div>
-            </div>
+          {/* HBar por secretaria */}
+          <ChartCard
+            title="Chamados por Secretaria"
+            subtitle="Volume de incidentes"
+            badge={`${total} total`}
+            icon={<Building2 />}
+            isDark={isDark}
+          >
             <div className="hbar-list" ref={hbarRef}>
               {secE.map(([l, v]) => {
                 const pct = Math.round((v / maxSec) * 100);
                 const cor = COR_SEC[l] || '#64748b';
                 return (
                   <div key={l} className="hbar-row">
-                    <div className="hbar-label">{l}</div>
-                    <div className="hbar-track">
-                      <div className="hbar-fill" style={{ width: 0, background: cor }} data-w={pct} />
+                    <div className="hbar-label" style={{ color: t.text }}>{l}</div>
+                    <div className="hbar-track" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: 6 }}>
+                      <div className="hbar-fill" style={{ width: 0, background: cor, borderRadius: 6 }} data-w={pct} />
                     </div>
-                    <div className="hbar-val">{v}</div>
+                    <div className="hbar-val" style={{ color: t.muted, fontFamily: 'monospace' }}>{v}</div>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </ChartCard>
         </div>
       </div>
 
@@ -390,7 +368,7 @@ export default function PainelChamados() {
             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => { fecharModal(); navigate('/chamado-detalhe', { state: { chamado: modal } }); }}
-                style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(59,130,246,.12)', border: '1px solid rgba(59,130,246,.25)', color: '#60a5fa', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
+                style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(13,124,61,.12)', border: '1px solid rgba(13,124,61,.25)', color: '#15A050', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
               >
                 Ver página completa →
               </button>

@@ -16,14 +16,14 @@ const TIPOS = [
 ];
 
 const inputSt = {
-  width: '100%', background: 'rgba(0,0,0,.2)',
-  border: '1px solid rgba(255,255,255,.1)', borderRadius: 8,
-  padding: '10px 14px', color: '#f1f5f9', fontSize: 13,
+  width: '100%', background: 'var(--surface)',
+  border: '1px solid var(--border-c)', borderRadius: 8,
+  padding: '10px 14px', color: 'var(--text)', fontSize: 13,
   outline: 'none', boxSizing: 'border-box',
 };
 
 const labelSt = {
-  display: 'block', fontSize: 11, color: '#64748b', fontWeight: 600,
+  display: 'block', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600,
   marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.06em',
 };
 
@@ -148,7 +148,7 @@ export default function NovoProtocolo() {
       <div className="topbar">
         <div className="topbar-left">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link to="/protocolos/painel" style={{ display: 'flex', alignItems: 'center', color: '#64748b' }}>
+            <Link to="/protocolos/painel" style={{ display: 'flex', alignItems: 'center', color: 'var(--muted-c)' }}>
               <ArrowLeft size={18} />
             </Link>
             <h1>Novo Protocolo Digital</h1>
@@ -172,23 +172,23 @@ export default function NovoProtocolo() {
             }}>
               <CheckCircle size={32} color="#10b981" />
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#f8fafc', marginBottom: 8 }}>Protocolo Gerado com Sucesso</h2>
-            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 24 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Protocolo Gerado com Sucesso</h2>
+            <p style={{ fontSize: 13, color: 'var(--muted-c)', marginBottom: 24 }}>
               O requerimento foi registrado no sistema e encaminhado para análise.
             </p>
 
             <div style={{
-              background: 'rgba(99, 102, 241, 0.07)',
-              border: '1px solid rgba(99, 102, 241, 0.18)',
+              background: 'rgba(13, 124, 61, 0.07)',
+              border: '1px solid rgba(13, 124, 61, 0.18)',
               borderRadius: 10, padding: '16px 20px', marginBottom: 30
             }}>
-              <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Código do Protocolo</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#a5b4fc', fontFamily: 'monospace' }}>{sucessoIndividual.numero_protocolo}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1', marginTop: 12, borderTop: '1px solid rgba(255,255,255,.05)', paddingTop: 10 }}>
+              <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Código do Protocolo</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#15A050', fontFamily: 'monospace' }}>{sucessoIndividual.numero_protocolo}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted-c)', marginTop: 12, borderTop: '1px solid rgba(0, 0, 0, 0.03)', paddingTop: 10 }}>
                 <span>Requerente:</span>
                 <span style={{ fontWeight: 600 }}>{sucessoIndividual.requerente_nome}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1', marginTop: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted-c)', marginTop: 6 }}>
                 <span>Prazo Estimado:</span>
                 <span style={{ fontWeight: 600 }}>{new Date(sucessoIndividual.prazo_estimado).toLocaleDateString('pt-BR')}</span>
               </div>
@@ -199,8 +199,8 @@ export default function NovoProtocolo() {
                 onClick={reiniciarIndividual}
                 style={{
                   padding: '10px 20px', borderRadius: 8,
-                  background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                  color: '#e2e8f0', fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                  background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer'
                 }}
               >
                 Abrir Outro
@@ -209,7 +209,7 @@ export default function NovoProtocolo() {
                 <button
                   style={{
                     padding: '10px 22px', borderRadius: 8,
-                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                    background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
                     border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer'
                   }}
                 >
@@ -230,18 +230,18 @@ export default function NovoProtocolo() {
             }}>
               <CheckCircle size={32} color="#10b981" />
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#f8fafc', marginBottom: 8 }}>Importação Concluída</h2>
-            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 24 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Importação Concluída</h2>
+            <p style={{ fontSize: 13, color: 'var(--muted-c)', marginBottom: 24 }}>
               Sua planilha foi processada e os registros foram importados.
             </p>
 
             <div style={{
-              background: 'rgba(99, 102, 241, 0.07)',
-              border: '1px solid rgba(99, 102, 241, 0.18)',
+              background: 'rgba(13, 124, 61, 0.07)',
+              border: '1px solid rgba(13, 124, 61, 0.18)',
               borderRadius: 10, padding: '20px', marginBottom: 30
             }}>
-              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Total de Protocolos Criados</div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#a5b4fc', fontFamily: 'monospace' }}>{sucessoLote}</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Total de Protocolos Criados</div>
+              <div style={{ fontSize: 36, fontWeight: 800, color: '#15A050', fontFamily: 'monospace' }}>{sucessoLote}</div>
             </div>
 
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -249,8 +249,8 @@ export default function NovoProtocolo() {
                 onClick={reiniciarLote}
                 style={{
                   padding: '10px 20px', borderRadius: 8,
-                  background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                  color: '#e2e8f0', fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                  background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer'
                 }}
               >
                 Importar Outra Planilha
@@ -259,7 +259,7 @@ export default function NovoProtocolo() {
                 <button
                   style={{
                     padding: '10px 22px', borderRadius: 8,
-                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                    background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
                     border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer'
                   }}
                 >
@@ -275,15 +275,15 @@ export default function NovoProtocolo() {
           <div className="chart-card" style={{ maxWidth: 640, margin: '0 auto', padding: '24px 30px' }}>
             
             {/* TABS NAVEGAÇÃO DE TIPO DE CADASTRO */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,.08)', paddingBottom: 12 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 20, borderBottom: '1px solid rgba(0, 0, 0, 0.05)', paddingBottom: 12 }}>
               <button
                 type="button"
                 onClick={() => { setAba('individual'); setErro(''); }}
                 style={{
                   padding: '8px 16px', borderRadius: 8,
-                  background: aba === 'individual' ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-                  border: `1px solid ${aba === 'individual' ? 'rgba(99, 102, 241, 0.25)' : 'transparent'}`,
-                  color: aba === 'individual' ? '#a5b4fc' : '#64748b',
+                  background: aba === 'individual' ? 'rgba(13, 124, 61, 0.12)' : 'transparent',
+                  border: `1px solid ${aba === 'individual' ? 'rgba(13, 124, 61, 0.25)' : 'transparent'}`,
+                  color: aba === 'individual' ? '#15A050' : '#64748b',
                   fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all .15s'
                 }}
               >
@@ -294,9 +294,9 @@ export default function NovoProtocolo() {
                 onClick={() => { setAba('lote'); setErro(''); }}
                 style={{
                   padding: '8px 16px', borderRadius: 8,
-                  background: aba === 'lote' ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-                  border: `1px solid ${aba === 'lote' ? 'rgba(99, 102, 241, 0.25)' : 'transparent'}`,
-                  color: aba === 'lote' ? '#a5b4fc' : '#64748b',
+                  background: aba === 'lote' ? 'rgba(13, 124, 61, 0.12)' : 'transparent',
+                  border: `1px solid ${aba === 'lote' ? 'rgba(13, 124, 61, 0.25)' : 'transparent'}`,
+                  color: aba === 'lote' ? '#15A050' : '#64748b',
                   fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all .15s'
                 }}
               >
@@ -307,9 +307,9 @@ export default function NovoProtocolo() {
             {/* ABA INDIVIDUAL (FORMULÁRIO MANUAL) */}
             {aba === 'individual' && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, borderBottom: '1px solid rgba(255,255,255,.05)', paddingBottom: 14 }}>
-                  <FilePlus color="#6366f1" size={20} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>Preencha o Formulário de Abertura</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, borderBottom: '1px solid rgba(0, 0, 0, 0.03)', paddingBottom: 14 }}>
+                  <FilePlus color="#0D7C3D" size={20} />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Preencha o Formulário de Abertura</span>
                 </div>
 
                 <form onSubmit={handleSalvarIndividual} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -388,17 +388,17 @@ export default function NovoProtocolo() {
                     <label style={labelSt}>Documento Comprobatório (Anexo)</label>
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 10,
-                      background: 'rgba(0,0,0,.15)', border: '1px dashed rgba(255,255,255,.15)',
-                      borderRadius: 8, padding: '12px 16px', color: '#94a3b8', fontSize: 13
+                      background: 'var(--bg)', border: '1px dashed #cbd5e1',
+                      borderRadius: 8, padding: '12px 16px', color: 'var(--muted-c)', fontSize: 13
                     }}>
-                      <FileText size={18} color="#6366f1" />
+                      <FileText size={18} color="#0D7C3D" />
                       <input
                         type="file"
                         onChange={e => setAnexo(e.target.value)}
                         style={{ display: 'none' }}
                         id="file-upload"
                       />
-                      <label htmlFor="file-upload" style={{ cursor: 'pointer', color: '#a5b4fc', fontWeight: 600 }}>
+                      <label htmlFor="file-upload" style={{ cursor: 'pointer', color: '#15A050', fontWeight: 600 }}>
                         {anexo ? anexo.split('\\').pop() : 'Selecione um arquivo PDF ou imagem'}
                       </label>
                       {anexo && (
@@ -410,7 +410,7 @@ export default function NovoProtocolo() {
                   </div>
 
                   {erro && (
-                    <div style={{ fontSize: 12, color: '#f87171', padding: '10px 14px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6 }}>
+                    <div style={{ fontSize: 12, color: '#dc2626', padding: '10px 14px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6 }}>
                       {erro}
                     </div>
                   )}
@@ -421,8 +421,8 @@ export default function NovoProtocolo() {
                         type="button"
                         style={{
                           padding: '10px 18px', borderRadius: 8,
-                          background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                          color: '#94a3b8', fontSize: 13, cursor: 'pointer'
+                          background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                          color: 'var(--muted-c)', fontSize: 13, cursor: 'pointer'
                         }}
                       >
                         Cancelar
@@ -433,10 +433,10 @@ export default function NovoProtocolo() {
                       disabled={loading}
                       style={{
                         padding: '10px 24px', borderRadius: 8,
-                        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                        background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
                         border: 'none', color: '#fff', fontSize: 13, fontWeight: 600,
                         cursor: loading ? 'wait' : 'pointer',
-                        boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+                        boxShadow: '0 4px 12px rgba(13, 124, 61, 0.2)'
                       }}
                     >
                       {loading ? 'Abrindo protocolo...' : 'Registrar Protocolo'}
@@ -449,19 +449,19 @@ export default function NovoProtocolo() {
             {/* ABA EM LOTE (UPLOAD DA PLANILHA EXCEL) */}
             {aba === 'lote' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid rgba(255,255,255,.05)', paddingBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid rgba(0, 0, 0, 0.03)', paddingBottom: 14 }}>
                   <FileSpreadsheet color="#10b981" size={20} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>Importar Planilha XLSX de Protocolos</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Importar Planilha XLSX de Protocolos</span>
                 </div>
 
-                <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: '1.6', marginTop: -4 }}>
+                <p style={{ fontSize: 12, color: 'var(--muted-c)', lineHeight: '1.6', marginTop: -4 }}>
                   Carregue um arquivo Excel contendo as colunas do relatório <strong>"Protocolos Aceitar e Receber"</strong>. O sistema processará automaticamente todas as linhas contidas na planilha.
                 </p>
 
                 {/* Dropzone de Lote */}
                 {!fileLote ? (
                   <div style={{
-                    border: '2px dashed rgba(255,255,255,.15)', borderRadius: 10,
+                    border: '2px dashed rgba(0, 0, 0, 0.08)', borderRadius: 10,
                     padding: '40px 20px', textAlign: 'center', background: 'rgba(0,0,0,.15)',
                     cursor: 'pointer', position: 'relative', minHeight: 120, display: 'flex',
                     alignItems: 'center', justifyContent: 'center'
@@ -477,13 +477,13 @@ export default function NovoProtocolo() {
                     />
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                       <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Upload size={22} color="#34d399" />
+                        <Upload size={22} color="#047857" />
                       </div>
                       <div>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>Clique para selecionar</span>
-                        <span style={{ fontSize: 13, color: '#64748b' }}> ou arraste o arquivo Excel aqui</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Clique para selecionar</span>
+                        <span style={{ fontSize: 13, color: 'var(--muted-c)' }}> ou arraste o arquivo Excel aqui</span>
                       </div>
-                      <span style={{ fontSize: 11, color: '#475569' }}>Suporta arquivos .XLS e .XLSX</span>
+                      <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>Suporta arquivos .XLS e .XLSX</span>
                     </div>
                   </div>
                 ) : (
@@ -491,10 +491,10 @@ export default function NovoProtocolo() {
                     background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)',
                     borderRadius: 8, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12
                   }}>
-                    <FileSpreadsheet size={24} color="#34d399" />
+                    <FileSpreadsheet size={24} color="#047857" />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fileLote.name}</div>
-                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fileLote.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>
                         {(fileLote.size / 1024).toFixed(1)} KB · <strong>{protsLote.length}</strong> protocolos detectados para importação.
                       </div>
                     </div>
@@ -510,10 +510,10 @@ export default function NovoProtocolo() {
                   </div>
                 )}
 
-                {loading && <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 12, color: '#64748b' }}>Processando planilha...</div>}
+                {loading && <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 12, color: 'var(--muted-c)' }}>Processando planilha...</div>}
                 
                 {erro && (
-                  <div style={{ fontSize: 12, color: '#f87171', padding: '10px 14px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <div style={{ fontSize: 12, color: '#dc2626', padding: '10px 14px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 6, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
                     <span>{erro}</span>
                   </div>
@@ -522,34 +522,34 @@ export default function NovoProtocolo() {
                 {/* Previsualização Lote */}
                 {protsLote.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>Pré-visualização dos Protocolos a serem criados</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>Pré-visualização dos Protocolos a serem criados</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 200, overflowY: 'auto', paddingRight: 6 }}>
                       {protsLote.slice(0, 4).map((p, idx) => (
-                        <div key={idx} style={{ background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 8, padding: '10px 12px', fontSize: 12 }}>
+                        <div key={idx} style={{ background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0, 0, 0, 0.03)', borderRadius: 8, padding: '10px 12px', fontSize: 12 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontWeight: 700, color: '#a5b4fc', fontFamily: 'monospace' }}>{p.numero_protocolo}</span>
-                            <span style={{ padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,.05)', color: '#94a3b8', fontSize: 10 }}>{p.secretaria}</span>
+                            <span style={{ fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{p.numero_protocolo}</span>
+                            <span style={{ padding: '2px 6px', borderRadius: 4, background: 'rgba(0, 0, 0, 0.03)', color: 'var(--muted-c)', fontSize: 10 }}>{p.secretaria}</span>
                           </div>
-                          <div style={{ color: '#cbd5e1', fontWeight: 600, marginBottom: 2 }}>{p.requerente_nome}</div>
-                          <div style={{ color: '#64748b', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.tipo_solicitacao} — {p.descricao}</div>
+                          <div style={{ color: 'var(--text)', fontWeight: 600, marginBottom: 2 }}>{p.requerente_nome}</div>
+                          <div style={{ color: 'var(--muted-c)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.tipo_solicitacao} — {p.descricao}</div>
                         </div>
                       ))}
                       {protsLote.length > 4 && (
-                        <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 4, fontStyle: 'italic' }}>... e mais {protsLote.length - 4} protocolos encontrados na planilha.</div>
+                        <div style={{ fontSize: 11, color: 'var(--muted-c)', textAlign: 'center', marginTop: 4, fontStyle: 'italic' }}>... e mais {protsLote.length - 4} protocolos encontrados na planilha.</div>
                       )}
                     </div>
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12, borderTop: '1px solid rgba(255,255,255,.05)', paddingTop: 14 }}>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12, borderTop: '1px solid rgba(0, 0, 0, 0.03)', paddingTop: 14 }}>
                   <Link to="/protocolos/painel" style={{ textDecoration: 'none' }}>
                     <button
                       type="button"
                       disabled={loading}
                       style={{
                         padding: '10px 18px', borderRadius: 8,
-                        background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                        color: '#94a3b8', fontSize: 13, cursor: 'pointer'
+                        background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                        color: 'var(--muted-c)', fontSize: 13, cursor: 'pointer'
                       }}
                     >
                       Cancelar

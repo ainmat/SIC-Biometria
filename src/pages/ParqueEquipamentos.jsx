@@ -5,20 +5,20 @@ import { useAuth } from '@/contexts/AuthContext';
 
 function moduloBadge(modulo) {
   const n = Number(modulo);
-  if (isNaN(n)) return { bg: 'rgba(100,116,139,.12)', color: '#94a3b8', border: 'rgba(100,116,139,.2)', label: '—' };
+  if (isNaN(n)) return { bg: 'rgba(100,116,139,.12)', color: 'var(--muted-c)', border: 'rgba(100,116,139,.2)', label: '—' };
   const blue = n < 17;
   return blue
-    ? { bg: 'rgba(59,130,246,.12)', color: '#60a5fa', border: 'rgba(59,130,246,.25)', label: String(n) }
-    : { bg: 'rgba(239,68,68,.12)', color: '#f87171', border: 'rgba(239,68,68,.25)', label: String(n) };
+    ? { bg: 'rgba(13,124,61,.12)', color: '#15A050', border: 'rgba(13,124,61,.25)', label: String(n) }
+    : { bg: 'rgba(239,68,68,.12)', color: '#dc2626', border: 'rgba(239,68,68,.25)', label: String(n) };
 }
 
 function fabricanteBadge(fabricante) {
   const f = (fabricante || '').trim();
   if (/tomm?i/i.test(f))
-    return { bg: 'rgba(59,130,246,.12)', color: '#60a5fa', border: 'rgba(59,130,246,.25)', label: f };
+    return { bg: 'rgba(13,124,61,.12)', color: '#15A050', border: 'rgba(13,124,61,.25)', label: f };
   if (/control\s*id/i.test(f))
-    return { bg: 'rgba(239,68,68,.12)', color: '#f87171', border: 'rgba(239,68,68,.25)', label: f };
-  return { bg: 'rgba(100,116,139,.12)', color: '#94a3b8', border: 'rgba(100,116,139,.2)', label: f || '—' };
+    return { bg: 'rgba(239,68,68,.12)', color: '#dc2626', border: 'rgba(239,68,68,.25)', label: f };
+  return { bg: 'rgba(100,116,139,.12)', color: 'var(--muted-c)', border: 'rgba(100,116,139,.2)', label: f || '—' };
 }
 
 function Badge({ style: { bg, color, border, label } }) {
@@ -103,19 +103,19 @@ export default function ParqueEquipamentos() {
         {/* KPIs */}
         <div className="kpi-grid" style={{ marginBottom: 24 }}>
           <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#3b82f6' }} />
+            <div className="kpi-accent" style={{ background: '#0D7C3D' }} />
             <div className="kpi-label">Total</div>
-            <div className="kpi-value" style={{ color: '#60a5fa' }}>{dados.length}</div>
+            <div className="kpi-value" style={{ color: '#15A050' }}>{dados.length}</div>
           </div>
           <div className="kpi-card">
-            <div className="kpi-accent" style={{ background: '#3b82f6' }} />
+            <div className="kpi-accent" style={{ background: '#0D7C3D' }} />
             <div className="kpi-label">Tommi</div>
-            <div className="kpi-value" style={{ color: '#60a5fa' }}>{tommiCount}</div>
+            <div className="kpi-value" style={{ color: '#15A050' }}>{tommiCount}</div>
           </div>
           <div className="kpi-card">
             <div className="kpi-accent" style={{ background: '#ef4444' }} />
             <div className="kpi-label">Control ID</div>
-            <div className="kpi-value" style={{ color: '#f87171' }}>{controlIdCount}</div>
+            <div className="kpi-value" style={{ color: '#dc2626' }}>{controlIdCount}</div>
           </div>
         </div>
 
@@ -167,15 +167,15 @@ export default function ParqueEquipamentos() {
                       textAlign: 'right',
                       fontFamily: "'JetBrains Mono', monospace",
                       fontWeight: 600,
-                      color: '#60a5fa',
+                      color: '#15A050',
                       fontSize: 11,
                     }}>
                       {eq.codigo}
                     </td>
-                    <td style={{ color: '#f1f5f9', fontWeight: 500, fontSize: 11 }}>
+                    <td style={{ color: 'var(--text)', fontWeight: 500, fontSize: 11 }}>
                       {eq.nome || '—'}
                     </td>
-                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: isVisitor ? '#374151' : '#94a3b8' }}>
+                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: isVisitor ? '#374151' : '#64748b' }}>
                       {isVisitor ? '••••••••' : (eq.ip_equipamento || '—')}
                     </td>
                     <td style={{ textAlign: 'center', fontSize: 11 }}>

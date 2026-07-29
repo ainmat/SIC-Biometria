@@ -8,19 +8,19 @@ import { isComissionado, anosParaAposentadoria, APOSENTADORIA } from '@/modules/
 const fmt = (n) => Math.round(n).toLocaleString('pt-BR');
 const diff = (a, b) => { const d = b - a; return d >= 0 ? `+${fmt(d)}` : fmt(d); };
 
-function Slider({ label, value, onChange, min = 0, max = 100, step = 1, cor = '#6366f1', suffix = '%', hint }) {
+function Slider({ label, value, onChange, min = 0, max = 100, step = 1, cor = '#0D7C3D', suffix = '%', hint }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{ fontSize: 13, color: '#e2e8f0', fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600 }}>{label}</span>
         <span style={{ fontSize: 16, fontWeight: 800, color: cor, fontVariantNumeric: 'tabular-nums' }}>{value}{suffix}</span>
       </div>
-      {hint && <div style={{ fontSize: 11, color: '#475569', marginBottom: 6 }}>{hint}</div>}
+      {hint && <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 6 }}>{hint}</div>}
       <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))}
         style={{ width: '100%', accentColor: cor, cursor: 'pointer' }} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 10, color: '#334155' }}>{min}{suffix}</span>
-        <span style={{ fontSize: 10, color: '#334155' }}>{max}{suffix}</span>
+        <span style={{ fontSize: 10, color: 'var(--text)' }}>{min}{suffix}</span>
+        <span style={{ fontSize: 10, color: 'var(--text)' }}>{max}{suffix}</span>
       </div>
     </div>
   );
@@ -32,11 +32,11 @@ function Tooltip_({ active, payload, label }) {
   const pr = payload.find(p => p.dataKey === 'projetado');
   const d = pr && at ? pr.value - at.value : 0;
   return (
-    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '8px 14px', fontSize: 12 }}>
-      <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>{label}</div>
-      {at && <div style={{ color: '#6366f1' }}>Atual: {fmt(at.value)}</div>}
+    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 10, padding: '8px 14px', fontSize: 12 }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{label}</div>
+      {at && <div style={{ color: '#0D7C3D' }}>Atual: {fmt(at.value)}</div>}
       {pr && <div style={{ color: '#10b981' }}>Projetado: {fmt(pr.value)}</div>}
-      {d !== 0 && <div style={{ color: d < 0 ? '#ef4444' : '#34d399', fontWeight: 700, marginTop: 4 }}>{d > 0 ? '+' : ''}{fmt(d)} servidores</div>}
+      {d !== 0 && <div style={{ color: d < 0 ? '#ef4444' : '#047857', fontWeight: 700, marginTop: 4 }}>{d > 0 ? '+' : ''}{fmt(d)} servidores</div>}
     </div>
   );
 }
@@ -95,7 +95,7 @@ export default function SimuladorCenarios() {
     return { resumo, porSecretaria };
   }, [dados, horizonte, pctAposenta, pctCortaComiss, admissoesNova, filtroSec]);
 
-  const SEL = { padding: '7px 10px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 12, outline: 'none' };
+  const SEL = { padding: '7px 10px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 12, outline: 'none' };
 
   return (
     <div>
@@ -114,16 +114,16 @@ export default function SimuladorCenarios() {
       </div>
 
       <div className="content">
-        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: '#475569', fontSize: 14 }}>Carregando...</div>}
-        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted-c)', fontSize: 14 }}>Carregando...</div>}
+        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {!loading && !erro && dados.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 16, alignItems: 'start' }}>
             {/* Painel de controles */}
             <div style={{ position: 'sticky', top: 20 }}>
               <div className="chart-card" style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 16 }}>Parâmetros do cenário</div>
-                <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(245,158,11,.07)', border: '1px solid rgba(245,158,11,.2)', color: '#fbbf24', fontSize: 10, marginBottom: 16, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>Parâmetros do cenário</div>
+                <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(245,158,11,.07)', border: '1px solid rgba(245,158,11,.2)', color: '#b45309', fontSize: 10, marginBottom: 16, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                   <AlertTriangle size={11} style={{ marginTop: 1, flexShrink: 0 }} />
                   Estimativas de aposentadoria baseadas em parâmetros configuráveis (EC 103/2019). Confirme com RH.
                 </div>
@@ -144,25 +144,25 @@ export default function SimuladorCenarios() {
               {/* Resumo */}
               {resumo.total > 0 && (
                 <div className="chart-card">
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 14 }}>Resultado do cenário</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 14 }}>Resultado do cenário</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {[
-                      { label: 'Quadro atual',          val: fmt(resumo.total),       cor: '#6366f1' },
+                      { label: 'Quadro atual',          val: fmt(resumo.total),       cor: '#0D7C3D' },
                       { label: `Saem (aposentadoria)`,  val: `−${fmt(resumo.saemAposent)}`, cor: '#ef4444' },
                       { label: 'Saem (comissionados)',  val: `−${fmt(resumo.saemComiss)}`,  cor: '#f97316' },
                       { label: 'Novas admissões',       val: `+${fmt(resumo.admissoesNova)}`, cor: '#10b981' },
                     ].map(({ label, val, cor }) => (
                       <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: '#64748b' }}>{label}</span>
+                        <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{label}</span>
                         <span style={{ fontSize: 13, fontWeight: 700, color: cor, fontVariantNumeric: 'tabular-nums' }}>{val}</span>
                       </div>
                     ))}
-                    <div style={{ height: 1, background: 'rgba(255,255,255,.08)', margin: '4px 0' }} />
+                    <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.05)', margin: '4px 0' }} />
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 700 }}>Quadro projetado</span>
+                      <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 700 }}>Quadro projetado</span>
                       <span style={{ fontSize: 18, fontWeight: 900, color: resumo.variacao < 0 ? '#ef4444' : '#10b981', fontVariantNumeric: 'tabular-nums' }}>{fmt(resumo.projetado)}</span>
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: 11, color: resumo.variacao < 0 ? '#f87171' : '#34d399', fontWeight: 600 }}>
+                    <div style={{ textAlign: 'right', fontSize: 11, color: resumo.variacao < 0 ? '#dc2626' : '#047857', fontWeight: 600 }}>
                       {resumo.variacao > 0 ? '+' : ''}{fmt(resumo.variacao)} servidores ({resumo.total > 0 ? ((resumo.variacao / resumo.total) * 100).toFixed(1) : 0}%)
                     </div>
                   </div>
@@ -172,15 +172,15 @@ export default function SimuladorCenarios() {
 
             {/* Gráfico por secretaria */}
             <div className="chart-card">
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Impacto por secretaria</div>
-              <div style={{ fontSize: 11, color: '#475569', marginBottom: 14 }}>Top 20 mais impactadas — barras paralelas: atual × projetado</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Impacto por secretaria</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 14 }}>Top 20 mais impactadas — barras paralelas: atual × projetado</div>
               <ResponsiveContainer width="100%" height={porSecretaria.length * 48 + 40}>
                 <BarChart data={porSecretaria} layout="vertical" margin={{ left: 8, right: 80, top: 0, bottom: 0 }} barGap={2} barCategoryGap="30%">
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="sec" width={200} tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(255,255,255,.04)' }} />
-                  <Legend formatter={v => <span style={{ color: '#64748b', fontSize: 11 }}>{v === 'atual' ? 'Atual' : 'Projetado'}</span>} />
-                  <Bar dataKey="atual"     name="atual"     fill="#6366f1" maxBarSize={14} radius={[0, 3, 3, 0]}
+                  <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
+                  <Legend formatter={v => <span style={{ color: 'var(--muted-c)', fontSize: 11 }}>{v === 'atual' ? 'Atual' : 'Projetado'}</span>} />
+                  <Bar dataKey="atual"     name="atual"     fill="#0D7C3D" maxBarSize={14} radius={[0, 3, 3, 0]}
                     label={{ position: 'right', fill: '#475569', fontSize: 9, formatter: fmt }} />
                   <Bar dataKey="projetado" name="projetado" fill="#10b981" maxBarSize={14} radius={[0, 3, 3, 0]}
                     label={{
@@ -191,7 +191,7 @@ export default function SimuladorCenarios() {
                         return <text x={x + width + 5} y={y + height / 2 + 4} fill="#475569" fontSize={9} textAnchor="start">{fmt(d.projetado)}{deltaStr}</text>;
                       },
                     }}>
-                    {porSecretaria.map((d, i) => <Cell key={i} fill={d.delta < 0 ? '#ef4444' : d.delta > 0 ? '#10b981' : '#6366f1'} />)}
+                    {porSecretaria.map((d, i) => <Cell key={i} fill={d.delta < 0 ? '#ef4444' : d.delta > 0 ? '#10b981' : '#0D7C3D'} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

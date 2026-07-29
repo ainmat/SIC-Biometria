@@ -28,9 +28,9 @@ export function SearchSelect({ value, onChange, options, placeholder = 'Todas', 
         onClick={() => { if (!disabled) { setOpen(o => !o); setSearch(''); } }}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-          background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
+          background: 'var(--surface)', border: '1px solid #334155',
           borderRadius: 6, padding: '6px 10px', cursor: disabled ? 'not-allowed' : 'pointer',
-          color: value ? '#f1f5f9' : '#64748b', fontSize: 13,
+          color: value ? '#1e293b' : '#64748b', fontSize: 13,
           opacity: disabled ? 0.4 : 1,
         }}
       >
@@ -41,9 +41,9 @@ export function SearchSelect({ value, onChange, options, placeholder = 'Todas', 
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 100,
-          background: '#1e293b', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8,
+          background: 'var(--surface)', border: '1px solid #334155', borderRadius: 8,
           minWidth: '100%', maxHeight: 280, display: 'flex', flexDirection: 'column',
-          boxShadow: '0 8px 32px rgba(0,0,0,.6)',
+          boxShadow: '0 8px 32px rgba(0,0,0,.08)',
         }}>
           <div style={{ padding: '6px 6px 4px' }}>
             <input
@@ -52,8 +52,8 @@ export function SearchSelect({ value, onChange, options, placeholder = 'Todas', 
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar..."
               style={{
-                width: '100%', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)',
-                borderRadius: 5, padding: '5px 8px', color: '#f1f5f9', fontSize: 12, outline: 'none',
+                width: '100%', background: 'var(--bg)', border: '1px solid #334155',
+                borderRadius: 5, padding: '5px 8px', color: 'var(--text)', fontSize: 12, outline: 'none',
               }}
             />
           </div>
@@ -62,10 +62,10 @@ export function SearchSelect({ value, onChange, options, placeholder = 'Todas', 
               onClick={() => { onChange(''); setOpen(false); }}
               style={{
                 padding: '7px 12px', cursor: 'pointer', fontSize: 12,
-                color: !value ? '#a5b4fc' : '#94a3b8',
-                background: !value ? 'rgba(99,102,241,.12)' : 'transparent',
+                color: !value ? '#15A050' : '#64748b',
+                background: !value ? 'rgba(13,124,61,.08)' : 'transparent',
               }}
-              onMouseEnter={e => { if (value) e.currentTarget.style.background = 'rgba(255,255,255,.04)'; }}
+              onMouseEnter={e => { if (value) e.currentTarget.style.background = 'rgba(0,0,0,.04)'; }}
               onMouseLeave={e => { if (value) e.currentTarget.style.background = 'transparent'; }}
             >
               {placeholder}
@@ -76,17 +76,17 @@ export function SearchSelect({ value, onChange, options, placeholder = 'Todas', 
                 onClick={() => { onChange(o.value); setOpen(false); }}
                 style={{
                   padding: '7px 12px', cursor: 'pointer', fontSize: 12,
-                  color: value === o.value ? '#a5b4fc' : '#f1f5f9',
-                  background: value === o.value ? 'rgba(99,102,241,.12)' : 'transparent',
+                  color: value === o.value ? '#15A050' : '#1e293b',
+                  background: value === o.value ? 'rgba(13,124,61,.08)' : 'transparent',
                 }}
-                onMouseEnter={e => { if (value !== o.value) e.currentTarget.style.background = 'rgba(255,255,255,.04)'; }}
+                onMouseEnter={e => { if (value !== o.value) e.currentTarget.style.background = 'rgba(0,0,0,.04)'; }}
                 onMouseLeave={e => { if (value !== o.value) e.currentTarget.style.background = 'transparent'; }}
               >
                 {o.label}
               </div>
             ))}
             {filtered.length === 0 && (
-              <div style={{ padding: '10px 12px', color: '#475569', fontSize: 12 }}>Nenhum resultado</div>
+              <div style={{ padding: '10px 12px', color: 'var(--muted-c)', fontSize: 12 }}>Nenhum resultado</div>
             )}
           </div>
         </div>

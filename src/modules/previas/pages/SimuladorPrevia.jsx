@@ -31,7 +31,7 @@ function fmt(n) { return (n || 0).toLocaleString('pt-BR'); }
 function fmtPct(n) { return `${n > 0 ? '+' : ''}${n}%`; }
 
 function DeltaBadge({ valor }) {
-  if (valor === null || valor === undefined) return <span style={{ color: '#64748b', fontSize: 11 }}>—</span>;
+  if (valor === null || valor === undefined) return <span style={{ color: 'var(--muted-c)', fontSize: 11 }}>—</span>;
   const cor = valor > 15 ? '#ef4444' : valor > 0 ? '#f59e0b' : '#10b981';
   const Icon = valor > 0 ? TrendingUp : TrendingDown;
   return (
@@ -53,7 +53,7 @@ function AnomaliaCard({ nivel, mensagem, detalhe }) {
       <Icon size={15} color={cor} style={{ flexShrink: 0, marginTop: 1 }} />
       <div>
         <div style={{ fontSize: 12, color: cor, fontWeight: 600 }}>{mensagem}</div>
-        {detalhe && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>{detalhe}</div>}
+        {detalhe && <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 3 }}>{detalhe}</div>}
       </div>
     </div>
   );
@@ -61,10 +61,10 @@ function AnomaliaCard({ nivel, mensagem, detalhe }) {
 
 function ComparacaoRow({ label, valor, delta, media }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
-      <div style={{ fontSize: 12, color: '#94a3b8' }}>{label}</div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(0, 0, 0, 0.03)' }}>
+      <div style={{ fontSize: 12, color: 'var(--muted-c)' }}>{label}</div>
       <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#64748b' }}>Média hist.: <strong style={{ color: '#94a3b8' }}>{fmt(media)}</strong></span>
+        <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>Média hist.: <strong style={{ color: 'var(--muted-c)' }}>{fmt(media)}</strong></span>
         <DeltaBadge valor={delta} />
       </div>
     </div>
@@ -79,8 +79,8 @@ function ZScoreBadge({ label, zScore, classificacao, media3m, cor }) {
     <div style={{ padding: '10px 14px', borderRadius: 8, background: `${corClass}0d`, border: `1px solid ${corClass}22` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</div>
-          <div style={{ fontSize: 11, color: '#94a3b8' }}>Média 3m: <strong style={{ color: '#e2e8f0' }}>{fmt(media3m)}</strong></div>
+          <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.05em' }}>{label}</div>
+          <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>Média 3m: <strong style={{ color: 'var(--text)' }}>{fmt(media3m)}</strong></div>
         </div>
         <div style={{ textAlign: 'right' }}>
           {zScore !== null ? (
@@ -91,7 +91,7 @@ function ZScoreBadge({ label, zScore, classificacao, media3m, cor }) {
               <div style={{ fontSize: 10, color: corClass, marginTop: 1 }}>{labelClassificacao(classificacao)}</div>
             </>
           ) : (
-            <div style={{ fontSize: 11, color: '#64748b' }}>Sem histórico suficiente</div>
+            <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>Sem histórico suficiente</div>
           )}
         </div>
       </div>
@@ -322,7 +322,7 @@ export default function SimuladorPrevia() {
           {step !== 'config' && (
             <button
               onClick={reiniciar}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 12 }}
             >
               <RotateCcw size={13} />
               Nova Simulação
@@ -349,13 +349,13 @@ export default function SimuladorPrevia() {
                   onClick={() => { setModo(id); setLoteItems([]); setCompResultado(null); if (id !== 'lote') { setArquivo(null); setValidos([]); } }}
                   style={{
                     padding: '8px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                    background: modo === id ? 'rgba(59,130,246,.18)' : 'rgba(255,255,255,.05)',
-                    border: `1px solid ${modo === id ? 'rgba(59,130,246,.4)' : 'rgba(255,255,255,.1)'}`,
-                    color: modo === id ? '#60a5fa' : '#64748b',
+                    background: modo === id ? 'rgba(13,124,61,.18)' : 'rgba(0, 0, 0, 0.03)',
+                    border: `1px solid ${modo === id ? 'rgba(13,124,61,.4)' : 'rgba(0, 0, 0, 0.06)'}`,
+                    color: modo === id ? '#15A050' : '#64748b',
                   }}
                 >
                   {label}
-                  <span style={{ display: 'block', fontSize: 10, fontWeight: 400, color: modo === id ? '#3b82f6' : '#475569', marginTop: 1 }}>{sub}</span>
+                  <span style={{ display: 'block', fontSize: 10, fontWeight: 400, color: modo === id ? '#0D7C3D' : '#475569', marginTop: 1 }}>{sub}</span>
                 </button>
               ))}
             </div>
@@ -366,32 +366,32 @@ export default function SimuladorPrevia() {
                 <div className="chart-card">
                   <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, alignItems: 'start' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Competência</label>
+                      <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Competência</label>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        <select value={mesComp} onChange={e => { setMesComp(e.target.value); setLoteItems([]); if (loteRef.current) loteRef.current.value = ''; }} style={{ padding: '8px 10px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 13 }}>
+                        <select value={mesComp} onChange={e => { setMesComp(e.target.value); setLoteItems([]); if (loteRef.current) loteRef.current.value = ''; }} style={{ padding: '8px 10px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 13 }}>
                           {MESES.map((m, i) => <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>)}
                         </select>
-                        <select value={anoComp} onChange={e => { setAnoComp(e.target.value); setLoteItems([]); if (loteRef.current) loteRef.current.value = ''; }} style={{ padding: '8px 10px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 13 }}>
+                        <select value={anoComp} onChange={e => { setAnoComp(e.target.value); setLoteItems([]); if (loteRef.current) loteRef.current.value = ''; }} style={{ padding: '8px 10px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 13 }}>
                           {ANOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
                         </select>
                       </div>
-                      <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 6 }}>Competência: {formatarCompetencia(competencia)}</div>
-                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
-                        Arquivo esperado: <span style={{ fontFamily: 'monospace', color: '#60a5fa' }}>{arquivoComp.prefixo}</span>
-                        {' '}<span style={{ color: '#64748b' }}>({MESES[parseInt(arquivoComp.mes, 10) - 1]}/{arquivoComp.ano})</span>
+                      <div style={{ fontSize: 11, color: '#15A050', marginTop: 6 }}>Competência: {formatarCompetencia(competencia)}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>
+                        Arquivo esperado: <span style={{ fontFamily: 'monospace', color: '#15A050' }}>{arquivoComp.prefixo}</span>
+                        {' '}<span style={{ color: 'var(--muted-c)' }}>({MESES[parseInt(arquivoComp.mes, 10) - 1]}/{arquivoComp.ano})</span>
                       </div>
-                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 8, lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 8, lineHeight: 1.6 }}>
                         A secretaria é detectada automaticamente pelo nome do arquivo.<br />
-                        Padrão: <span style={{ fontFamily: 'monospace', color: '#94a3b8' }}>{arquivoComp.prefixo} - {'{código}'} {'{nome}'}.TXT</span>
+                        Padrão: <span style={{ fontFamily: 'monospace', color: 'var(--muted-c)' }}>{arquivoComp.prefixo} - {'{código}'} {'{nome}'}.TXT</span>
                       </div>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Arquivos das Prévias</label>
+                      <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Arquivos das Prévias</label>
                       <div
                         style={{
-                          border: `2px dashed ${loteItems.length > 0 ? 'rgba(59,130,246,.4)' : 'rgba(255,255,255,.1)'}`,
+                          border: `2px dashed ${loteItems.length > 0 ? 'rgba(13,124,61,.4)' : 'rgba(0, 0, 0, 0.06)'}`,
                           borderRadius: 10, padding: '24px 16px', textAlign: 'center', cursor: 'pointer',
-                          background: loteItems.length > 0 ? 'rgba(59,130,246,.04)' : 'transparent',
+                          background: loteItems.length > 0 ? 'rgba(13,124,61,.04)' : 'transparent',
                         }}
                         onClick={() => loteRef.current?.click()}
                         onDragOver={e => e.preventDefault()}
@@ -401,23 +401,23 @@ export default function SimuladorPrevia() {
                         {loteItems.length === 0 ? (
                           <>
                             <Upload size={24} color="#64748b" style={{ margin: '0 auto 8px' }} />
-                            <div style={{ fontSize: 13, color: '#64748b' }}>Arraste todos os arquivos .txt ou clique para selecionar</div>
-                            <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Exemplo: IMP012026 - 57 SED.TXT · IMP012026 - 58 SS.TXT</div>
+                            <div style={{ fontSize: 13, color: 'var(--muted-c)' }}>Arraste todos os arquivos .txt ou clique para selecionar</div>
+                            <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>Exemplo: IMP012026 - 57 SED.TXT · IMP012026 - 58 SS.TXT</div>
                           </>
                         ) : (
                           <>
                             <CheckCircle size={24} color="#10b981" style={{ margin: '0 auto 8px' }} />
-                            <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
                               {loteItems.length} arquivo{loteItems.length !== 1 ? 's' : ''} carregados
                             </div>
-                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+                            <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>
                               {loteItems.filter(i => i.status !== 'rejeitado' && i.status !== 'erro').length} válidos
                               {' · '}
                               {loteItems.filter(i => i.status === 'rejeitado' || i.status === 'erro').length} rejeitados
                             </div>
                             <button
                               onClick={e => { e.stopPropagation(); setLoteItems([]); if (loteRef.current) loteRef.current.value = ''; }}
-                              style={{ marginTop: 8, fontSize: 11, color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                              style={{ marginTop: 8, fontSize: 11, color: 'var(--muted-c)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                             >
                               Limpar e recarregar
                             </button>
@@ -451,7 +451,7 @@ export default function SimuladorPrevia() {
                             {temProblema && (
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.25)', maxWidth: 420 }}>
                                 <AlertTriangle size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
-                                <span style={{ fontSize: 11, color: '#fbbf24' }}>
+                                <span style={{ fontSize: 11, color: '#b45309' }}>
                                   {comDups.length > 0 && <><strong>{comDups.length}</strong> arquivo(s) com duplicatas{comAnoms.length > 0 ? ' · ' : ''}</>}
                                   {comAnoms.length > 0 && <><strong>{comAnoms.length}</strong> arquivo(s) com anomalias</>}
                                   {' '}— verifique a coluna Alertas antes de publicar.
@@ -463,7 +463,7 @@ export default function SimuladorPrevia() {
                               disabled={lotePublicando}
                           style={{
                             padding: '8px 18px', borderRadius: 8, border: 'none', fontWeight: 600, fontSize: 12,
-                            background: lotePublicando ? 'rgba(59,130,246,.4)' : '#3b82f6',
+                            background: lotePublicando ? 'rgba(13,124,61,.4)' : '#0D7C3D',
                             color: '#fff', cursor: lotePublicando ? 'wait' : 'pointer',
                             display: 'flex', alignItems: 'center', gap: 6,
                           }}
@@ -497,11 +497,11 @@ export default function SimuladorPrevia() {
                             return (
                               <tr key={idx}>
                                 <td style={{ maxWidth: 240 }}>
-                                  <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--muted-c)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {item.nome}
                                   </div>
                                   {item.erroNome && (
-                                    <div style={{ fontSize: 10, color: '#f87171', marginTop: 2 }}>{item.erroNome}</div>
+                                    <div style={{ fontSize: 10, color: '#dc2626', marginTop: 2 }}>{item.erroNome}</div>
                                   )}
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
@@ -510,18 +510,18 @@ export default function SimuladorPrevia() {
                                       {item.secretaria.numero} · {item.secretaria.sigla}
                                     </span>
                                   ) : (
-                                    <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                                    <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>—</span>
                                   )}
                                 </td>
                                 {/* Composição */}
                                 <td style={{ textAlign: 'center' }}>
                                   {item.status === 'lendo' ? (
-                                    <span style={{ fontSize: 11, color: '#64748b' }}>...</span>
+                                    <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>...</span>
                                   ) : item.status === 'rejeitado' ? (
-                                    <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                                    <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>—</span>
                                   ) : item.classif && !item.classif.semCodigo ? (
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                                      <span style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa' }}>{item.validos.length} total</span>
+                                      <span style={{ fontSize: 11, fontWeight: 700, color: '#15A050' }}>{item.validos.length} total</span>
                                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
                                         {item.classif.faltas  > 0 && <span style={{ fontSize: 10, color: '#ef4444', fontWeight: 600 }}>{item.classif.faltas}F</span>}
                                         {item.classif.atrasos > 0 && <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 600 }}>{item.classif.atrasos}A</span>}
@@ -529,22 +529,22 @@ export default function SimuladorPrevia() {
                                       </div>
                                     </div>
                                   ) : (
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: item.validos.length > 0 ? '#60a5fa' : '#64748b' }}>{item.validos.length}</span>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: item.validos.length > 0 ? '#15A050' : '#64748b' }}>{item.validos.length}</span>
                                   )}
                                 </td>
                                 {/* Alertas */}
                                 <td style={{ textAlign: 'center', minWidth: 100 }}>
                                   {item.status === 'lendo' || item.status === 'rejeitado' ? (
-                                    <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                                    <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>—</span>
                                   ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
                                       {(item.duplicatas?.length ?? 0) > 0 && (
-                                        <span title={item.duplicatas.map(d => `Mat.${d.matricula} ${d.data}`).join(', ')} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(245,158,11,.15)', color: '#fbbf24', fontWeight: 700, cursor: 'help' }}>
+                                        <span title={item.duplicatas.map(d => `Mat.${d.matricula} ${d.data}`).join(', ')} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(245,158,11,.15)', color: '#b45309', fontWeight: 700, cursor: 'help' }}>
                                           <AlertTriangle size={9} />{item.duplicatas.length} dup.
                                         </span>
                                       )}
                                       {(item.anomalias?.length ?? 0) > 0 && (
-                                        <span title={item.anomalias.map(a => a.mensagem).join(' | ')} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(239,68,68,.12)', color: '#f87171', fontWeight: 700, cursor: 'help' }}>
+                                        <span title={item.anomalias.map(a => a.mensagem).join(' | ')} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(239,68,68,.12)', color: '#dc2626', fontWeight: 700, cursor: 'help' }}>
                                           <AlertTriangle size={9} />{item.anomalias.length} anom.
                                         </span>
                                       )}
@@ -556,20 +556,20 @@ export default function SimuladorPrevia() {
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
                                   {item.status === 'rejeitado' || item.status === 'lendo'
-                                    ? <span style={{ color: '#475569' }}>—</span>
+                                    ? <span style={{ color: 'var(--muted-c)' }}>—</span>
                                     : item.jaExiste
                                       ? <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(245,158,11,.12)', color: '#f59e0b', fontWeight: 700 }}>Sim — será substituído</span>
-                                      : <span style={{ fontSize: 10, color: '#475569' }}>Não</span>}
+                                      : <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>Não</span>}
                                 </td>
                                 <td style={{ textAlign: 'center', minWidth: 100 }}>
-                                  {item.status === 'lendo'      && <span style={{ fontSize: 11, color: '#60a5fa' }}>Lendo...</span>}
-                                  {item.status === 'pendente'   && <span style={{ fontSize: 11, color: '#94a3b8' }}>Aguardando</span>}
-                                  {item.status === 'publicando' && <span style={{ fontSize: 11, color: '#3b82f6', fontWeight: 700 }}>Publicando...</span>}
+                                  {item.status === 'lendo'      && <span style={{ fontSize: 11, color: '#15A050' }}>Lendo...</span>}
+                                  {item.status === 'pendente'   && <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>Aguardando</span>}
+                                  {item.status === 'publicando' && <span style={{ fontSize: 11, color: '#0D7C3D', fontWeight: 700 }}>Publicando...</span>}
                                   {item.status === 'publicado'  && <span style={{ fontSize: 11, color: '#10b981', fontWeight: 700 }}>✓ Publicado</span>}
-                                  {item.status === 'rejeitado'  && <span style={{ fontSize: 11, color: '#f87171' }}>✗ Rejeitado</span>}
+                                  {item.status === 'rejeitado'  && <span style={{ fontSize: 11, color: '#dc2626' }}>✗ Rejeitado</span>}
                                   {item.status === 'erro' && (
                                     <div>
-                                      <span style={{ fontSize: 11, color: '#f87171' }}>✗ Erro</span>
+                                      <span style={{ fontSize: 11, color: '#dc2626' }}>✗ Erro</span>
                                       {item.erroPublicacao && <div style={{ fontSize: 10, color: '#ef4444', marginTop: 2 }}>{item.erroPublicacao}</div>}
                                     </div>
                                   )}
@@ -587,7 +587,7 @@ export default function SimuladorPrevia() {
 
             {/* ── MODO COMPARAR ── */}
             {modo === 'comparar' && (() => {
-              const statusCor   = { apenas_a: '#f87171', apenas_b: '#34d399', alterado: '#f59e0b', igual: '#64748b' };
+              const statusCor   = { apenas_a: '#dc2626', apenas_b: '#047857', alterado: '#f59e0b', igual: '#64748b' };
               const statusLabel = { apenas_a: 'Apenas A', apenas_b: 'Apenas B', alterado: 'Alterado', igual: 'Igual' };
               const linhasVisiveis = compResultado
                 ? (compSoDiff
@@ -596,15 +596,15 @@ export default function SimuladorPrevia() {
                 : [];
 
               function ZoneComp({ lado, arq, refEl, onChange }) {
-                const cor = lado === 'a' ? '#60a5fa' : '#34d399';
+                const cor = lado === 'a' ? '#15A050' : '#047857';
                 return (
                   <div className="chart-card">
-                    <div style={{ fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>
+                    <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>
                       Arquivo {lado.toUpperCase()} {lado === 'a' ? '— base' : '— comparação'}
                     </div>
                     <div
                       style={{
-                        border: `2px dashed ${arq ? cor + '66' : 'rgba(255,255,255,.1)'}`,
+                        border: `2px dashed ${arq ? cor + '66' : 'rgba(0, 0, 0, 0.06)'}`,
                         borderRadius: 10, padding: '20px 14px', textAlign: 'center', cursor: 'pointer',
                         background: arq ? cor + '08' : 'transparent',
                       }}
@@ -616,7 +616,7 @@ export default function SimuladorPrevia() {
                       {arq ? (
                         <>
                           <CheckCircle size={22} color={cor} style={{ margin: '0 auto 6px' }} />
-                          <div style={{ fontSize: 12, color: '#f1f5f9', fontWeight: 600 }}>{arq.nome}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{arq.nome}</div>
                           <div style={{ fontSize: 11, color: cor, marginTop: 4 }}>
                             {arq.validos.length} registros válidos
                             {' · '}
@@ -624,7 +624,7 @@ export default function SimuladorPrevia() {
                           </div>
                           <button
                             onClick={e => { e.stopPropagation(); onChange(null); }}
-                            style={{ marginTop: 8, fontSize: 10, color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                            style={{ marginTop: 8, fontSize: 10, color: 'var(--muted-c)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                           >
                             Trocar arquivo
                           </button>
@@ -632,7 +632,7 @@ export default function SimuladorPrevia() {
                       ) : (
                         <>
                           <Upload size={22} color="#64748b" style={{ margin: '0 auto 6px' }} />
-                          <div style={{ fontSize: 12, color: '#64748b' }}>Arraste o .txt ou clique</div>
+                          <div style={{ fontSize: 12, color: 'var(--muted-c)' }}>Arraste o .txt ou clique</div>
                         </>
                       )}
                     </div>
@@ -660,7 +660,7 @@ export default function SimuladorPrevia() {
                       <button
                         onClick={comparar}
                         style={{
-                          padding: '10px 28px', borderRadius: 8, border: 'none', background: '#3b82f6',
+                          padding: '10px 28px', borderRadius: 8, border: 'none', background: '#0D7C3D',
                           color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                           display: 'flex', alignItems: 'center', gap: 8,
                         }}
@@ -679,10 +679,10 @@ export default function SimuladorPrevia() {
                         {/* KPIs */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10 }}>
                           {[
-                            { label: 'Matrículas em A', value: totalA,          cor: '#60a5fa' },
-                            { label: 'Matrículas em B', value: totalB,          cor: '#34d399' },
-                            { label: 'Apenas em A',     value: apenasA.length,  cor: '#f87171' },
-                            { label: 'Apenas em B',     value: apenasB.length,  cor: '#34d399' },
+                            { label: 'Matrículas em A', value: totalA,          cor: '#15A050' },
+                            { label: 'Matrículas em B', value: totalB,          cor: '#047857' },
+                            { label: 'Apenas em A',     value: apenasA.length,  cor: '#dc2626' },
+                            { label: 'Apenas em B',     value: apenasB.length,  cor: '#047857' },
                             { label: 'Alterados',       value: alterados.length, cor: '#f59e0b' },
                             { label: 'Iguais',          value: iguais.length,   cor: '#64748b' },
                           ].map(({ label, value, cor }) => (
@@ -701,12 +701,12 @@ export default function SimuladorPrevia() {
                               <div className="chart-sub">{linhasVisiveis.length} linha{linhasVisiveis.length !== 1 ? 's' : ''} exibida{linhasVisiveis.length !== 1 ? 's' : ''}</div>
                             </div>
                             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                              <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: '#94a3b8' }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--muted-c)' }}>
                                 <input
                                   type="checkbox"
                                   checked={compSoDiff}
                                   onChange={e => setCompSoDiff(e.target.checked)}
-                                  style={{ accentColor: '#3b82f6' }}
+                                  style={{ accentColor: '#0D7C3D' }}
                                 />
                                 Apenas diferenças
                               </label>
@@ -714,8 +714,8 @@ export default function SimuladorPrevia() {
                                 onClick={exportarCompCSV}
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: 6,
-                                  padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)',
-                                  background: 'rgba(255,255,255,.05)', color: '#94a3b8', fontSize: 12, cursor: 'pointer',
+                                  padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(0, 0, 0, 0.06)',
+                                  background: 'rgba(0, 0, 0, 0.03)', color: 'var(--muted-c)', fontSize: 12, cursor: 'pointer',
                                 }}
                               >
                                 <Download size={12} />
@@ -728,11 +728,11 @@ export default function SimuladorPrevia() {
                               <thead>
                                 <tr>
                                   <th>Matrícula</th>
-                                  <th style={{ textAlign: 'center', color: '#60a5fa' }}>Faltas A</th>
-                                  <th style={{ textAlign: 'center', color: '#34d399' }}>Faltas B</th>
+                                  <th style={{ textAlign: 'center', color: '#15A050' }}>Faltas A</th>
+                                  <th style={{ textAlign: 'center', color: '#047857' }}>Faltas B</th>
                                   <th style={{ textAlign: 'center' }}>Δ Faltas</th>
-                                  <th style={{ textAlign: 'center', color: '#60a5fa' }}>Atrasos A</th>
-                                  <th style={{ textAlign: 'center', color: '#34d399' }}>Atrasos B</th>
+                                  <th style={{ textAlign: 'center', color: '#15A050' }}>Atrasos A</th>
+                                  <th style={{ textAlign: 'center', color: '#047857' }}>Atrasos B</th>
                                   <th style={{ textAlign: 'center' }}>Δ Atrasos</th>
                                   <th style={{ textAlign: 'center' }}>Status</th>
                                 </tr>
@@ -740,8 +740,8 @@ export default function SimuladorPrevia() {
                               <tbody>
                                 {linhasVisiveis.map((r, i) => {
                                   const cor = statusCor[r.status];
-                                  const fmtDiff = d => d === 0 ? <span style={{ color: '#475569' }}>—</span>
-                                    : <span style={{ color: d > 0 ? '#f87171' : '#34d399', fontWeight: 700 }}>{d > 0 ? `+${d}` : d}</span>;
+                                  const fmtDiff = d => d === 0 ? <span style={{ color: 'var(--muted-c)' }}>—</span>
+                                    : <span style={{ color: d > 0 ? '#dc2626' : '#047857', fontWeight: 700 }}>{d > 0 ? `+${d}` : d}</span>;
                                   return (
                                     <tr key={i} style={{ background: r.status === 'igual' ? undefined : `${cor}08` }}>
                                       <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{r.matricula}</td>
@@ -761,7 +761,7 @@ export default function SimuladorPrevia() {
                                 })}
                                 {linhasVisiveis.length === 0 && (
                                   <tr>
-                                    <td colSpan={8} style={{ textAlign: 'center', color: '#64748b', padding: '24px 0', fontSize: 12 }}>
+                                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--muted-c)', padding: '24px 0', fontSize: 12 }}>
                                       {compSoDiff ? 'Nenhuma diferença encontrada — os arquivos são idênticos.' : 'Nenhum registro.'}
                                     </td>
                                   </tr>
@@ -769,7 +769,7 @@ export default function SimuladorPrevia() {
                               </tbody>
                             </table>
                           </div>
-                          <div style={{ marginTop: 10, fontSize: 10, color: '#475569', lineHeight: 1.5 }}>
+                          <div style={{ marginTop: 10, fontSize: 10, color: 'var(--muted-c)', lineHeight: 1.5 }}>
                             Esta aba é somente leitura — nenhum dado é publicado ou salvo.
                           </div>
                         </div>
@@ -788,18 +788,18 @@ export default function SimuladorPrevia() {
             <div className="chart-card">
               <div className="chart-title" style={{ marginBottom: 20 }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <FileText size={16} color="#60a5fa" />
+                  <FileText size={16} color="#15A050" />
                   Configuração da Simulação
                 </span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Secretaria</label>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Secretaria</label>
                   <select
                     value={secretariaCodigo}
                     onChange={e => setSecretariaCodigo(e.target.value)}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,.1)', color: secretariaCodigo ? '#f1f5f9' : '#64748b', fontSize: 13 }}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(0, 0, 0, 0.06)', color: secretariaCodigo ? '#1e293b' : '#64748b', fontSize: 13 }}
                   >
                     <option value="">Selecione a secretaria...</option>
                     {SECRETARIAS.map(s => (
@@ -809,26 +809,26 @@ export default function SimuladorPrevia() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Competência</label>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Competência</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    <select value={mesComp} onChange={e => setMesComp(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 13 }}>
+                    <select value={mesComp} onChange={e => setMesComp(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 13 }}>
                       {MESES.map((m, i) => <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>)}
                     </select>
-                    <select value={anoComp} onChange={e => setAnoComp(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 13 }}>
+                    <select value={anoComp} onChange={e => setAnoComp(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 13 }}>
                       {ANOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
                     </select>
                   </div>
-                  <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 6 }}>Competência: {formatarCompetencia(competencia)}</div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
-                    Arquivo esperado: <span style={{ fontFamily: 'monospace', color: '#60a5fa' }}>{arquivoComp.prefixo}</span>
-                    {' '}<span style={{ color: '#64748b' }}>({MESES[parseInt(arquivoComp.mes, 10) - 1]}/{arquivoComp.ano})</span>
+                  <div style={{ fontSize: 11, color: '#15A050', marginTop: 6 }}>Competência: {formatarCompetencia(competencia)}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 3 }}>
+                    Arquivo esperado: <span style={{ fontFamily: 'monospace', color: '#15A050' }}>{arquivoComp.prefixo}</span>
+                    {' '}<span style={{ color: 'var(--muted-c)' }}>({MESES[parseInt(arquivoComp.mes, 10) - 1]}/{arquivoComp.ano})</span>
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Arquivo da Prévia</label>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.05em' }}>Arquivo da Prévia</label>
                   <div
-                    style={{ border: `2px dashed ${arquivo ? 'rgba(59,130,246,.4)' : 'rgba(255,255,255,.1)'}`, borderRadius: 10, padding: '24px 16px', textAlign: 'center', cursor: 'pointer', transition: 'border-color .2s', background: arquivo ? 'rgba(59,130,246,.04)' : 'transparent' }}
+                    style={{ border: `2px dashed ${arquivo ? 'rgba(13,124,61,.4)' : 'rgba(0, 0, 0, 0.06)'}`, borderRadius: 10, padding: '24px 16px', textAlign: 'center', cursor: 'pointer', transition: 'border-color .2s', background: arquivo ? 'rgba(13,124,61,.04)' : 'transparent' }}
                     onClick={() => inputRef.current?.click()}
                     onDragOver={e => e.preventDefault()}
                     onDrop={e => { e.preventDefault(); processarArquivo(e.dataTransfer.files[0]); }}
@@ -837,12 +837,12 @@ export default function SimuladorPrevia() {
                     {arquivo ? (
                       <div>
                         <CheckCircle size={24} color="#10b981" style={{ margin: '0 auto 8px' }} />
-                        <div style={{ fontSize: 13, color: '#f1f5f9', fontWeight: 600 }}>{arquivo.name}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600 }}>{arquivo.name}</div>
                         <div style={{ fontSize: 11, color: '#10b981', marginTop: 4 }}>{validos.length} registros válidos · {descartados.length} descartados</div>
                         {duplicatas.length > 0 && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.25)' }}>
                             <AlertTriangle size={13} color="#f59e0b" style={{ flexShrink: 0 }} />
-                            <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 600 }}>
+                            <span style={{ fontSize: 11, color: '#b45309', fontWeight: 600 }}>
                               {duplicatas.length} matrícula{duplicatas.length > 1 ? 's' : ''} com 2 ocorrências na mesma data
                             </span>
                           </div>
@@ -851,8 +851,8 @@ export default function SimuladorPrevia() {
                     ) : (
                       <div>
                         <Upload size={24} color="#64748b" style={{ margin: '0 auto 8px' }} />
-                        <div style={{ fontSize: 13, color: '#64748b' }}>Arraste o arquivo .txt ou clique</div>
-                        <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>Formato posicional ou delimitado</div>
+                        <div style={{ fontSize: 13, color: 'var(--muted-c)' }}>Arraste o arquivo .txt ou clique</div>
+                        <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>Formato posicional ou delimitado</div>
                       </div>
                     )}
                   </div>
@@ -860,15 +860,15 @@ export default function SimuladorPrevia() {
 
                 {!arquivo && (
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 0' }}>
-                    <input type="checkbox" checked={mesVazio} onChange={e => setMesVazio(e.target.checked)} style={{ width: 14, height: 14, accentColor: '#3b82f6' }} />
-                    <span style={{ fontSize: 12, color: '#94a3b8' }}>
-                      Este mês <strong style={{ color: '#f1f5f9' }}>não possui arquivo</strong> — registrar competência com 0 ocorrências
+                    <input type="checkbox" checked={mesVazio} onChange={e => setMesVazio(e.target.checked)} style={{ width: 14, height: 14, accentColor: '#0D7C3D' }} />
+                    <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>
+                      Este mês <strong style={{ color: 'var(--text)' }}>não possui arquivo</strong> — registrar competência com 0 ocorrências
                     </span>
                   </label>
                 )}
 
                 {erro && (
-                  <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.2)', color: '#f87171', fontSize: 12 }}>{erro}</div>
+                  <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.2)', color: '#dc2626', fontSize: 12 }}>{erro}</div>
                 )}
 
                 <button
@@ -876,7 +876,7 @@ export default function SimuladorPrevia() {
                   disabled={!podeFiltrar}
                   style={{
                     padding: '10px 16px', borderRadius: 8, border: 'none', cursor: podeFiltrar ? 'pointer' : 'not-allowed',
-                    background: podeFiltrar ? '#3b82f6' : 'rgba(255,255,255,.06)', color: podeFiltrar ? '#fff' : '#475569',
+                    background: podeFiltrar ? '#0D7C3D' : 'rgba(0, 0, 0, 0.04)', color: podeFiltrar ? '#fff' : '#475569',
                     fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'background .2s',
                   }}
                 >
@@ -888,10 +888,10 @@ export default function SimuladorPrevia() {
             {/* Preview dos registros */}
             <div className="chart-card" style={{ overflowY: 'auto', maxHeight: 480 }}>
               <div className="chart-title" style={{ marginBottom: 16 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BarChart2 size={16} color="#60a5fa" />Preview do Arquivo</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><BarChart2 size={16} color="#15A050" />Preview do Arquivo</span>
               </div>
               {!arquivo ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 280, color: '#475569' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 280, color: 'var(--muted-c)' }}>
                   <FileText size={40} style={{ marginBottom: 12, opacity: .4 }} />
                   <div style={{ fontSize: 13 }}>Nenhum arquivo carregado</div>
                 </div>
@@ -900,7 +900,7 @@ export default function SimuladorPrevia() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
                     {[
                       { label: 'Registros válidos', value: validos.length, cor: '#10b981' },
-                      { label: 'Descartados', value: descartados.length, cor: descartados.length > 0 ? '#f87171' : '#10b981' },
+                      { label: 'Descartados', value: descartados.length, cor: descartados.length > 0 ? '#dc2626' : '#10b981' },
                     ].map(({ label, value, cor }) => (
                       <div key={label} className="chamado-modal-item">
                         <div className="chamado-modal-label">{label}</div>
@@ -918,16 +918,16 @@ export default function SimuladorPrevia() {
                     <tbody>
                       {validos.slice(0, 12).map((r, i) => (
                         <tr key={i}>
-                          <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#475569' }}>{i + 1}</td>
+                          <td style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--muted-c)' }}>{i + 1}</td>
                           <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{r.matricula}</td>
-                          {validos[0]?.data_ocorrencia && <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#64748b' }}>{r.data_ocorrencia}</td>}
-                          {validos[0]?.codigo_ocorrencia && <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#64748b' }}>{r.codigo_ocorrencia}</td>}
-                          <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 11, color: r.percentual_desconto > 0 ? '#f87171' : '#94a3b8' }}>{r.percentual_desconto}%</td>
+                          {validos[0]?.data_ocorrencia && <td style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--muted-c)' }}>{r.data_ocorrencia}</td>}
+                          {validos[0]?.codigo_ocorrencia && <td style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--muted-c)' }}>{r.codigo_ocorrencia}</td>}
+                          <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 11, color: r.percentual_desconto > 0 ? '#dc2626' : '#64748b' }}>{r.percentual_desconto}%</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {validos.length > 12 && <div style={{ textAlign: 'center', color: '#475569', fontSize: 11, marginTop: 8 }}>+ {validos.length - 12} registros</div>}
+                  {validos.length > 12 && <div style={{ textAlign: 'center', color: 'var(--muted-c)', fontSize: 11, marginTop: 8 }}>+ {validos.length - 12} registros</div>}
                 </>
               )}
             </div>
@@ -938,8 +938,8 @@ export default function SimuladorPrevia() {
         {/* ─── ETAPA 2: Analisando ─── */}
         {step === 'analisando' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300, flexDirection: 'column', gap: 16 }}>
-            <div style={{ width: 48, height: 48, border: '3px solid rgba(59,130,246,.3)', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <div style={{ color: '#60a5fa', fontSize: 14 }}>Carregando histórico e calculando análise...</div>
+            <div style={{ width: 48, height: 48, border: '3px solid rgba(13,124,61,.3)', borderTop: '3px solid #0D7C3D', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <div style={{ color: '#15A050', fontSize: 14 }}>Carregando histórico e calculando análise...</div>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
@@ -948,20 +948,20 @@ export default function SimuladorPrevia() {
         {step === 'resultado' && analise && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Banner secretaria + competência */}
-            <div className="chart-card" style={{ background: 'rgba(59,130,246,.08)', border: '1px solid rgba(59,130,246,.2)' }}>
+            <div className="chart-card" style={{ background: 'rgba(13,124,61,.08)', border: '1px solid rgba(13,124,61,.2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Análise da Prévia</div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9' }}>{secretariaNome}</div>
-                  <div style={{ fontSize: 14, color: '#60a5fa' }}>Competência: {formatarCompetencia(competencia)}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Análise da Prévia</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>{secretariaNome}</div>
+                  <div style={{ fontSize: 14, color: '#15A050' }}>Competência: {formatarCompetencia(competencia)}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Classificação (Total)</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 4 }}>Classificação (Total)</div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: corClassificacao(analise.classificacao) }}>
                     {labelClassificacao(analise.classificacao)}
                   </div>
                   {analise.zScore !== null && (
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Z-Score total: {analise.zScore > 0 ? '+' : ''}{analise.zScore}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>Z-Score total: {analise.zScore > 0 ? '+' : ''}{analise.zScore}</div>
                   )}
                 </div>
               </div>
@@ -970,15 +970,15 @@ export default function SimuladorPrevia() {
             {/* KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12 }}>
               <div className="kpi-card">
-                <div className="kpi-accent" style={{ background: '#3b82f6' }} />
+                <div className="kpi-accent" style={{ background: '#0D7C3D' }} />
                 <div className="kpi-label"><Activity size={13} />Total de Ocorrências</div>
-                <div className="kpi-value" style={{ color: '#3b82f6', fontSize: 26 }}>{fmt(validos.length)}</div>
+                <div className="kpi-value" style={{ color: '#0D7C3D', fontSize: 26 }}>{fmt(validos.length)}</div>
               </div>
               <div className="kpi-card">
                 <div className="kpi-accent" style={{ background: '#ef4444' }} />
-                <div className="kpi-label"><XCircle size={13} />Faltas <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(171)</span></div>
+                <div className="kpi-label"><XCircle size={13} />Faltas <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 400 }}>(171)</span></div>
                 <div className="kpi-value" style={{ color: '#ef4444', fontSize: 26 }}>
-                  {classificacao?.semCodigo ? <span style={{ fontSize: 14, color: '#64748b' }}>N/D</span> : fmt(classificacao?.faltas ?? 0)}
+                  {classificacao?.semCodigo ? <span style={{ fontSize: 14, color: 'var(--muted-c)' }}>N/D</span> : fmt(classificacao?.faltas ?? 0)}
                 </div>
                 {!classificacao?.semCodigo && classificacao?.faltas > 0 && (
                   <div className="kpi-footer">
@@ -990,9 +990,9 @@ export default function SimuladorPrevia() {
               </div>
               <div className="kpi-card">
                 <div className="kpi-accent" style={{ background: '#f59e0b' }} />
-                <div className="kpi-label"><AlertTriangle size={13} />Atrasos <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(335)</span></div>
+                <div className="kpi-label"><AlertTriangle size={13} />Atrasos <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 400 }}>(335)</span></div>
                 <div className="kpi-value" style={{ color: '#f59e0b', fontSize: 26 }}>
-                  {classificacao?.semCodigo ? <span style={{ fontSize: 14, color: '#64748b' }}>N/D</span> : fmt(classificacao?.atrasos ?? 0)}
+                  {classificacao?.semCodigo ? <span style={{ fontSize: 14, color: 'var(--muted-c)' }}>N/D</span> : fmt(classificacao?.atrasos ?? 0)}
                 </div>
                 {!classificacao?.semCodigo && classificacao?.atrasos > 0 && (
                   <div className="kpi-footer">
@@ -1005,7 +1005,7 @@ export default function SimuladorPrevia() {
               {!classificacao?.semCodigo && (classificacao?.dsrs ?? 0) > 0 && (
                 <div className="kpi-card">
                   <div className="kpi-accent" style={{ background: '#06b6d4' }} />
-                  <div className="kpi-label"><Activity size={13} />DSR <span style={{ fontSize: 10, color: '#64748b', fontWeight: 400 }}>(504)</span></div>
+                  <div className="kpi-label"><Activity size={13} />DSR <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 400 }}>(504)</span></div>
                   <div className="kpi-value" style={{ color: '#06b6d4', fontSize: 26 }}>{fmt(classificacao.dsrs)}</div>
                   {classificacao.dsrDesconto > 0 && (
                     <div className="kpi-footer">
@@ -1017,9 +1017,9 @@ export default function SimuladorPrevia() {
                 </div>
               )}
               <div className="kpi-card">
-                <div className="kpi-accent" style={{ background: '#8b5cf6' }} />
+                <div className="kpi-accent" style={{ background: '#0D7C3D' }} />
                 <div className="kpi-label"><Users size={13} />Servidores Impactados</div>
-                <div className="kpi-value" style={{ color: '#8b5cf6', fontSize: 26 }}>
+                <div className="kpi-value" style={{ color: '#0D7C3D', fontSize: 26 }}>
                   {fmt(new Set(validos.map(r => r.matricula)).size)}
                 </div>
               </div>
@@ -1029,8 +1029,8 @@ export default function SimuladorPrevia() {
             {classificacao && (
               <div className="chart-card" style={{ padding: '14px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>Composição das Ocorrências</div>
-                  {classificacao.semCodigo && <span style={{ fontSize: 11, color: '#64748b' }}>Arquivo sem código de ocorrência</span>}
+                  <div style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 500 }}>Composição das Ocorrências</div>
+                  {classificacao.semCodigo && <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>Arquivo sem código de ocorrência</span>}
                 </div>
                 {validos.length === 0 ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10b981', padding: '4px 0' }}>
@@ -1041,7 +1041,7 @@ export default function SimuladorPrevia() {
                   </div>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,.06)', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(0, 0, 0, 0.04)', marginBottom: 8 }}>
                       {classificacao.faltas  > 0 && <div style={{ width: `${(classificacao.faltas  / validos.length) * 100}%`, background: '#ef4444' }} />}
                       {classificacao.atrasos > 0 && <div style={{ width: `${(classificacao.atrasos / validos.length) * 100}%`, background: '#f59e0b' }} />}
                       {(classificacao.dsrs ?? 0) > 0 && <div style={{ width: `${(classificacao.dsrs / validos.length) * 100}%`, background: '#06b6d4' }} />}
@@ -1056,18 +1056,18 @@ export default function SimuladorPrevia() {
                       ].map(({ label, value, cor }) => (
                         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                           <span style={{ width: 8, height: 8, borderRadius: 2, background: cor, flexShrink: 0 }} />
-                          <span style={{ fontSize: 11, color: '#94a3b8' }}>{label}:</span>
+                          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{label}:</span>
                           <span style={{ fontSize: 11, fontWeight: 700, color: cor }}>{fmt(value)}</span>
                         </div>
                       ))}
                     </div>
                     {classificacao.outrosCodigos?.length > 0 && (
-                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.06)' }}>
-                        <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>Outros códigos encontrados:</div>
+                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0, 0, 0, 0.04)' }}>
+                        <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 6 }}>Outros códigos encontrados:</div>
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                           {classificacao.outrosCodigos.map(([cod, qtd]) => (
-                            <span key={cod} style={{ padding: '2px 8px', borderRadius: 4, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', fontSize: 11, fontFamily: 'monospace', color: '#94a3b8' }}>
-                              {cod} <strong style={{ color: '#f1f5f9' }}>×{qtd}</strong>
+                            <span key={cod} style={{ padding: '2px 8px', borderRadius: 4, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.05)', fontSize: 11, fontFamily: 'monospace', color: 'var(--muted-c)' }}>
+                              {cod} <strong style={{ color: 'var(--text)' }}>×{qtd}</strong>
                             </span>
                           ))}
                         </div>
@@ -1098,7 +1098,7 @@ export default function SimuladorPrevia() {
                     cor="#f59e0b"
                   />
                 </div>
-                <div style={{ marginTop: 8, fontSize: 11, color: '#475569' }}>
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--muted-c)' }}>
                   Z-Score indica quantos desvios padrão o valor atual está acima/abaixo da média dos 3 meses anteriores.
                 </div>
               </div>
@@ -1109,21 +1109,21 @@ export default function SimuladorPrevia() {
               <div className="chart-card">
                 <div className="chart-title" style={{ marginBottom: 16 }}>Comparação Histórica (Total)</div>
                 {analise.mesesHistorico === 0 ? (
-                  <div style={{ color: '#64748b', fontSize: 13, padding: '20px 0' }}>Nenhum histórico disponível para esta secretaria.</div>
+                  <div style={{ color: 'var(--muted-c)', fontSize: 13, padding: '20px 0' }}>Nenhum histórico disponível para esta secretaria.</div>
                 ) : (
                   <>
                     <ComparacaoRow label="vs. Média 3 meses"  valor={validos.length} delta={analise.deltaPct3m}  media={analise.media3m} />
                     <ComparacaoRow label="vs. Média 6 meses"  valor={validos.length} delta={analise.deltaPct6m}  media={analise.media6m} />
                     <ComparacaoRow label="vs. Média 12 meses" valor={validos.length} delta={analise.deltaPct12m} media={analise.media12m} />
                     <div style={{ marginTop: 16 }}>
-                      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 10 }}>Últimos períodos</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 10 }}>Últimos períodos</div>
                       {historico.slice(0, 6).map(h => (
-                        <div key={h.periodo_referencia} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
-                          <span style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>{formatarCompetencia(h.periodo_referencia)}</span>
+                        <div key={h.periodo_referencia} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}>
+                          <span style={{ fontSize: 11, color: 'var(--muted-c)', fontFamily: 'monospace' }}>{formatarCompetencia(h.periodo_referencia)}</span>
                           <div style={{ display: 'flex', gap: 12 }}>
                             {h.total_faltas != null && <span style={{ fontSize: 10, color: '#ef4444' }}>{h.total_faltas}F</span>}
                             {h.total_atrasos != null && <span style={{ fontSize: 10, color: '#f59e0b' }}>{h.total_atrasos}A</span>}
-                            <span style={{ fontSize: 11, color: '#60a5fa', fontWeight: 600 }}>{fmt(h.total_ocorrencias)}</span>
+                            <span style={{ fontSize: 11, color: '#15A050', fontWeight: 600 }}>{fmt(h.total_ocorrencias)}</span>
                           </div>
                         </div>
                       ))}
@@ -1152,8 +1152,8 @@ export default function SimuladorPrevia() {
               <div className="chart-card" style={{ background: jaExiste ? 'rgba(245,158,11,.06)' : undefined }}>
                 {isVisitor && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.18)' }}>
-                    <Lock size={14} color="#f87171" />
-                    <span style={{ fontSize: 12, color: '#f87171', fontWeight: 500 }}>
+                    <Lock size={14} color="#dc2626" />
+                    <span style={{ fontSize: 12, color: '#dc2626', fontWeight: 500 }}>
                       Visitantes não podem publicar prévias. Faça login como Administrador para liberar esta ação.
                     </span>
                   </div>
@@ -1161,7 +1161,7 @@ export default function SimuladorPrevia() {
                 {!isVisitor && jaExiste && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '8px 12px', borderRadius: 6, background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.2)' }}>
                     <AlertTriangle size={14} color="#f59e0b" />
-                    <span style={{ fontSize: 12, color: '#fbbf24' }}>
+                    <span style={{ fontSize: 12, color: '#b45309' }}>
                       Já existe uma prévia publicada para {secretariaNome} em {formatarCompetencia(competencia)}. Publicar irá substituí-la.
                     </span>
                   </div>
@@ -1170,21 +1170,21 @@ export default function SimuladorPrevia() {
                   <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.25)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <AlertTriangle size={14} color="#f59e0b" />
-                      <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>
+                      <span style={{ fontSize: 12, color: '#b45309', fontWeight: 700 }}>
                         {duplicatas.length} matrícula{duplicatas.length > 1 ? 's' : ''} com 2 ou mais ocorrências na mesma data
                       </span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 120, overflowY: 'auto' }}>
                       {duplicatas.slice(0, 10).map((d, i) => (
-                        <div key={i} style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>
-                          Mat. <strong style={{ color: '#fbbf24' }}>{d.matricula}</strong> — {d.data} — códigos: {d.codigos}
+                        <div key={i} style={{ fontSize: 11, color: 'var(--muted-c)', fontFamily: 'monospace' }}>
+                          Mat. <strong style={{ color: '#b45309' }}>{d.matricula}</strong> — {d.data} — códigos: {d.codigos}
                         </div>
                       ))}
                       {duplicatas.length > 10 && (
-                        <div style={{ fontSize: 11, color: '#64748b' }}>+ {duplicatas.length - 10} mais...</div>
+                        <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>+ {duplicatas.length - 10} mais...</div>
                       )}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 8 }}>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 8 }}>
                       Verifique o arquivo antes de publicar. Duplicatas podem indicar lançamentos incorretos no sistema de biometria.
                     </div>
                   </div>
@@ -1195,7 +1195,7 @@ export default function SimuladorPrevia() {
                     disabled={publicando || isVisitor}
                     style={{
                       flex: 1, padding: '12px 20px', borderRadius: 8, border: 'none',
-                      background: isVisitor ? 'rgba(255,255,255,.04)' : publicando ? 'rgba(59,130,246,.4)' : '#3b82f6',
+                      background: isVisitor ? 'rgba(0, 0, 0, 0.02)' : publicando ? 'rgba(13,124,61,.4)' : '#0D7C3D',
                       color: isVisitor ? '#374151' : '#fff', fontWeight: 700, fontSize: 13,
                       cursor: isVisitor ? 'not-allowed' : publicando ? 'wait' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -1204,17 +1204,17 @@ export default function SimuladorPrevia() {
                     {isVisitor ? <Lock size={14} /> : <CheckCircle size={15} />}
                     {isVisitor ? 'Publicação restrita a Administradores' : publicando ? 'Publicando...' : `Publicar Prévia · ${fmt(validos.length)} registros`}
                   </button>
-                  <button onClick={reiniciar} style={{ padding: '12px 20px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                  <button onClick={reiniciar} style={{ padding: '12px 20px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
                     <XCircle size={15} style={{ display: 'inline', marginRight: 6 }} />Cancelar
                   </button>
                 </div>
-                {erro && <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 6, background: 'rgba(239,68,68,.1)', color: '#f87171', fontSize: 12 }}>Erro: {erro}</div>}
+                {erro && <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 6, background: 'rgba(239,68,68,.1)', color: '#dc2626', fontSize: 12 }}>Erro: {erro}</div>}
               </div>
             ) : (
               <div className="chart-card" style={{ background: 'rgba(16,185,129,.08)', border: '1px solid rgba(16,185,129,.2)', textAlign: 'center' }}>
                 <CheckCircle size={36} color="#10b981" style={{ margin: '0 auto 12px' }} />
-                <div style={{ fontSize: 16, color: '#34d399', fontWeight: 700, marginBottom: 8 }}>Prévia publicada com sucesso!</div>
-                <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>
+                <div style={{ fontSize: 16, color: '#047857', fontWeight: 700, marginBottom: 8 }}>Prévia publicada com sucesso!</div>
+                <div style={{ fontSize: 12, color: 'var(--muted-c)', marginBottom: 16 }}>
                   {fmt(validos.length)} registros importados para {secretariaNome} · {formatarCompetencia(competencia)}
                 </div>
                 <button onClick={reiniciar} style={{ padding: '8px 20px', borderRadius: 8, background: '#10b981', color: '#fff', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>

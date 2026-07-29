@@ -41,6 +41,8 @@ import PainelProtocolo       from '@/modules/protocolo/pages/PainelProtocolo';
 import ConsultaProtocolo     from '@/modules/protocolo/pages/ConsultaProtocolo';
 import NovoProtocolo         from '@/modules/protocolo/pages/NovoProtocolo';
 
+
+
 function RequireAuth({ children }) {
   const { isLoggedIn } = useAuth();
   return isLoggedIn ? children : <Navigate to="/login" replace />;

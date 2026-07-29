@@ -28,10 +28,10 @@ function StatChip({ label, value, color }) {
     <span style={{
       display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
       padding: '6px 14px', borderRadius: 8,
-      background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)',
+      background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.05)',
     }}>
-      <span style={{ fontSize: 15, color: color || '#60a5fa', fontWeight: 700, fontFamily: 'monospace' }}>{fmt(value)}</span>
-      <span style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>{label}</span>
+      <span style={{ fontSize: 15, color: color || '#15A050', fontWeight: 700, fontFamily: 'monospace' }}>{fmt(value)}</span>
+      <span style={{ fontSize: 9, color: 'var(--muted-c)', marginTop: 2 }}>{label}</span>
     </span>
   );
 }
@@ -173,14 +173,14 @@ export default function HistoricoPrevias() {
         <div className="topbar-right">
           <button
             onClick={carregar}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 12 }}
           >
             <RefreshCw size={12} /> Atualizar
           </button>
           <button
             onClick={exportarCSV}
             disabled={filtrados.length === 0}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: filtrados.length ? '#3b82f6' : 'rgba(255,255,255,.06)', border: 'none', color: filtrados.length ? '#fff' : '#475569', cursor: filtrados.length ? 'pointer' : 'not-allowed', fontSize: 12, fontWeight: 600 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: filtrados.length ? '#0D7C3D' : 'rgba(0, 0, 0, 0.04)', border: 'none', color: filtrados.length ? '#fff' : '#475569', cursor: filtrados.length ? 'pointer' : 'not-allowed', fontSize: 12, fontWeight: 600 }}
           >
             <Download size={12} /> Exportar
           </button>
@@ -198,16 +198,16 @@ export default function HistoricoPrevias() {
                 value={busca}
                 onChange={e => setBusca(e.target.value)}
                 placeholder="Filtrar secretaria..."
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#f1f5f9', fontSize: 13 }}
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13 }}
               />
             </div>
-            <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,.1)' }} />
+            <div style={{ width: 1, height: 20, background: 'rgba(0, 0, 0, 0.06)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <Filter size={13} color="#64748b" />
               <select
                 value={filtroAno}
                 onChange={e => setFiltroAno(e.target.value)}
-                style={{ background: 'var(--card-bg)', border: 'none', color: filtroAno ? '#f1f5f9' : '#64748b', fontSize: 12, outline: 'none' }}
+                style={{ background: 'var(--card-bg)', border: 'none', color: filtroAno ? '#1e293b' : '#64748b', fontSize: 12, outline: 'none' }}
               >
                 <option value="">Todos os anos</option>
                 {ANOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
@@ -217,18 +217,18 @@ export default function HistoricoPrevias() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>Carregando histórico...</div>
+          <div style={{ textAlign: 'center', padding: 60, color: 'var(--muted-c)' }}>Carregando histórico...</div>
         ) : erro ? (
-          <div className="chart-card" style={{ color: '#f87171', fontSize: 13 }}>
+          <div className="chart-card" style={{ color: '#dc2626', fontSize: 13 }}>
             <strong>Erro:</strong> {erro}
             {erro?.includes('relation') && (
-              <div style={{ marginTop: 8, color: '#94a3b8', fontSize: 12 }}>
+              <div style={{ marginTop: 8, color: 'var(--muted-c)', fontSize: 12 }}>
                 A tabela <code>previas_publicadas</code> ainda não foi criada. Execute <code>previas_publicadas.sql</code> no Supabase.
               </div>
             )}
           </div>
         ) : filtrados.length === 0 ? (
-          <div className="chart-card" style={{ textAlign: 'center', padding: 60, color: '#475569' }}>
+          <div className="chart-card" style={{ textAlign: 'center', padding: 60, color: 'var(--muted-c)' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>Nenhuma prévia publicada</div>
             <div style={{ fontSize: 12, marginTop: 4 }}>Use o Simulador para publicar a primeira prévia</div>
@@ -238,13 +238,13 @@ export default function HistoricoPrevias() {
             {/* ── Consolidated overview card ── */}
             <div
               className="chart-card"
-              style={{ marginBottom: 16, borderLeft: '3px solid #3b82f6' }}
+              style={{ marginBottom: 16, borderLeft: '3px solid #0D7C3D' }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>Visão Consolidada</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Visão Consolidada</div>
                   {consolidado.primeiroPeriodo && (
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 3 }}>
                       {formatarCompetencia(consolidado.primeiroPeriodo)}
                       {' → '}
                       {formatarCompetencia(consolidado.ultimoPeriodo)}
@@ -252,14 +252,14 @@ export default function HistoricoPrevias() {
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(59,130,246,.15)', color: '#60a5fa', fontSize: 11, fontWeight: 600 }}>
+                  <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(13,124,61,.15)', color: '#15A050', fontSize: 11, fontWeight: 600 }}>
                     {consolidado.secretariasAtivas} secretaria{consolidado.secretariasAtivas !== 1 ? 's' : ''}
                   </span>
-                  <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(255,255,255,.06)', color: '#94a3b8', fontSize: 11, fontWeight: 600 }}>
+                  <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(0, 0, 0, 0.04)', color: 'var(--muted-c)', fontSize: 11, fontWeight: 600 }}>
                     {consolidado.totalPrevias} prévias
                   </span>
                   {consolidado.alertas > 0 && (
-                    <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(239,68,68,.15)', color: '#f87171', fontSize: 11, fontWeight: 600 }}>
+                    <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(239,68,68,.15)', color: '#dc2626', fontSize: 11, fontWeight: 600 }}>
                       {consolidado.alertas} alerta{consolidado.alertas !== 1 ? 's' : ''}
                     </span>
                   )}
@@ -275,12 +275,12 @@ export default function HistoricoPrevias() {
 
             {/* ── Expand / collapse controls ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: '#64748b' }}>
+              <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>
                 {secretariasFiltradas.length} secretaria{secretariasFiltradas.length !== 1 ? 's' : ''} com dados
               </span>
               <button
                 onClick={toggleTodos}
-                style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 11 }}
+                style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 11 }}
               >
                 {todosAbertos ? 'Colapsar tudo' : 'Expandir tudo'}
               </button>
@@ -311,11 +311,11 @@ export default function HistoricoPrevias() {
                       }}
                     >
                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: sec.cor, flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>
+                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
                         {sec.numero} — {sec.sigla || sec.codigo}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 11, color: '#64748b' }}>
+                        <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
                           {sec.periodos.length} período{sec.periodos.length !== 1 ? 's' : ''}
                           {ultimo ? ` · último: ${formatarCompetencia(ultimo.competencia)}` : ''}
                         </span>
@@ -330,7 +330,7 @@ export default function HistoricoPrevias() {
 
                     {/* Periods table — visible when expanded */}
                     {aberta && (
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', overflowX: 'auto' }}>
+                      <div style={{ borderTop: '1px solid rgba(0, 0, 0, 0.04)', overflowX: 'auto' }}>
                         <table style={{ width: '100%' }}>
                           <thead>
                             <tr>
@@ -347,18 +347,18 @@ export default function HistoricoPrevias() {
                           <tbody>
                             {sec.periodos.map(d => (
                               <tr key={d.id || d.competencia}>
-                                <td style={{ paddingLeft: 32, fontFamily: 'monospace', fontSize: 12, color: '#60a5fa' }}>
+                                <td style={{ paddingLeft: 32, fontFamily: 'monospace', fontSize: 12, color: '#15A050' }}>
                                   {formatarCompetencia(d.competencia)}
                                 </td>
                                 <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12 }}>{fmt(d.total_ocorrencias)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#f87171' }}>{fmt(d.total_faltas || 0)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#fb923c' }}>{fmt(d.total_atrasos || 0)}</td>
+                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#dc2626' }}>{fmt(d.total_faltas || 0)}</td>
+                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#c2410c' }}>{fmt(d.total_atrasos || 0)}</td>
                                 <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12 }}>{fmt(d.servidores_impactados)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#94a3b8' }}>
+                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: 'var(--muted-c)' }}>
                                   {d.media_desconto != null ? `${d.media_desconto}%` : '—'}
                                 </td>
                                 <td><BadgeAlerta classificacao={d.classificacao_alerta} /></td>
-                                <td style={{ fontSize: 11, color: '#64748b' }}>
+                                <td style={{ fontSize: 11, color: 'var(--muted-c)' }}>
                                   {d.data_publicacao
                                     ? new Date(d.data_publicacao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
                                     : '—'}

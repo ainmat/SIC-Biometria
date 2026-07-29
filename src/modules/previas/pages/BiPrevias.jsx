@@ -6,53 +6,45 @@ import {
   CategoryScale, LinearScale, PointElement, LineElement, BarElement,
   ArcElement, Title, Tooltip, Legend, Filler,
 } from 'chart.js';
-import { RefreshCw, ArrowLeft, TrendingUp, XCircle, Timer } from 'lucide-react';
+import { RefreshCw, ArrowLeft, TrendingUp, XCircle, Timer, Activity, AlertTriangle, Clock, Users } from 'lucide-react';
 import DisplayCards from '@/components/ui/display-cards';
 import {
   SECRETARIAS, formatarCompetencia, getCorSecretaria, getNomeSecretaria,
 } from '@/modules/previas/constants';
 import { fetchBIPublicadas, fetchTopMatriculas } from '@/modules/previas/services/previasService';
+import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 const TOOLTIP_STYLE = {
   backgroundColor: 'rgba(17,24,39,.95)',
-  titleColor: '#f1f5f9',
-  bodyColor: '#94a3b8',
-  borderColor: 'rgba(59,130,246,.3)',
+  titleColor: '#1e293b',
+  bodyColor: '#64748b',
+  borderColor: 'rgba(13,124,61,.3)',
   borderWidth: 1,
   padding: 10,
 };
 
 const SCALE_OPTS = {
-  x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' } },
-  y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+  x: { ticks: { color: 'var(--muted-c)', font: { size: 10 } }, grid: { color: 'rgba(0, 0, 0, 0.02)' } },
+  y: { ticks: { color: 'var(--muted-c)', font: { size: 10 } }, grid: { color: 'rgba(0, 0, 0, 0.02)' } },
 };
 
 function fmt(n) { return (n || 0).toLocaleString('pt-BR'); }
 
 // ─── Shared sub-components ───────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, cor }) {
-  return (
-    <div className="kpi-card">
-      <div className="kpi-accent" style={{ background: cor }} />
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value" style={{ color: cor, fontSize: 26 }}>{value}</div>
-      {sub && <div className="kpi-footer"><span className="kpi-tag" style={{ background: `${cor}18`, color: cor }}>{sub}</span></div>}
-    </div>
-  );
-}
+// KpiCard is now imported from @/components/ui/dashboard-card
 
 function TopMatList({ topMat, loading }) {
-  if (loading) return <div style={{ color: '#64748b', fontSize: 13, padding: '20px 0' }}>Carregando...</div>;
-  if (!topMat.length) return <div style={{ color: '#475569', fontSize: 13, padding: '20px 0' }}>Sem dados</div>;
+  if (loading) return <div style={{ color: 'var(--muted-c)', fontSize: 13, padding: '20px 0' }}>Carregando...</div>;
+  if (!topMat.length) return <div style={{ color: 'var(--muted-c)', fontSize: 13, padding: '20px 0' }}>Sem dados</div>;
   const maxOcorr = topMat[0]?.ocorrencias || 1;
   return (
     <div className="hbar-list">
       {topMat.map((m, i) => {
         const pct = Math.round((m.ocorrencias / maxOcorr) * 100);
-        const cor = i === 0 ? '#ef4444' : i < 3 ? '#f59e0b' : '#3b82f6';
+        const cor = i === 0 ? '#ef4444' : i < 3 ? '#f59e0b' : '#0D7C3D';
         return (
           <div key={m.matricula} className="hbar-row">
             <div className="hbar-label" style={{ fontFamily: 'monospace', fontSize: 11 }}>{m.matricula}</div>
@@ -76,8 +68,8 @@ function Heatmap({ publicadas }) {
   const maxVal = Math.max(...publicadas.map(d => d.total_ocorrencias || 0), 1);
   const heatColor = (v) => {
     const i = v / maxVal;
-    if (i === 0)     return 'rgba(59,130,246,.05)';
-    if (i < 0.25)    return 'rgba(59,130,246,.2)';
+    if (i === 0)     return 'rgba(13,124,61,.05)';
+    if (i < 0.25)    return 'rgba(13,124,61,.2)';
     if (i < 0.5)     return 'rgba(245,158,11,.4)';
     if (i < 0.75)    return 'rgba(239,68,68,.6)';
     return 'rgba(239,68,68,.85)';
@@ -87,9 +79,9 @@ function Heatmap({ publicadas }) {
       <table style={{ borderCollapse: 'separate', borderSpacing: 3, fontSize: 10, whiteSpace: 'nowrap' }}>
         <thead>
           <tr>
-            <th style={{ textAlign: 'left', color: '#64748b', fontSize: 10, paddingRight: 12, fontWeight: 400 }}>Secretaria</th>
+            <th style={{ textAlign: 'left', color: 'var(--muted-c)', fontSize: 10, paddingRight: 12, fontWeight: 400 }}>Secretaria</th>
             {periods.map(p => (
-              <th key={p} style={{ color: '#64748b', fontWeight: 400, minWidth: 38, textAlign: 'center' }}>
+              <th key={p} style={{ color: 'var(--muted-c)', fontWeight: 400, minWidth: 38, textAlign: 'center' }}>
                 {formatarCompetencia(p)}
               </th>
             ))}
@@ -98,7 +90,7 @@ function Heatmap({ publicadas }) {
         <tbody>
           {secs.map(sec => (
             <tr key={sec}>
-              <td style={{ color: '#94a3b8', paddingRight: 12, fontWeight: 500 }}>
+              <td style={{ color: 'var(--muted-c)', paddingRight: 12, fontWeight: 500 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: getCorSecretaria(sec) }} />
                   {getNomeSecretaria(sec)}
@@ -109,7 +101,7 @@ function Heatmap({ publicadas }) {
                 return (
                   <td key={p}
                     title={`${getNomeSecretaria(sec)} · ${formatarCompetencia(p)}: ${v} ocorrências`}
-                    style={{ textAlign: 'center', padding: '4px 6px', borderRadius: 4, background: heatColor(v), color: v ? '#f1f5f9' : 'transparent', cursor: 'default', fontFamily: 'monospace' }}>
+                    style={{ textAlign: 'center', padding: '4px 6px', borderRadius: 4, background: heatColor(v), color: v ? '#1e293b' : 'transparent', cursor: 'default', fontFamily: 'monospace' }}>
                     {v || ''}
                   </td>
                 );
@@ -118,9 +110,9 @@ function Heatmap({ publicadas }) {
           ))}
         </tbody>
       </table>
-      <div style={{ display: 'flex', gap: 12, marginTop: 10, alignItems: 'center', fontSize: 10, color: '#64748b' }}>
+      <div style={{ display: 'flex', gap: 12, marginTop: 10, alignItems: 'center', fontSize: 10, color: 'var(--muted-c)' }}>
         <span>Intensidade:</span>
-        {[['Nenhuma','rgba(59,130,246,.05)'],['Baixa','rgba(59,130,246,.2)'],['Média','rgba(245,158,11,.4)'],['Alta','rgba(239,68,68,.6)'],['Crítica','rgba(239,68,68,.85)']].map(([l, c]) => (
+        {[['Nenhuma','rgba(13,124,61,.05)'],['Baixa','rgba(13,124,61,.2)'],['Média','rgba(245,158,11,.4)'],['Alta','rgba(239,68,68,.6)'],['Crítica','rgba(239,68,68,.85)']].map(([l, c]) => (
           <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ width: 12, height: 12, borderRadius: 2, background: c }} />{l}
           </span>
@@ -134,7 +126,7 @@ function BackButton({ onVoltar }) {
   return (
     <button
       onClick={onVoltar}
-      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 12 }}
     >
       <ArrowLeft size={13} /> Voltar
     </button>
@@ -144,6 +136,17 @@ function BackButton({ onVoltar }) {
 // ─── Dashboard por secretaria ────────────────────────────────────────────────
 
 function DashboardSecretaria({ publicadas, topMat, loadingTop, secInfo, onVoltar }) {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    window.addEventListener('themechange', handleTheme);
+    return () => window.removeEventListener('themechange', handleTheme);
+  }, []);
+
+  const textColor = isDark ? '#f1f5f9' : '#1e293b';
+  const mutedColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.02)';
+
   const sorted       = useMemo(() => [...publicadas].sort((a, b) => a.competencia.localeCompare(b.competencia)), [publicadas]);
   const labels       = sorted.map(d => formatarCompetencia(d.competencia));
   const totalOcorr   = publicadas.reduce((s, d) => s + (d.total_ocorrencias || 0), 0);
@@ -157,8 +160,8 @@ function DashboardSecretaria({ publicadas, topMat, loadingTop, secInfo, onVoltar
       {
         label: 'Ocorrências',
         data: sorted.map(d => d.total_ocorrencias || 0),
-        borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)',
-        borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#60a5fa',
+        borderColor: '#15A050', backgroundColor: 'rgba(96,165,250,.1)',
+        borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#15A050',
       },
       {
         label: 'Faltas',
@@ -183,17 +186,22 @@ function DashboardSecretaria({ publicadas, topMat, loadingTop, secInfo, onVoltar
     ],
   };
 
+  const dynamicScaleOpts = {
+    x: { ticks: { color: mutedColor, font: { size: 10 } }, grid: { color: gridColor } },
+    y: { ticks: { color: mutedColor, font: { size: 10 } }, grid: { color: gridColor } },
+  };
+
   const baseOpts = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, tooltip: TOOLTIP_STYLE },
-    scales: SCALE_OPTS,
+    plugins: { legend: { labels: { color: mutedColor, font: { size: 11 } } }, tooltip: TOOLTIP_STYLE },
+    scales: dynamicScaleOpts,
   };
 
   const stackedOpts = {
     ...baseOpts,
     scales: {
-      x: { ...SCALE_OPTS.x, stacked: true },
-      y: { ...SCALE_OPTS.y, stacked: true },
+      x: { ...dynamicScaleOpts.x, stacked: true },
+      y: { ...dynamicScaleOpts.y, stacked: true },
     },
   };
 
@@ -202,58 +210,40 @@ function DashboardSecretaria({ publicadas, topMat, loadingTop, secInfo, onVoltar
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <BackButton onVoltar={onVoltar} />
         <span style={{ width: 10, height: 10, borderRadius: '50%', background: secInfo.cor }} />
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>{secInfo.numero} — {secInfo.sigla}</span>
-        <span style={{ fontSize: 11, color: '#64748b' }}>{publicadas.length} período{publicadas.length !== 1 ? 's' : ''} publicado{publicadas.length !== 1 ? 's' : ''}</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{secInfo.numero} — {secInfo.sigla}</span>
+        <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{publicadas.length} período{publicadas.length !== 1 ? 's' : ''} publicado{publicadas.length !== 1 ? 's' : ''}</span>
       </div>
 
-      <div className="kpi-grid" style={{ marginBottom: 20 }}>
-        <KpiCard label="Prévias publicadas" value={fmt(publicadas.length)} sub="períodos"   cor="#3b82f6" />
-        <KpiCard label="Ocorrências"         value={fmt(totalOcorr)}        sub="acumulado" cor="#60a5fa" />
-        <KpiCard label="Faltas (171)"         value={fmt(totalFaltas)}       sub="acumulado" cor="#ef4444" />
-        <KpiCard label="Atrasos (335)"        value={fmt(totalAtrasos)}      sub="acumulado" cor="#f97316" />
-        <KpiCard label="Servidores"           value={fmt(totalServid)}       sub="acumulado" cor="#10b981" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 20 }}>
+        <KpiCard label="Prévias publicadas" value={fmt(publicadas.length)} sub="períodos"   cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
+        <KpiCard label="Ocorrências"         value={fmt(totalOcorr)}        sub="acumulado" cor="#15A050" icon={<TrendingUp />} isDark={isDark} />
+        <KpiCard label="Faltas (171)"         value={fmt(totalFaltas)}       sub="acumulado" cor="#ef4444" icon={<XCircle />} isDark={isDark} />
+        <KpiCard label="Atrasos (335)"        value={fmt(totalAtrasos)}      sub="acumulado" cor="#f97316" icon={<Clock />} isDark={isDark} />
+        <KpiCard label="Servidores"           value={fmt(totalServid)}       sub="acumulado" cor="#10b981" icon={<Users />} isDark={isDark} />
       </div>
 
-      <div className="chart-card" style={{ marginBottom: 20 }}>
-        <div className="chart-header">
-          <div>
-            <div className="chart-title">Evolução Mensal</div>
-            <div className="chart-sub">Ocorrências, faltas e atrasos por competência</div>
-          </div>
-        </div>
+      <ChartCard title="Evolução Mensal" subtitle="Ocorrências, faltas e atrasos por competência" icon={<TrendingUp />} isDark={isDark} style={{ marginBottom: 20 }}>
         <div style={{ height: 240, position: 'relative' }}>
           {sorted.length > 0
             ? <Line data={lineData} options={baseOpts} />
-            : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#475569', fontSize: 13 }}>Sem dados</div>
+            : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted-c)', fontSize: 13 }}>Sem dados</div>
           }
         </div>
-      </div>
+      </ChartCard>
 
-      <div className="bottom-row">
-        <div className="chart-card">
-          <div className="chart-header" style={{ marginBottom: 16 }}>
-            <div>
-              <div className="chart-title">Faltas × Atrasos por Período</div>
-              <div className="chart-sub">Composição mensal acumulada</div>
-            </div>
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <ChartCard title="Faltas × Atrasos por Período" subtitle="Composição mensal acumulada" isDark={isDark}>
           <div style={{ height: 220, position: 'relative' }}>
             {sorted.length > 0
               ? <Bar data={barData} options={stackedOpts} />
-              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#475569', fontSize: 13 }}>Sem dados</div>
+              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted-c)', fontSize: 13 }}>Sem dados</div>
             }
           </div>
-        </div>
+        </ChartCard>
 
-        <div className="chart-card">
-          <div className="chart-header" style={{ marginBottom: 16 }}>
-            <div>
-              <div className="chart-title">Top 10 Matrículas</div>
-              <div className="chart-sub">Maior número de ocorrências nesta secretaria</div>
-            </div>
-          </div>
+        <ChartCard title="Top 10 Matrículas" subtitle="Maior número de ocorrências nesta secretaria" isDark={isDark}>
           <TopMatList topMat={topMat} loading={loadingTop} />
-        </div>
+        </ChartCard>
       </div>
     </>
   );
@@ -262,6 +252,17 @@ function DashboardSecretaria({ publicadas, topMat, loadingTop, secInfo, onVoltar
 // ─── Dashboard consolidado ───────────────────────────────────────────────────
 
 function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    window.addEventListener('themechange', handleTheme);
+    return () => window.removeEventListener('themechange', handleTheme);
+  }, []);
+
+  const textColor = isDark ? '#f1f5f9' : '#1e293b';
+  const mutedColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.02)';
+
   const totalPrevias     = publicadas.length;
   const totalOcorrencias = publicadas.reduce((s, d) => s + (d.total_ocorrencias || 0), 0);
   const totalFaltas      = publicadas.reduce((s, d) => s + (d.total_faltas || 0), 0);
@@ -281,7 +282,7 @@ function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
   const evolData = {
     labels: evolSorted.map(([p]) => formatarCompetencia(p)),
     datasets: [
-      { label: 'Ocorrências',        data: evolSorted.map(([, v]) => v.ocorrencias), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.12)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#3b82f6' },
+      { label: 'Ocorrências',        data: evolSorted.map(([, v]) => v.ocorrencias), borderColor: '#0D7C3D', backgroundColor: 'rgba(13,124,61,.12)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#0D7C3D' },
       { label: 'Servidores afetados', data: evolSorted.map(([, v]) => v.servidores),  borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,.07)',  borderWidth: 1.5, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#f59e0b' },
     ],
   };
@@ -297,7 +298,7 @@ function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
 
   const donutData = {
     labels: secLabels.map(getNomeSecretaria),
-    datasets: [{ data: secLabels.map(c => secMap[c]), backgroundColor: secLabels.map(c => getCorSecretaria(c) + 'cc'), borderColor: '#0d1424', borderWidth: 2 }],
+    datasets: [{ data: secLabels.map(c => secMap[c]), backgroundColor: secLabels.map(c => getCorSecretaria(c) + 'cc'), borderColor: isDark ? '#0F1423' : '#ffffff', borderWidth: 2 }],
   };
 
   const barData = {
@@ -305,15 +306,20 @@ function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
     datasets: [{ label: 'Ocorrências', data: secLabels.map(c => secMap[c]), backgroundColor: secLabels.map(c => getCorSecretaria(c) + 'cc'), borderColor: secLabels.map(c => getCorSecretaria(c)), borderWidth: 1, borderRadius: 4 }],
   };
 
+  const dynamicScaleOpts = {
+    x: { ticks: { color: mutedColor, font: { size: 10 } }, grid: { color: gridColor } },
+    y: { ticks: { color: mutedColor, font: { size: 10 } }, grid: { color: gridColor } },
+  };
+
   const baseOpts = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, tooltip: TOOLTIP_STYLE },
-    scales: SCALE_OPTS,
+    plugins: { legend: { labels: { color: mutedColor, font: { size: 11 } } }, tooltip: TOOLTIP_STYLE },
+    scales: dynamicScaleOpts,
   };
 
   const donutOpts = {
     responsive: true, maintainAspectRatio: false, cutout: '60%',
-    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 }, padding: 12, usePointStyle: true } }, tooltip: TOOLTIP_STYLE },
+    plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, padding: 12, usePointStyle: true } }, tooltip: TOOLTIP_STYLE },
   };
 
   const barOnlyOpts = { ...baseOpts, plugins: { ...baseOpts.plugins, legend: { display: false } } };
@@ -324,85 +330,55 @@ function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <BackButton onVoltar={onVoltar} />
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Dashboard Consolidado</span>
-        <span style={{ fontSize: 11, color: '#64748b' }}>{secretariasAtivas} secretarias · {totalPrevias} prévias</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Dashboard Consolidado</span>
+        <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{secretariasAtivas} secretarias · {totalPrevias} prévias</span>
       </div>
 
-      <div className="kpi-grid" style={{ marginBottom: 20 }}>
-        <KpiCard label="Prévias publicadas"    value={fmt(totalPrevias)}     sub="total"      cor="#3b82f6" />
-        <KpiCard label="Ocorrências"            value={fmt(totalOcorrencias)} sub="acumulado"  cor="#ef4444" />
-        <KpiCard label="Faltas (171)"           value={fmt(totalFaltas)}      sub="acumulado"  cor="#f87171" />
-        <KpiCard label="Atrasos (335)"          value={fmt(totalAtrasos)}     sub="acumulado"  cor="#f97316" />
-        <KpiCard label="Servidores Impactados"  value={fmt(totalServidores)}  sub="acumulado"  cor="#f59e0b" />
-        <KpiCard label="Maior Ocorrência"       value={secTop ? getNomeSecretaria(secTop[0]) : '—'} sub={secTop ? `${fmt(secTop[1])} ocorrências` : ''} cor="#8b5cf6" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 20 }}>
+        <KpiCard label="Prévias publicadas"   value={fmt(totalPrevias)}     sub="total"     cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
+        <KpiCard label="Ocorrências"           value={fmt(totalOcorrencias)} sub="acumulado" cor="#ef4444" icon={<TrendingUp />} isDark={isDark} />
+        <KpiCard label="Faltas (171)"          value={fmt(totalFaltas)}      sub="acumulado" cor="#dc2626" icon={<XCircle />} isDark={isDark} />
+        <KpiCard label="Atrasos (335)"         value={fmt(totalAtrasos)}     sub="acumulado" cor="#f97316" icon={<Clock />} isDark={isDark} />
+        <KpiCard label="Servidores Impactados" value={fmt(totalServidores)}  sub="acumulado" cor="#f59e0b" icon={<Users />} isDark={isDark} />
+        <KpiCard label="Maior Ocorrência"      value={secTop ? getNomeSecretaria(secTop[0]) : '—'} sub={secTop ? `${fmt(secTop[1])} ocorrências` : ''} cor="#0D7C3D" icon={<AlertTriangle />} isDark={isDark} />
       </div>
 
-      <div className="charts-row" style={{ marginBottom: 20 }}>
-        <div className="chart-card" style={{ flex: 2 }}>
-          <div className="chart-header">
-            <div>
-              <div className="chart-title">Evolução Mensal</div>
-              <div className="chart-sub">Ocorrências e servidores nos últimos 12 meses</div>
-            </div>
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
+        <ChartCard title="Evolução Mensal" subtitle="Ocorrências e servidores nos últimos 12 meses" icon={<TrendingUp />} isDark={isDark}>
           <div style={{ height: 220, position: 'relative' }}>
             {evolSorted.length > 0
               ? <Line data={evolData} options={baseOpts} />
-              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#475569', fontSize: 13 }}>Sem dados</div>
+              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted-c)', fontSize: 13 }}>Sem dados</div>
             }
           </div>
-        </div>
-        <div className="chart-card" style={{ flex: 1 }}>
-          <div className="chart-header">
-            <div>
-              <div className="chart-title">Distribuição</div>
-              <div className="chart-sub">Por secretaria</div>
-            </div>
-          </div>
+        </ChartCard>
+        <ChartCard title="Distribuição" subtitle="Por secretaria" isDark={isDark}>
           <div style={{ height: 220, position: 'relative' }}>
             {secLabels.length > 0
               ? <Doughnut data={donutData} options={donutOpts} />
-              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#475569', fontSize: 13 }}>Sem dados</div>
+              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted-c)', fontSize: 13 }}>Sem dados</div>
             }
           </div>
-        </div>
+        </ChartCard>
       </div>
 
-      <div className="bottom-row" style={{ marginBottom: 20 }}>
-        <div className="chart-card">
-          <div className="chart-header" style={{ marginBottom: 16 }}>
-            <div>
-              <div className="chart-title">Ocorrências por Secretaria</div>
-              <div className="chart-sub">Volume acumulado</div>
-            </div>
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <ChartCard title="Ocorrências por Secretaria" subtitle="Volume acumulado" isDark={isDark}>
           <div style={{ height: 220, position: 'relative' }}>
             {secLabels.length > 0
               ? <Bar data={barData} options={barOnlyOpts} />
-              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#475569', fontSize: 13 }}>Sem dados</div>
+              : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted-c)', fontSize: 13 }}>Sem dados</div>
             }
           </div>
-        </div>
-        <div className="chart-card">
-          <div className="chart-header" style={{ marginBottom: 16 }}>
-            <div>
-              <div className="chart-title">Top 10 Matrículas</div>
-              <div className="chart-sub">Global, maior número de ocorrências</div>
-            </div>
-          </div>
+        </ChartCard>
+        <ChartCard title="Top 10 Matrículas" subtitle="Global, maior número de ocorrências" isDark={isDark}>
           <TopMatList topMat={topMat} loading={loadingTop} />
-        </div>
+        </ChartCard>
       </div>
 
-      <div className="chart-card">
-        <div className="chart-header" style={{ marginBottom: 20 }}>
-          <div>
-            <div className="chart-title">Heatmap · Secretaria × Período</div>
-            <div className="chart-sub">Volume de ocorrências por secretaria e mês</div>
-          </div>
-        </div>
+      <ChartCard title="Heatmap · Secretaria × Período" subtitle="Volume de ocorrências por secretaria e mês" isDark={isDark}>
         <Heatmap publicadas={publicadas} />
-      </div>
+      </ChartCard>
     </>
   );
 }
@@ -430,7 +406,7 @@ function SelectionGrid({ publicadas, onSelect }) {
 
   if (!publicadas.length) {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0', color: '#475569' }}>
+      <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--muted-c)' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Nenhuma prévia publicada</div>
         <div style={{ fontSize: 13 }}>Publique prévias pelo Simulador para visualizar os indicadores aqui.</div>
@@ -478,11 +454,11 @@ function SelectionGrid({ publicadas, onSelect }) {
 
       {/* ── Divider ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.06)' }} />
-        <span style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
+        <div style={{ flex: 1, height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
+        <span style={{ fontSize: 10, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
           Selecione uma secretaria
         </span>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.06)' }} />
+        <div style={{ flex: 1, height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
       </div>
 
       {/* ── Card consolidado ── */}
@@ -490,10 +466,10 @@ function SelectionGrid({ publicadas, onSelect }) {
         onClick={() => onSelect('consolidado')}
         className="sec-card chart-card"
         style={{
-          '--sec-color': '#3b82f6',
+          '--sec-color': '#0D7C3D',
           display: 'block', width: '100%', marginBottom: 14, cursor: 'pointer',
-          textAlign: 'left', border: '1px solid rgba(59,130,246,.25)',
-          borderLeft: '4px solid #3b82f6', padding: '16px 20px',
+          textAlign: 'left', border: '1px solid rgba(13,124,61,.25)',
+          borderLeft: '4px solid #0D7C3D', padding: '16px 20px',
           animationDelay: '0ms',
         }}
       >
@@ -501,30 +477,30 @@ function SelectionGrid({ publicadas, onSelect }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 18 }}>📊</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#60a5fa' }}>Dashboard Consolidado</div>
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Todas as secretarias · {publicadas.length} prévias</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#15A050' }}>Dashboard Consolidado</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>Todas as secretarias · {publicadas.length} prévias</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(59,130,246,.15)', color: '#60a5fa', fontSize: 11, fontWeight: 600 }}>
+            <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(13,124,61,.15)', color: '#15A050', fontSize: 11, fontWeight: 600 }}>
               {secretarias.length} secretarias
             </span>
             {alertas > 0 && (
-              <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(239,68,68,.15)', color: '#f87171', fontSize: 11, fontWeight: 600 }}>
+              <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(239,68,68,.15)', color: '#dc2626', fontSize: 11, fontWeight: 600 }}>
                 {alertas} alertas
               </span>
             )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>
+          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
             <span style={{ fontSize: 18, fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>{fmt(totalOcorrConsol)}</span> ocorrências
           </span>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#f87171', fontFamily: 'monospace' }}>{fmt(totalFaltasConsol)}</span> faltas
+          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{fmt(totalFaltasConsol)}</span> faltas
           </span>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#fb923c', fontFamily: 'monospace' }}>{fmt(totalAtrasosConsol)}</span> atrasos
+          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: '#c2410c', fontFamily: 'monospace' }}>{fmt(totalAtrasosConsol)}</span> atrasos
           </span>
         </div>
       </button>
@@ -553,22 +529,22 @@ function SelectionGrid({ publicadas, onSelect }) {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: sec.cor, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{sec.numero} — {sec.sigla}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{sec.numero} — {sec.sigla}</span>
               </div>
-              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 8 }}>
                 {sec.periodos.length} período{sec.periodos.length !== 1 ? 's' : ''}
                 {ultimo ? ` · último: ${formatarCompetencia(ultimo.competencia)}` : ''}
               </div>
               <div style={{ fontSize: 15, fontWeight: 700, color: sec.cor, fontFamily: 'monospace', marginBottom: 4 }}>
-                {fmt(sec.totalOcorr)}<span style={{ fontSize: 10, fontWeight: 400, color: '#64748b', marginLeft: 4 }}>ocorr.</span>
+                {fmt(sec.totalOcorr)}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--muted-c)', marginLeft: 4 }}>ocorr.</span>
               </div>
               <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 10, color: '#f87171' }}>{fmt(sec.totalFaltas)} F</span>
-                <span style={{ fontSize: 10, color: '#64748b' }}>·</span>
-                <span style={{ fontSize: 10, color: '#fb923c' }}>{fmt(sec.totalAtrasos)} A</span>
+                <span style={{ fontSize: 10, color: '#dc2626' }}>{fmt(sec.totalFaltas)} F</span>
+                <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>·</span>
+                <span style={{ fontSize: 10, color: '#c2410c' }}>{fmt(sec.totalAtrasos)} A</span>
               </div>
               {total > 0 && (
-                <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,.08)', overflow: 'hidden', display: 'flex' }}>
+                <div style={{ height: 3, borderRadius: 2, background: 'rgba(0, 0, 0, 0.05)', overflow: 'hidden', display: 'flex' }}>
                   <div style={{ height: '100%', width: `${pctFaltas}%`, background: '#ef4444' }} />
                   <div style={{ height: '100%', flex: 1, background: '#f97316' }} />
                 </div>
@@ -647,7 +623,7 @@ export default function BiPrevias() {
       <div>
         <div className="topbar"><div className="topbar-left"><h1>BI · Prévias</h1><p>Carregando...</p></div></div>
         <div className="content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
-          <div style={{ color: '#64748b' }}>Carregando indicadores...</div>
+          <div style={{ color: 'var(--muted-c)' }}>Carregando indicadores...</div>
         </div>
       </div>
     );
@@ -658,9 +634,9 @@ export default function BiPrevias() {
       <div>
         <div className="topbar"><div className="topbar-left"><h1>BI · Prévias</h1></div></div>
         <div className="content">
-          <div style={{ padding: 20, color: '#f87171', fontSize: 13 }}>
+          <div style={{ padding: 20, color: '#dc2626', fontSize: 13 }}>
             Erro ao carregar dados: {erro}
-            <div style={{ marginTop: 8, color: '#94a3b8', fontSize: 12 }}>
+            <div style={{ marginTop: 8, color: 'var(--muted-c)', fontSize: 12 }}>
               Verifique se as tabelas <code>previas_publicadas</code> e <code>previas_frequencia</code> existem no Supabase.
             </div>
           </div>
@@ -679,7 +655,7 @@ export default function BiPrevias() {
         <div className="topbar-right">
           <button
             onClick={carregar}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 12 }}
           >
             <RefreshCw size={12} /> Atualizar
           </button>

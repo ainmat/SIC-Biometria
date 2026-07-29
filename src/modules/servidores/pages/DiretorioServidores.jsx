@@ -75,7 +75,7 @@ const PER_PAGE = 50;
 
 const SEL_ST = {
   padding: '7px 10px', borderRadius: 8, background: 'var(--card-bg)',
-  border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 12,
+  border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 12,
   outline: 'none', minWidth: 120,
 };
 
@@ -96,8 +96,8 @@ function ModalServidor({ matricula, onClose }) {
   function campo(label, valor, mono = false) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</span>
-        <span style={{ fontSize: 13, color: mono ? '#a5b4fc' : '#e2e8f0', fontFamily: mono ? 'monospace' : 'inherit', fontWeight: mono ? 700 : 400 }}>{dash(valor)}</span>
+        <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</span>
+        <span style={{ fontSize: 13, color: mono ? '#15A050' : '#334155', fontFamily: mono ? 'monospace' : 'inherit', fontWeight: mono ? 700 : 400 }}>{dash(valor)}</span>
       </div>
     );
   }
@@ -112,23 +112,23 @@ function ModalServidor({ matricula, onClose }) {
           <button className="chamado-modal-close" onClick={onClose}>×</button>
         </div>
 
-        {loading && <div style={{ padding: '40px 24px', textAlign: 'center', color: '#475569' }}>Carregando...</div>}
-        {erro    && <div style={{ padding: '16px 24px', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--muted-c)' }}>Carregando...</div>}
+        {erro    && <div style={{ padding: '16px 24px', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {dados && (
           <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* cabeçalho */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 10, background: 'rgba(99,102,241,.07)', border: '1px solid rgba(99,102,241,.15)' }}>
-              <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'rgba(99,102,241,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 10, background: 'rgba(13,124,61,.07)', border: '1px solid rgba(13,124,61,.15)' }}>
+              <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'rgba(13,124,61,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <User size={22} color="#818cf8" />
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>{dados.Nome_Funcionario || '—'}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{dados.Nome_Funcionario || '—'}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, color: '#a5b4fc', fontFamily: 'monospace', fontWeight: 700 }}>Mat. {dados.Matricula}</span>
-                  {dados.Des_Cargo && <span style={{ fontSize: 11, color: '#64748b' }}>· {dados.Des_Cargo}</span>}
+                  <span style={{ fontSize: 11, color: '#15A050', fontFamily: 'monospace', fontWeight: 700 }}>Mat. {dados.Matricula}</span>
+                  {dados.Des_Cargo && <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>· {dados.Des_Cargo}</span>}
                   {dados.SiglaSec && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#818cf8', padding: '2px 8px', borderRadius: 20, background: 'rgba(99,102,241,.15)', border: '1px solid rgba(99,102,241,.25)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#4338ca', padding: '2px 8px', borderRadius: 20, background: 'rgba(13,124,61,.15)', border: '1px solid rgba(13,124,61,.25)' }}>
                       {dados.SiglaSec}
                     </span>
                   )}
@@ -138,7 +138,7 @@ function ModalServidor({ matricula, onClose }) {
 
             {/* Lotação */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Lotação</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Lotação</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 {campo('Secretaria',       dados.Des_Secretaria)}
                 {campo('Sigla',            dados.SiglaSec, true)}
@@ -149,11 +149,11 @@ function ModalServidor({ matricula, onClose }) {
               </div>
             </div>
 
-            <div style={{ height: 1, background: 'rgba(255,255,255,.06)' }} />
+            <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
 
             {/* Contrato */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Contrato e Vínculo</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Contrato e Vínculo</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                 {campo('Regime',        dados.Des_RegTrab)}
                 {campo('Padrão Adm.',   dados.Des_Padrao_Adm)}
@@ -169,11 +169,11 @@ function ModalServidor({ matricula, onClose }) {
               </div>
             </div>
 
-            <div style={{ height: 1, background: 'rgba(255,255,255,.06)' }} />
+            <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
 
             {/* Dados pessoais */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Dados Pessoais</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Dados Pessoais</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                 {campo('Sexo',        dados.Sexo)}
                 {campo('Idade',       dados.Idade ? `${dados.Idade} anos` : null)}
@@ -184,10 +184,10 @@ function ModalServidor({ matricula, onClose }) {
             {/* Tempo de serviço em destaque */}
             {dados.Tempo_Contrato_Anos != null && (
               <>
-                <div style={{ height: 1, background: 'rgba(255,255,255,.06)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, background: 'rgba(99,102,241,.06)', border: '1px solid rgba(99,102,241,.15)' }}>
-                  <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Tempo de serviço</span>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: '#a5b4fc', fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, background: 'rgba(13,124,61,.06)', border: '1px solid rgba(13,124,61,.15)' }}>
+                  <span style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 600 }}>Tempo de serviço</span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: '#15A050', fontVariantNumeric: 'tabular-nums' }}>
                     {tempoServicoReal || `${dados.Tempo_Contrato_Anos} anos`}
                   </span>
                 </div>
@@ -263,7 +263,7 @@ export default function DiretorioServidores() {
           <p>Consulta e detalhamento do quadro de pessoal</p>
         </div>
         <div className="topbar-right">
-          <button onClick={exportar} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(16,185,129,.15)', border: '1px solid rgba(16,185,129,.3)', color: '#34d399', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={exportar} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(16,185,129,.15)', border: '1px solid rgba(16,185,129,.3)', color: '#047857', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
             <Download size={13} /> CSV
           </button>
           <TopbarAvatar />
@@ -282,7 +282,7 @@ export default function DiretorioServidores() {
                 style={{ ...SEL_ST, paddingLeft: 32, width: '100%', boxSizing: 'border-box' }}
               />
               {busca && (
-                <button onClick={() => setBusca('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#475569', display: 'flex' }}>
+                <button onClick={() => setBusca('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-c)', display: 'flex' }}>
                   <X size={13} />
                 </button>
               )}
@@ -305,18 +305,18 @@ export default function DiretorioServidores() {
 
             {temFiltro && (
               <button onClick={() => { setBusca(''); setFiltroSec(''); setFiltroReg(''); setFiltroPad(''); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 12, cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>
                 <X size={12} /> Limpar
               </button>
             )}
 
-            <span style={{ fontSize: 12, color: '#475569', marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 12, color: 'var(--muted-c)', marginLeft: 'auto', whiteSpace: 'nowrap' }}>
               {loading ? 'Buscando...' : `${total.toLocaleString('pt-BR')} servidores`}
             </span>
           </div>
         </div>
 
-        {erro && <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13, marginBottom: 16 }}>{erro}</div>}
+        {erro && <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13, marginBottom: 16 }}>{erro}</div>}
 
         {/* Tabela */}
         <div className="chart-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -325,14 +325,14 @@ export default function DiretorioServidores() {
               <thead>
                 <tr>
                   {['Matrícula','Nome','Cargo','Secretaria','Local de Trabalho','Regime','Padrão Adm.','Admissão'].map(h => (
-                    <th key={h} style={{ padding: '11px 14px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: '#475569', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,.07)', whiteSpace: 'nowrap', background: 'rgba(0,0,0,.2)' }}>{h}</th>
+                    <th key={h} style={{ padding: '11px 14px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--muted-c)', textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,.07)', whiteSpace: 'nowrap', background: 'rgba(0,0,0,.2)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {!loading && lista.length === 0 && (
                   <tr>
-                    <td colSpan={8} style={{ padding: '48px 14px', textAlign: 'center', color: '#334155', fontSize: 13 }}>
+                    <td colSpan={8} style={{ padding: '48px 14px', textAlign: 'center', color: 'var(--text)', fontSize: 13 }}>
                       {total === 0 && !temFiltro ? 'Nenhum servidor cadastrado.' : 'Nenhum resultado para os filtros aplicados.'}
                     </td>
                   </tr>
@@ -340,18 +340,18 @@ export default function DiretorioServidores() {
                 {lista.map(r => (
                   <tr key={r.Matricula}
                     onClick={() => setSelected(r.Matricula)}
-                    style={{ cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,.06)'; }}
+                    style={{ cursor: 'pointer', borderBottom: '1px solid rgba(0, 0, 0, 0.02)', transition: 'background .1s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(13,124,61,.06)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = ''; }}
                   >
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#a5b4fc', fontFamily: 'monospace', fontWeight: 700, whiteSpace: 'nowrap' }}>{r.Matricula}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#f1f5f9', fontWeight: 500, whiteSpace: 'nowrap', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.Nome_Funcionario || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: '#94a3b8', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.Des_Cargo || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: '#64748b', whiteSpace: 'nowrap' }}>{r.SiglaSec || r.Des_Secretaria || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: '#475569', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.Des_LocalTrab || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: '#64748b', whiteSpace: 'nowrap' }}>{r.Des_RegTrab || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: '#64748b', whiteSpace: 'nowrap' }}>{r.Des_Padrao_Adm || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: '#475569', whiteSpace: 'nowrap' }}>{fmtData(r.DtAdmissao)}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#15A050', fontFamily: 'monospace', fontWeight: 700, whiteSpace: 'nowrap' }}>{r.Matricula}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text)', fontWeight: 500, whiteSpace: 'nowrap', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.Nome_Funcionario || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.Des_Cargo || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{r.SiglaSec || r.Des_Secretaria || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.Des_LocalTrab || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{r.Des_RegTrab || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{r.Des_Padrao_Adm || '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{fmtData(r.DtAdmissao)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -359,15 +359,15 @@ export default function DiretorioServidores() {
           </div>
 
           {totalPages > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderTop: '1px solid rgba(255,255,255,.06)' }}>
-              <span style={{ fontSize: 12, color: '#475569' }}>Página {page + 1} de {totalPages} · {total.toLocaleString('pt-BR')} servidores</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderTop: '1px solid rgba(0, 0, 0, 0.04)' }}>
+              <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>Página {page + 1} de {totalPages} · {total.toLocaleString('pt-BR')} servidores</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => carregar(page - 1)} disabled={page === 0}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.04)', color: page === 0 ? '#334155' : '#94a3b8', fontSize: 12, cursor: page === 0 ? 'default' : 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(0, 0, 0, 0.06)', background: 'rgba(0, 0, 0, 0.02)', color: page === 0 ? '#334155' : '#64748b', fontSize: 12, cursor: page === 0 ? 'default' : 'pointer' }}>
                   <ChevronLeft size={13} /> Anterior
                 </button>
                 <button onClick={() => carregar(page + 1)} disabled={page >= totalPages - 1}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.04)', color: page >= totalPages - 1 ? '#334155' : '#94a3b8', fontSize: 12, cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(0, 0, 0, 0.06)', background: 'rgba(0, 0, 0, 0.02)', color: page >= totalPages - 1 ? '#334155' : '#64748b', fontSize: 12, cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
                   Próxima <ChevronRight size={13} />
                 </button>
               </div>

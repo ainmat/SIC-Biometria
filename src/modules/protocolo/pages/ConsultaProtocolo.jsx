@@ -25,16 +25,16 @@ const OPERADORES = [
 ];
 
 const CORES_STATUS = {
-  'Aberto': { bg: 'rgba(59, 130, 246, 0.12)', text: '#60a5fa', border: 'rgba(59, 130, 246, 0.25)' },
-  'Em Análise': { bg: 'rgba(245, 158, 11, 0.12)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.25)' },
-  'Concluído': { bg: 'rgba(16, 185, 129, 0.12)', text: '#34d399', border: 'rgba(16, 185, 129, 0.25)' }
+  'Aberto': { bg: 'rgba(13, 124, 61, 0.12)', text: '#15A050', border: 'rgba(13, 124, 61, 0.25)' },
+  'Em Análise': { bg: 'rgba(245, 158, 11, 0.12)', text: '#b45309', border: 'rgba(245, 158, 11, 0.25)' },
+  'Concluído': { bg: 'rgba(16, 185, 129, 0.12)', text: '#047857', border: 'rgba(16, 185, 129, 0.25)' }
 };
 
 const CORES_PRIORIDADE = {
-  'Baixa': { bg: 'rgba(100, 116, 139, 0.12)', text: '#94a3b8', border: 'rgba(100, 116, 139, 0.25)' },
-  'Normal': { bg: 'rgba(59, 130, 246, 0.12)', text: '#60a5fa', border: 'rgba(59, 130, 246, 0.25)' },
-  'Alta': { bg: 'rgba(245, 158, 11, 0.12)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.25)' },
-  'Urgente': { bg: 'rgba(239, 68, 68, 0.12)', text: '#f87171', border: 'rgba(239, 68, 68, 0.25)' }
+  'Baixa': { bg: 'rgba(100, 116, 139, 0.12)', text: '#64748b', border: 'rgba(100, 116, 139, 0.25)' },
+  'Normal': { bg: 'rgba(13, 124, 61, 0.12)', text: '#15A050', border: 'rgba(13, 124, 61, 0.25)' },
+  'Alta': { bg: 'rgba(245, 158, 11, 0.12)', text: '#b45309', border: 'rgba(245, 158, 11, 0.25)' },
+  'Urgente': { bg: 'rgba(239, 68, 68, 0.12)', text: '#dc2626', border: 'rgba(239, 68, 68, 0.25)' }
 };
 
 function formatarData(isoStr) {
@@ -63,7 +63,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
   const [submitting, setSubmitting] = useState(false);
   const [erro, setErro] = useState('');
 
-  const stStyle = CORES_STATUS[protocolo.status] || { bg: 'rgba(255,255,255,.05)', text: '#f1f5f9' };
+  const stStyle = CORES_STATUS[protocolo.status] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#1e293b' };
 
   async function handleTramitar(e) {
     e.preventDefault();
@@ -95,7 +95,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#a5b4fc', fontFamily: 'monospace' }}>{protocolo.numero_protocolo}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{protocolo.numero_protocolo}</div>
           <span style={{
             padding: '3px 9px', borderRadius: 6,
             background: stStyle.bg, color: stStyle.text,
@@ -153,28 +153,28 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
         {protocolo.documento_anexo && (
           <div className="chamado-modal-item" style={{ marginBottom: 16 }}>
             <div className="chamado-modal-label">Documento Anexo</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#60a5fa', marginTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#15A050', marginTop: 4 }}>
               <FileText size={14} />
-              <a href="#" onClick={e => e.preventDefault()} style={{ color: '#60a5fa', textDecoration: 'underline' }}>
+              <a href="#" onClick={e => e.preventDefault()} style={{ color: '#15A050', textDecoration: 'underline' }}>
                 {protocolo.documento_anexo}
               </a>
             </div>
           </div>
         )}
 
-        <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.08)', margin: '20px 0' }} />
+        <hr style={{ border: 'none', borderTop: '1px solid rgba(0, 0, 0, 0.05)', margin: '20px 0' }} />
 
         {/* Linha do tempo de tramitação */}
         <div style={{ marginBottom: 20 }}>
           <div className="chamado-modal-label" style={{ marginBottom: 12 }}>Histórico de Tramitação</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 180, overflowY: 'auto', paddingRight: 6 }}>
             {protocolo.historico_tramitacao?.map((t, idx) => {
-              const cs = CORES_STATUS[t.status] || { text: '#94a3b8' };
+              const cs = CORES_STATUS[t.status] || { text: '#64748b' };
               return (
-                <div key={idx} style={{ display: 'flex', gap: 10, fontSize: 12, borderLeft: '2px solid rgba(255,255,255,.05)', paddingLeft: 10, marginLeft: 4 }}>
-                  <div style={{ flexShrink: 0, color: '#64748b', fontWeight: 600 }}>{formatarData(t.data)}</div>
+                <div key={idx} style={{ display: 'flex', gap: 10, fontSize: 12, borderLeft: '2px solid rgba(0, 0, 0, 0.03)', paddingLeft: 10, marginLeft: 4 }}>
+                  <div style={{ flexShrink: 0, color: 'var(--muted-c)', fontWeight: 600 }}>{formatarData(t.data)}</div>
                   <div style={{ flexShrink: 0, color: cs.text, fontWeight: 700 }}>[{t.status}]</div>
-                  <div style={{ color: '#cbd5e1' }}>{t.observacao}</div>
+                  <div style={{ color: 'var(--muted-c)' }}>{t.observacao}</div>
                 </div>
               );
             })}
@@ -182,8 +182,8 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
         </div>
 
         {/* Formulário de Nova Tramitação */}
-        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 10, padding: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>Tramitar Protocolo</div>
+        <div style={{ background: 'rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0, 0, 0, 0.03)', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Tramitar Protocolo</div>
           <form onSubmit={handleTramitar} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', gap: 10 }}>
               <div style={{ flex: 1 }}>
@@ -192,8 +192,8 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                   onChange={e => setNovoStatus(e.target.value)}
                   style={{
                     width: '100%', padding: '8px 10px', borderRadius: 6,
-                    background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.1)',
-                    color: '#f1f5f9', fontSize: 12, outline: 'none'
+                    background: 'rgba(0,0,0,.2)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                    color: 'var(--text)', fontSize: 12, outline: 'none'
                   }}
                 >
                   {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
@@ -207,15 +207,15 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                 placeholder="Insira um parecer ou observação detalhada..."
                 style={{
                   width: '100%', height: 60, padding: '8px 10px', borderRadius: 6,
-                  background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.1)',
-                  color: '#f1f5f9', fontSize: 12, outline: 'none', resize: 'none',
+                  background: 'rgba(0,0,0,.2)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  color: 'var(--text)', fontSize: 12, outline: 'none', resize: 'none',
                   boxSizing: 'border-box'
                 }}
               />
             </div>
 
             {erro && (
-              <div style={{ fontSize: 11, color: '#f87171', background: 'rgba(239, 68, 68, 0.1)', padding: '6px 10px', borderRadius: 4 }}>
+              <div style={{ fontSize: 11, color: '#dc2626', background: 'rgba(239, 68, 68, 0.1)', padding: '6px 10px', borderRadius: 4 }}>
                 {erro}
               </div>
             )}
@@ -226,8 +226,8 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                 onClick={onClose}
                 style={{
                   padding: '6px 12px', borderRadius: 6,
-                  background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                  color: '#94a3b8', fontSize: 11, cursor: 'pointer'
+                  background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  color: 'var(--muted-c)', fontSize: 11, cursor: 'pointer'
                 }}
               >
                 Voltar
@@ -237,7 +237,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                 disabled={submitting}
                 style={{
                   padding: '6px 14px', borderRadius: 6,
-                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
                   border: 'none', color: '#fff', fontSize: 11, fontWeight: 600,
                   cursor: submitting ? 'wait' : 'pointer'
                 }}
@@ -343,8 +343,8 @@ export default function ConsultaProtocolo() {
     padding: '7px 10px',
     borderRadius: 8,
     background: 'var(--card-bg)',
-    border: '1px solid rgba(255,255,255,.1)',
-    color: '#f1f5f9',
+    border: '1px solid rgba(0, 0, 0, 0.06)',
+    color: 'var(--text)',
     fontSize: 12,
     outline: 'none',
     minWidth: 120
@@ -366,7 +366,7 @@ export default function ConsultaProtocolo() {
               padding: '8px 14px', borderRadius: 8,
               background: 'rgba(16, 185, 129, 0.1)',
               border: '1px solid rgba(16, 185, 129, 0.25)',
-              color: '#34d399', fontSize: 12, fontWeight: 600,
+              color: '#047857', fontSize: 12, fontWeight: 600,
               cursor: 'pointer'
             }}
           >
@@ -378,8 +378,8 @@ export default function ConsultaProtocolo() {
             title="Atualizar"
             style={{
               padding: 8, borderRadius: 8,
-              background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-              color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center'
+              background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+              color: 'var(--muted-c)', cursor: 'pointer', display: 'flex', alignItems: 'center'
             }}
           >
             <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
@@ -390,13 +390,13 @@ export default function ConsultaProtocolo() {
 
       <div className="content">
         {/* Abas estilo Asana */}
-        <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(0, 0, 0, 0.04)', marginBottom: 16 }}>
           <button
             onClick={() => setAbaAtiva('todos')}
             style={{
               padding: '10px 16px', background: 'none', border: 'none',
-              color: abaAtiva === 'todos' ? '#6366f1' : '#64748b',
-              borderBottom: abaAtiva === 'todos' ? '2px solid #6366f1' : '2px solid transparent',
+              color: abaAtiva === 'todos' ? '#0D7C3D' : '#64748b',
+              borderBottom: abaAtiva === 'todos' ? '2px solid #0D7C3D' : '2px solid transparent',
               fontSize: 13, fontWeight: 600, cursor: 'pointer', outline: 'none',
               transition: 'color 0.2s, border-color 0.2s'
             }}
@@ -407,8 +407,8 @@ export default function ConsultaProtocolo() {
             onClick={() => setAbaAtiva('meus')}
             style={{
               padding: '10px 16px', background: 'none', border: 'none',
-              color: abaAtiva === 'meus' ? '#6366f1' : '#64748b',
-              borderBottom: abaAtiva === 'meus' ? '2px solid #6366f1' : '2px solid transparent',
+              color: abaAtiva === 'meus' ? '#0D7C3D' : '#64748b',
+              borderBottom: abaAtiva === 'meus' ? '2px solid #0D7C3D' : '2px solid transparent',
               fontSize: 13, fontWeight: 600, cursor: 'pointer', outline: 'none',
               transition: 'color 0.2s, border-color 0.2s'
             }}
@@ -420,14 +420,14 @@ export default function ConsultaProtocolo() {
         {/* Barra de Filtros */}
         <div className="chart-card" style={{ padding: '14px 18px', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginBottom: 16 }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,.2)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 200 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 200 }}>
             <Search size={15} color="#64748b" />
             <input
               type="text"
               value={busca}
               onChange={e => setBusca(e.target.value)}
               placeholder="Buscar por Requerente ou Protocolo..."
-              style={{ background: 'transparent', border: 'none', outline: 'none', color: '#f1f5f9', fontSize: 13, width: '100%' }}
+              style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, width: '100%' }}
             />
           </div>
 
@@ -467,7 +467,7 @@ export default function ConsultaProtocolo() {
 
           {/* Ordenação - Visual Asana */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-            <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ordenar:</span>
+            <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ordenar:</span>
             <select
               value={sortField}
               onChange={e => setSortField(e.target.value)}
@@ -483,8 +483,8 @@ export default function ConsultaProtocolo() {
               onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
               style={{
                 padding: '7px 12px', borderRadius: 8,
-                background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                color: '#e2e8f0', cursor: 'pointer', fontSize: 12, fontWeight: 600
+                background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                color: 'var(--text)', cursor: 'pointer', fontSize: 12, fontWeight: 600
               }}
             >
               {sortDirection === 'asc' ? 'Crescente' : 'Decrescente'}
@@ -494,13 +494,13 @@ export default function ConsultaProtocolo() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>Carregando protocolos...</div>
+          <div style={{ textAlign: 'center', padding: 60, color: 'var(--muted-c)' }}>Carregando protocolos...</div>
         ) : erro ? (
-          <div style={{ padding: '14px 18px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>
+          <div style={{ padding: '14px 18px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>
             <strong>Erro:</strong> {erro}
           </div>
         ) : filtrados.length === 0 ? (
-          <div className="chart-card" style={{ textAlign: 'center', padding: 60, color: '#475569' }}>
+          <div className="chart-card" style={{ textAlign: 'center', padding: 60, color: 'var(--muted-c)' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>Nenhum protocolo localizado</div>
             <div style={{ fontSize: 12, marginTop: 4 }}>Ajuste os filtros ou crie um novo protocolo.</div>
@@ -509,13 +509,13 @@ export default function ConsultaProtocolo() {
           <div className="chart-card" style={{ padding: 0, overflowX: 'auto' }}>
             <table className="unidades-tabela" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,.08)' }}>
+                <tr style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }}>
                   <th 
                     onClick={() => {
                       setSortField('numero_protocolo');
                       setSortDirection(prev => sortField === 'numero_protocolo' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Protocolo
@@ -527,21 +527,21 @@ export default function ConsultaProtocolo() {
                       setSortField('requerente_nome');
                       setSortDirection(prev => sortField === 'requerente_nome' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Requerente
                       {sortField === 'requerente_nome' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
                     </div>
                   </th>
-                  <th style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Tipo de Demanda</th>
-                  <th style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Secretaria</th>
+                  <th style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Tipo de Demanda</th>
+                  <th style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Secretaria</th>
                   <th 
                     onClick={() => {
                       setSortField('data_abertura');
                       setSortDirection(prev => sortField === 'data_abertura' ? (prev === 'asc' ? 'desc' : 'asc') : 'desc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Abertura
@@ -553,7 +553,7 @@ export default function ConsultaProtocolo() {
                       setSortField('responsavel');
                       setSortDirection(prev => sortField === 'responsavel' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Responsável
@@ -565,7 +565,7 @@ export default function ConsultaProtocolo() {
                       setSortField('data_conclusao');
                       setSortDirection(prev => sortField === 'data_conclusao' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Conclusão
@@ -577,7 +577,7 @@ export default function ConsultaProtocolo() {
                       setSortField('prioridade');
                       setSortDirection(prev => sortField === 'prioridade' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Prioridade
@@ -589,7 +589,7 @@ export default function ConsultaProtocolo() {
                       setSortField('status');
                       setSortDirection(prev => sortField === 'status' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
                     }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Status
@@ -600,8 +600,8 @@ export default function ConsultaProtocolo() {
               </thead>
               <tbody>
                 {filtrados.map(p => {
-                  const st = CORES_STATUS[p.status] || { bg: 'rgba(255,255,255,.05)', text: '#f1f5f9', border: 'rgba(255,255,255,.1)' };
-                  const prioStyle = CORES_PRIORIDADE[p.prioridade || 'Normal'] || { bg: 'rgba(255,255,255,.05)', text: '#cbd5e1', border: 'rgba(255,255,255,.1)' };
+                  const st = CORES_STATUS[p.status] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#1e293b', border: 'rgba(0, 0, 0, 0.06)' };
+                  const prioStyle = CORES_PRIORIDADE[p.prioridade || 'Normal'] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#cbd5e1', border: 'rgba(0, 0, 0, 0.06)' };
                   
                   const isAtrasado = () => {
                     if (!p.data_conclusao || p.status === 'Concluído') return false;
@@ -623,28 +623,28 @@ export default function ConsultaProtocolo() {
                   return (
                     <tr 
                       key={p.id} 
-                      style={{ borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }} 
+                      style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.02)', cursor: 'pointer' }} 
                       className="table-row"
                       onClick={() => setModal(p)}
                       title="Clique na linha para abrir os detalhes e histórico"
                     >
                       {/* Protocolo */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, fontWeight: 700, color: '#e2e8f0', fontFamily: 'monospace' }}>{p.numero_protocolo}</td>
+                      <td style={{ padding: '14px 18px', fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace' }}>{p.numero_protocolo}</td>
                       
                       {/* Requerente */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: '#cbd5e1' }}>
+                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>
                         <div>{p.requerente_nome}</div>
-                        {p.requerente_matricula && <div style={{ fontSize: 11, color: '#64748b' }}>Mat: {p.requerente_matricula}</div>}
+                        {p.requerente_matricula && <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>Mat: {p.requerente_matricula}</div>}
                       </td>
                       
                       {/* Tipo de Demanda */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: '#cbd5e1' }}>{p.tipo_solicitacao}</td>
+                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>{p.tipo_solicitacao}</td>
                       
                       {/* Secretaria */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: '#cbd5e1' }}>{p.secretaria}</td>
+                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>{p.secretaria}</td>
                       
                       {/* Abertura */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: '#cbd5e1' }}>{formatarDataSimples(p.data_abertura)}</td>
+                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>{formatarDataSimples(p.data_abertura)}</td>
                       
                       {/* Responsável (Estilo Asana com Bloqueio de Teammates) */}
                       <td style={{ padding: '14px 18px' }} onClick={e => e.stopPropagation()}>
@@ -664,8 +664,8 @@ export default function ConsultaProtocolo() {
                             onBlur={() => setEditingRespId(null)}
                             autoFocus
                             style={{
-                              padding: '4px 6px', borderRadius: 6, background: '#1e293b',
-                              border: '1px solid rgba(255,255,255,.15)', color: '#f1f5f9', fontSize: 12, outline: 'none'
+                              padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                              border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
                             }}
                           >
                             <option value="">Ninguém</option>
@@ -677,29 +677,29 @@ export default function ConsultaProtocolo() {
                           (p.responsavel === meuNome || isMaster) ? (
                             <div 
                               onClick={() => setEditingRespId(p.id)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0, 0, 0, 0.04)' }}
                               title="Clique para alterar o responsável"
                             >
-                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#6366f1', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {obterIniciais(p.responsavel)}
                               </div>
-                              <span style={{ fontSize: 12, color: '#e2e8f0' }}>{p.responsavel}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text)' }}>{p.responsavel}</span>
                             </div>
                           ) : (
                             <div 
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'not-allowed', padding: '3px 8px', borderRadius: 20, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.03)', opacity: 0.5 }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'not-allowed', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', opacity: 0.5 }}
                               title={`Atribuído a ${p.responsavel} (Apenas o próprio ou Master pode alterar para evitar conflitos)`}
                             >
-                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#475569', color: '#94a3b8', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#475569', color: 'var(--muted-c)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {obterIniciais(p.responsavel)}
                               </div>
-                              <span style={{ fontSize: 12, color: '#94a3b8' }}>{p.responsavel}</span>
+                              <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>{p.responsavel}</span>
                             </div>
                           )
                         ) : (
                           <div 
                             onClick={() => setEditingRespId(p.id)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, border: '1px dashed rgba(255,255,255,0.18)', color: '#64748b' }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, border: '1px dashed rgba(0,0,0,0.18)', color: 'var(--muted-c)' }}
                             title="Atribuir responsável"
                           >
                             <Plus size={12} />
@@ -740,14 +740,14 @@ export default function ConsultaProtocolo() {
                             }}
                             autoFocus
                             style={{
-                              padding: '4px 6px', borderRadius: 6, background: '#1e293b',
-                              border: '1px solid rgba(255,255,255,.15)', color: '#f1f5f9', fontSize: 12, outline: 'none', width: 120
+                              padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                              border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none', width: 120
                             }}
                           />
                         ) : p.data_conclusao ? (
                           <div 
                             onClick={() => setEditingDateId(p.id)}
-                            style={{ fontSize: 12, color: atrasado ? '#ef4444' : '#cbd5e1', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                            style={{ fontSize: 12, color: atrasado ? '#ef4444' : '#334155', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                             title={atrasado ? 'Prazo expirado!' : 'Clique para alterar a data'}
                           >
                             <Calendar size={12} color={atrasado ? '#ef4444' : '#64748b'} />
@@ -756,11 +756,11 @@ export default function ConsultaProtocolo() {
                         ) : (
                           <div 
                             onClick={() => setEditingDateId(p.id)}
-                            style={{ fontSize: 12, color: '#64748b', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                            style={{ fontSize: 12, color: 'var(--muted-c)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                             title="Definir data de conclusão"
                           >
                             <Calendar size={12} />
-                            <span style={{ borderBottom: '1px dashed rgba(255,255,255,0.18)' }}>Definir data</span>
+                            <span style={{ borderBottom: '1px dashed rgba(0,0,0,0.18)' }}>Definir data</span>
                           </div>
                         )}
                       </td>
@@ -784,7 +784,7 @@ export default function ConsultaProtocolo() {
                             autoFocus
                             style={{
                               padding: '4px 6px', borderRadius: 6, background: '#1e293b',
-                              border: '1px solid rgba(255,255,255,.15)', color: '#f1f5f9', fontSize: 12, outline: 'none'
+                              border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
                             }}
                           >
                             <option value="Baixa">Baixa</option>
@@ -828,7 +828,7 @@ export default function ConsultaProtocolo() {
                             autoFocus
                             style={{
                               padding: '4px 6px', borderRadius: 6, background: '#1e293b',
-                              border: '1px solid rgba(255,255,255,.15)', color: '#f1f5f9', fontSize: 12, outline: 'none'
+                              border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
                             }}
                           >
                             {STATUS_OPCOES.map(stOpt => <option key={stOpt} value={stOpt}>{stOpt}</option>)}
@@ -946,12 +946,12 @@ function ImportarModal({ onClose, onRefresh }) {
             }}>
               <CheckCircle size={24} color="#10b981" />
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 16 }}>{sucessoMsg}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>{sucessoMsg}</div>
             <button
               onClick={() => { onClose(); onRefresh(); }}
               style={{
                 padding: '8px 20px', borderRadius: 8,
-                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
                 border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer'
               }}
             >
@@ -960,13 +960,13 @@ function ImportarModal({ onClose, onRefresh }) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: '1.5' }}>
+            <p style={{ fontSize: 12, color: 'var(--muted-c)', lineHeight: '1.5' }}>
               Faça upload do relatório <strong>"Protocolos Aceitar e Receber"</strong> em formato XLS ou XLSX. O sistema identificará automaticamente as colunas correspondentes de forma inteligente.
             </p>
 
             {!file ? (
               <div style={{
-                border: '2px dashed rgba(255,255,255,.15)', borderRadius: 10,
+                border: '2px dashed rgba(0, 0, 0, 0.08)', borderRadius: 10,
                 padding: '30px 20px', textAlign: 'center', background: 'rgba(0,0,0,.15)',
                 cursor: 'pointer', position: 'relative'
               }}>
@@ -980,25 +980,25 @@ function ImportarModal({ onClose, onRefresh }) {
                   }}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Upload size={20} color="#a5b4fc" />
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(13, 124, 61, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Upload size={20} color="#15A050" />
                   </div>
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>Clique para selecionar</span>
-                    <span style={{ fontSize: 13, color: '#64748b' }}> ou arraste o arquivo aqui</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Clique para selecionar</span>
+                    <span style={{ fontSize: 13, color: 'var(--muted-c)' }}> ou arraste o arquivo aqui</span>
                   </div>
-                  <span style={{ fontSize: 10, color: '#475569' }}>Formatos aceitos: .XLS e .XLSX</span>
+                  <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>Formatos aceitos: .XLS e .XLSX</span>
                 </div>
               </div>
             ) : (
               <div style={{
-                background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.15)',
+                background: 'rgba(13, 124, 61, 0.05)', border: '1px solid rgba(13, 124, 61, 0.15)',
                 borderRadius: 8, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10
               }}>
                 <FileSpreadsheet size={20} color="#818cf8" />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>{(file.size / 1024).toFixed(1)} KB · {prots.length} protocolo(s) localizado(s)</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>{(file.size / 1024).toFixed(1)} KB · {prots.length} protocolo(s) localizado(s)</div>
                 </div>
                 {!loading && (
                   <button
@@ -1011,9 +1011,9 @@ function ImportarModal({ onClose, onRefresh }) {
               </div>
             )}
 
-            {loading && <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 12, color: '#64748b' }}>Processando planilha...</div>}
+            {loading && <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 12, color: 'var(--muted-c)' }}>Processando planilha...</div>}
             {erro && (
-              <div style={{ fontSize: 12, color: '#f87171', padding: '10px 12px', background: 'rgba(239,68,68,.1)', borderRadius: 6, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 12, color: '#dc2626', padding: '10px 12px', background: 'rgba(239,68,68,.1)', borderRadius: 6, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                 <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
                 <span>{erro}</span>
               </div>
@@ -1021,20 +1021,20 @@ function ImportarModal({ onClose, onRefresh }) {
 
             {prots.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Pré-visualização (primeiros 3 itens)</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Pré-visualização (primeiros 3 itens)</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 150, overflowY: 'auto' }}>
                   {prots.slice(0, 3).map((p, idx) => (
-                    <div key={idx} style={{ background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 6, padding: '8px 10px', fontSize: 12 }}>
+                    <div key={idx} style={{ background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0, 0, 0, 0.03)', borderRadius: 6, padding: '8px 10px', fontSize: 12 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                        <span style={{ fontWeight: 700, color: '#a5b4fc', fontFamily: 'monospace' }}>{p.numero_protocolo}</span>
-                        <span style={{ color: '#94a3b8' }}>{p.secretaria}</span>
+                        <span style={{ fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{p.numero_protocolo}</span>
+                        <span style={{ color: 'var(--muted-c)' }}>{p.secretaria}</span>
                       </div>
-                      <div style={{ color: '#cbd5e1', fontWeight: 600 }}>{p.requerente_nome}</div>
-                      <div style={{ color: '#64748b', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.tipo_solicitacao} - {p.descricao}</div>
+                      <div style={{ color: 'var(--text)', fontWeight: 600 }}>{p.requerente_nome}</div>
+                      <div style={{ color: 'var(--muted-c)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.tipo_solicitacao} - {p.descricao}</div>
                     </div>
                   ))}
                   {prots.length > 3 && (
-                    <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 4 }}>e mais {prots.length - 3} protocolo(s)...</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-c)', textAlign: 'center', marginTop: 4 }}>e mais {prots.length - 3} protocolo(s)...</div>
                   )}
                 </div>
               </div>
@@ -1047,8 +1047,8 @@ function ImportarModal({ onClose, onRefresh }) {
                 disabled={loading}
                 style={{
                   padding: '9px 18px', borderRadius: 8,
-                  background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                  color: '#94a3b8', fontSize: 13, cursor: 'pointer'
+                  background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  color: 'var(--muted-c)', fontSize: 13, cursor: 'pointer'
                 }}
               >
                 Cancelar
@@ -1058,7 +1058,7 @@ function ImportarModal({ onClose, onRefresh }) {
                 disabled={loading || prots.length === 0}
                 style={{
                   padding: '9px 20px', borderRadius: 8,
-                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
                   border: 'none', color: '#fff', fontSize: 13, fontWeight: 600,
                   cursor: (loading || prots.length === 0) ? 'not-allowed' : 'pointer',
                   opacity: prots.length === 0 ? 0.6 : 1

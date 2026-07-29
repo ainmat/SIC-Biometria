@@ -1,19 +1,21 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { RefreshCw, Download, LogOut, KeyRound } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { RefreshCw, Download, LogOut, KeyRound, Sun, Moon, ChevronRight } from 'lucide-react';
 import logoDarh from '../../../img/logo-darh.png';
 import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
+/* ─── Modal Alterar Senha ─────────────────────────────────────────────────── */
+
 const inputSt = {
-  width: '100%', background: 'rgba(255,255,255,.06)',
-  border: '1px solid rgba(255,255,255,.1)', borderRadius: 7,
-  padding: '9px 12px', color: '#f1f5f9', fontSize: 13,
+  width: '100%', background: 'var(--surface)',
+  border: '1px solid #334155', borderRadius: 7,
+  padding: '9px 12px', color: 'var(--text)', fontSize: 13,
   outline: 'none', boxSizing: 'border-box',
 };
 const labelSt = {
-  display: 'block', fontSize: 11, color: '#64748b', fontWeight: 600,
+  display: 'block', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600,
   marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.06em',
 };
 
@@ -63,23 +65,23 @@ function ModalAlterarSenha({ onClose }) {
         {sucesso ? (
           <div style={{ padding: '28px 24px', textAlign: 'center' }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', margin: '0 auto 16px', background: 'rgba(16,185,129,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" style={{ width: 24, height: 24 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#047857" strokeWidth="2.5" style={{ width: 24, height: 24 }}>
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>Senha alterada com sucesso</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 24 }}>Use a nova senha no próximo acesso.</div>
-            <button onClick={onClose} style={{ padding: '9px 24px', borderRadius: 7, background: 'rgba(99,102,241,.85)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>Senha alterada com sucesso</div>
+            <div style={{ fontSize: 12, color: 'var(--muted-c)', marginBottom: 24 }}>Use a nova senha no próximo acesso.</div>
+            <button onClick={onClose} style={{ padding: '9px 24px', borderRadius: 7, background: '#0D7C3D', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               Fechar
             </button>
           </div>
         ) : (
           <form onSubmit={salvar} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ background: 'rgba(99,102,241,.07)', border: '1px solid rgba(99,102,241,.18)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', flexShrink: 0 }} />
+            <div style={{ background: 'rgba(13,124,61,.07)', border: '1px solid rgba(13,124,61,.18)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#0D7C3D', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Usuário</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', fontFamily: 'monospace' }}>{sessao?.username}</div>
+                <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Usuário</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{sessao?.username}</div>
               </div>
             </div>
             <div>
@@ -95,13 +97,13 @@ function ModalAlterarSenha({ onClose }) {
               <input type="password" value={confirmar} onChange={e => setConfirmar(e.target.value)} placeholder="Repita a nova senha" style={inputSt} />
             </div>
             {erro && (
-              <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(239,68,68,.1)', borderRadius: 6 }}>{erro}</div>
+              <div style={{ fontSize: 12, color: '#dc2626', padding: '8px 12px', background: 'rgba(239,68,68,.1)', borderRadius: 6 }}>{erro}</div>
             )}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
-              <button type="button" onClick={onClose} style={{ padding: '9px 18px', borderRadius: 7, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#64748b', fontSize: 13, cursor: 'pointer' }}>
+              <button type="button" onClick={onClose} style={{ padding: '9px 18px', borderRadius: 7, background: 'rgba(0,0,0,.05)', border: '1px solid rgba(0,0,0,.1)', color: 'var(--muted-c)', fontSize: 13, cursor: 'pointer' }}>
                 Cancelar
               </button>
-              <button type="submit" disabled={loading} style={{ padding: '9px 20px', borderRadius: 7, background: 'rgba(99,102,241,.85)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}>
+              <button type="submit" disabled={loading} style={{ padding: '9px 20px', borderRadius: 7, background: '#0D7C3D', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: loading ? 'wait' : 'pointer' }}>
                 {loading ? 'Salvando...' : 'Alterar senha'}
               </button>
             </div>
@@ -111,6 +113,8 @@ function ModalAlterarSenha({ onClose }) {
     </div>
   );
 }
+
+/* ─── Navigation data ─────────────────────────────────────────────────────── */
 
 const NAV = [
   {
@@ -457,120 +461,270 @@ const NAV = [
   },
 ];
 
+/* ─── NavItem ─────────────────────────────────────────────────────────────── */
+
+function NavItem({ to, label, icon, end }) {
+  return (
+    <NavLink
+      to={to}
+      end={end ?? false}
+      className={({ isActive }) =>
+        [
+          'group flex items-center gap-2.5 px-2.5 rounded-md cursor-pointer transition-all duration-150 select-none no-underline',
+          isActive
+            ? 'bg-black/[0.06] dark:bg-white/10 text-foreground font-semibold'
+            : 'text-muted-foreground hover:bg-black/[0.04] dark:hover:bg-white/5 hover:text-foreground/90',
+        ].join(' ')
+      }
+      style={{ paddingTop: 7, paddingBottom: 7, color: 'inherit' }}
+    >
+      {({ isActive }) => (
+        <>
+          <span
+            className="shrink-0 transition-colors"
+            style={{
+              width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: isActive ? 'var(--text)' : 'var(--muted-c)',
+            }}
+          >
+            {icon}
+          </span>
+          <span style={{ fontSize: 13, letterSpacing: '0.01em', lineHeight: 1 }}>{label}</span>
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+/* ─── NavSection (collapsible) ────────────────────────────────────────────── */
+
+function NavSection({ section, items, isAdmin, isMaster }) {
+  const location = useLocation();
+  const visibleItems = items.filter(({ adminOnly, masterOnly }) => {
+    if (masterOnly && !isMaster) return false;
+    if (adminOnly  && !isAdmin)  return false;
+    return true;
+  });
+  if (!visibleItems.length) return null;
+
+  // Auto-open if a child is active
+  const hasActive = visibleItems.some(item => {
+    if (item.end) return location.pathname === item.to;
+    return location.pathname === item.to || location.pathname.startsWith(item.to + '/');
+  });
+
+  const [open, setOpen] = useState(hasActive);
+
+  return (
+    <div className="flex flex-col">
+      {/* Section heading — clickable to collapse */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="group flex items-center justify-between px-2 mb-0.5 cursor-pointer select-none border-none bg-transparent w-full text-left"
+        style={{ paddingTop: 4, paddingBottom: 4 }}
+      >
+        <span style={{
+          fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'var(--muted-c)',
+          opacity: 0.65,
+        }}>
+          {section}
+        </span>
+        <ChevronRight
+          size={12}
+          style={{
+            color: 'var(--muted-c)',
+            opacity: 0.4,
+            transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+            transition: 'transform 200ms ease',
+            flexShrink: 0,
+          }}
+        />
+      </button>
+
+      {/* Animated items container */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          opacity: open ? 1 : 0,
+          transition: 'grid-template-rows 250ms ease, opacity 200ms ease',
+        }}
+      >
+        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+          <div className="flex flex-col" style={{ gap: 1, paddingBottom: 4 }}>
+            {visibleItems.map(item => (
+              <NavItem
+                key={item.to}
+                to={item.to}
+                label={item.label}
+                icon={item.icon}
+                end={item.end}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────────────────────── */
+
 export default function Sidebar() {
   const { isAdmin, isMaster, sessao, logout } = useAuth();
   const navigate = useNavigate();
   const [modalSenha, setModalSenha] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+    window.dispatchEvent(new Event('themechange'));
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
 
   function handleLogout() {
     logout();
     navigate('/login', { replace: true });
   }
 
+  const roleColor  = isMaster ? '#f59e0b' : isAdmin ? '#0D7C3D' : '#10b981';
+  const roleLabel  = isMaster ? 'Master'  : isAdmin ? 'Administrador' : 'Visitante';
+  const roleBg     = isMaster ? 'rgba(245,158,11,.08)' : isAdmin ? 'rgba(13,124,61,.08)' : 'rgba(16,185,129,.08)';
+  const roleBorder = isMaster ? 'rgba(245,158,11,.2)'  : isAdmin ? 'rgba(13,124,61,.2)'  : 'rgba(16,185,129,.2)';
+
   return (
     <>
-    <aside className="sidebar">
-      <div className="logo">
-        <img
-          src={logoDarh}
-          alt="DARH Osasco"
-          style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0, filter: 'brightness(1.15) contrast(1.1) drop-shadow(0 0 4px rgba(255,255,255,.15))' }}
-        />
-        <div className="logo-text">SIC · Biometria</div>
-      </div>
+      <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      <nav className="nav">
-        {NAV.map(({ section, items }) => {
-          const visibleItems = items.filter(({ adminOnly, masterOnly }) => {
-            if (masterOnly && !isMaster) return false;
-            if (adminOnly  && !isAdmin)  return false;
-            return true;
-          });
-          if (!visibleItems.length) return null;
-          return (
-            <div key={section}>
-              <div className="nav-section">{section}</div>
-              {visibleItems.map(({ to, label, icon, end, adminOnly, masterOnly }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end ?? false}
-                  className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-                >
-                  {icon}
-                  {label}
-                </NavLink>
-              ))}
-            </div>
-          );
-        })}
-      </nav>
-
-      <div className="sidebar-footer">
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 10, padding: '6px 10px', borderRadius: 8,
-          background: isMaster ? 'rgba(245,158,11,.08)' : isAdmin ? 'rgba(59,130,246,.08)' : 'rgba(16,185,129,.08)',
-          border: `1px solid ${isMaster ? 'rgba(245,158,11,.2)' : isAdmin ? 'rgba(59,130,246,.2)' : 'rgba(16,185,129,.2)'}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-            <span style={{
-              width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-              background: isMaster ? '#f59e0b' : isAdmin ? '#3b82f6' : '#10b981',
-            }} />
-            <div style={{ minWidth: 0 }}>
-              {sessao?.nome && sessao.role !== 'visitor' && (
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {sessao.nome}
-                </div>
-              )}
-              <span style={{ fontSize: 10, fontWeight: 600, color: isMaster ? '#fbbf24' : isAdmin ? '#60a5fa' : '#34d399' }}>
-                {isMaster ? 'Master' : isAdmin ? 'Administrador' : 'Visitante'}
-              </span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <button
-              onClick={() => setModalSenha(true)}
-              title="Alterar senha"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer', padding: 3,
-                color: '#475569', display: 'flex', alignItems: 'center',
-                borderRadius: 4, transition: 'color .15s',
-              }}
-              onMouseOver={e => { e.currentTarget.style.color = '#a5b4fc'; }}
-              onMouseOut={e => { e.currentTarget.style.color = '#475569'; }}
-            >
-              <KeyRound size={13} />
-            </button>
-            <button
-              onClick={handleLogout}
-              title="Sair"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer', padding: 3,
-                color: '#475569', display: 'flex', alignItems: 'center',
-                borderRadius: 4, transition: 'color .15s',
-              }}
-              onMouseOver={e => { e.currentTarget.style.color = '#f87171'; }}
-              onMouseOut={e => { e.currentTarget.style.color = '#475569'; }}
-            >
-              <LogOut size={13} />
-            </button>
-          </div>
+        {/* ── Logo ── */}
+        <div className="logo" style={{ flexShrink: 0 }}>
+          <img
+            src={logoDarh}
+            alt="DARH Osasco"
+            style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }}
+          />
+          <div className="logo-text" style={{ color: 'var(--text)' }}>SIC · Biometria</div>
         </div>
 
-        <div className="status-pill" style={{ marginBottom: 12 }}>
-          <div className="status-dot" />
-          Realtime ativo
-        </div>
-        <IconBar>
-          <IconBarItem icon={RefreshCw} label="Atualizar" onClick={() => window.location.reload()} />
-          <IconBarItem icon={Download}  label="Exportar PDF" onClick={() => window.print()} />
-        </IconBar>
-      </div>
-    </aside>
+        {/* ── Scrollable nav ── */}
+        <nav
+          className="nav"
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            paddingRight: 2,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}
+        >
+          {NAV.map(({ section, items }) => (
+            <NavSection
+              key={section}
+              section={section}
+              items={items}
+              isAdmin={isAdmin}
+              isMaster={isMaster}
+            />
+          ))}
+        </nav>
 
-    {modalSenha && <ModalAlterarSenha onClose={() => setModalSenha(false)} />}
-  </>
+        {/* ── Footer ── */}
+        <div className="sidebar-footer" style={{ flexShrink: 0 }}>
+          {/* User card */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10, padding: '8px 10px', borderRadius: 8,
+            background: roleBg, border: `1px solid ${roleBorder}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+              {/* Avatar */}
+              <div style={{
+                width: 28, height: 28, borderRadius: 6,
+                background: roleColor + '22',
+                border: `1px solid ${roleColor}44`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+                fontSize: 11, fontWeight: 700, color: roleColor,
+              }}>
+                {sessao?.nome ? sessao.nome.charAt(0).toUpperCase() : '?'}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                {sessao?.nome && sessao.role !== 'visitor' && (
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {sessao.nome}
+                  </div>
+                )}
+                <span style={{ fontSize: 10, fontWeight: 600, color: roleColor }}>
+                  {roleLabel}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <ActionBtn
+                title={theme === 'light' ? 'Modo Escuro' : 'Modo Claro'}
+                onClick={toggleTheme}
+                hoverColor="#15A050"
+              >
+                {theme === 'light' ? <Moon size={13} /> : <Sun size={13} />}
+              </ActionBtn>
+              <ActionBtn title="Alterar senha" onClick={() => setModalSenha(true)} hoverColor="#15A050">
+                <KeyRound size={13} />
+              </ActionBtn>
+              <ActionBtn title="Sair" onClick={handleLogout} hoverColor="#dc2626">
+                <LogOut size={13} />
+              </ActionBtn>
+            </div>
+          </div>
+
+          {/* Status + icon bar */}
+          <div className="status-pill" style={{ marginBottom: 12 }}>
+            <div className="status-dot" />
+            Realtime ativo
+          </div>
+          <IconBar>
+            <IconBarItem icon={RefreshCw} label="Atualizar"    onClick={() => window.location.reload()} />
+            <IconBarItem icon={Download}  label="Exportar PDF" onClick={() => window.print()} />
+          </IconBar>
+        </div>
+      </aside>
+
+      {modalSenha && <ModalAlterarSenha onClose={() => setModalSenha(false)} />}
+    </>
+  );
+}
+
+/* ─── Tiny helper ─────────────────────────────────────────────────────────── */
+function ActionBtn({ title, onClick, hoverColor = '#15A050', children }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      title={title}
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? (hoverColor + '15') : 'none',
+        border: 'none', cursor: 'pointer', padding: 4,
+        color: hov ? hoverColor : 'var(--muted-c)',
+        display: 'flex', alignItems: 'center',
+        borderRadius: 5, transition: 'color .15s, background .15s',
+      }}
+    >
+      {children}
+    </button>
   );
 }

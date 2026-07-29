@@ -103,7 +103,7 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
     onConfirm();
   }
 
-  const tdS = { fontSize: 11, padding: '5px 8px', borderBottom: '1px solid rgba(255,255,255,.04)', verticalAlign: 'middle' };
+  const tdS = { fontSize: 11, padding: '5px 8px', borderBottom: '1px solid rgba(0, 0, 0, 0.02)', verticalAlign: 'middle' };
 
   return (
     <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && onCancel()}>
@@ -121,7 +121,7 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
 
         <div style={{ overflowY: 'auto', flex: 1, padding: '0 2px 4px' }}>
           {/* Arquivo */}
-          <div style={{ marginBottom: 14, padding: '8px 12px', borderRadius: 7, background: 'rgba(59,130,246,.08)', border: '1px solid rgba(59,130,246,.2)', fontSize: 12, color: '#93c5fd' }}>
+          <div style={{ marginBottom: 14, padding: '8px 12px', borderRadius: 7, background: 'rgba(13,124,61,.08)', border: '1px solid rgba(13,124,61,.2)', fontSize: 12, color: '#047857' }}>
             <strong>Arquivo:</strong> {arquivo?.name}
           </div>
 
@@ -132,9 +132,9 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
               { label: 'Cabeçalho', value: `Linha ${headerIdx + 1}` },
               { label: 'Dados',     value: `${linhasDados.toLocaleString('pt-BR')} linhas` },
             ].map(({ label, value }) => (
-              <div key={label} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', textAlign: 'center' }}>
-                <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 600 }}>{value}</div>
+              <div key={label} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0,0,0,.07)', textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{value}</div>
               </div>
             ))}
           </div>
@@ -144,8 +144,8 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
             <div style={{ marginBottom: 14 }}>
               {erros.map((e, i) => (
                 <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 12px', marginBottom: 6, borderRadius: 6, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)' }}>
-                  <XCircle size={13} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span style={{ fontSize: 12, color: '#f87171' }}>{e}</span>
+                  <XCircle size={13} color="#dc2626" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ fontSize: 12, color: '#dc2626' }}>{e}</span>
                 </div>
               ))}
             </div>
@@ -153,27 +153,27 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
 
           {/* Mapeamento de colunas */}
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 8 }}>
               Colunas mapeadas ({Object.keys(mapeamento).length})
             </div>
-            <div style={{ overflowX: 'auto', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8 }}>
+            <div style={{ overflowX: 'auto', border: '1px solid rgba(0,0,0,.07)', borderRadius: 8 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,.04)' }}>
-                    <th style={{ ...tdS, color: '#64748b', textAlign: 'left', fontWeight: 600 }}>Coluna no arquivo</th>
-                    <th style={{ ...tdS, color: '#64748b', textAlign: 'left', fontWeight: 600 }}>Campo canônico</th>
-                    <th style={{ ...tdS, color: '#64748b', textAlign: 'center', fontWeight: 600 }}>Tipo</th>
+                  <tr style={{ background: 'rgba(0, 0, 0, 0.02)' }}>
+                    <th style={{ ...tdS, color: 'var(--muted-c)', textAlign: 'left', fontWeight: 600 }}>Coluna no arquivo</th>
+                    <th style={{ ...tdS, color: 'var(--muted-c)', textAlign: 'left', fontWeight: 600 }}>Campo canônico</th>
+                    <th style={{ ...tdS, color: 'var(--muted-c)', textAlign: 'center', fontWeight: 600 }}>Tipo</th>
                   </tr>
                 </thead>
                 <tbody>
                   {Object.entries(mapeamento).map(([colIdx, def]) => (
                     <tr key={colIdx}>
-                      <td style={{ ...tdS, fontFamily: 'monospace', color: '#94a3b8' }}>{def.nomeOriginal}</td>
-                      <td style={{ ...tdS, color: '#e2e8f0', fontWeight: 500 }}>{defLabel(def)}</td>
+                      <td style={{ ...tdS, fontFamily: 'monospace', color: 'var(--muted-c)' }}>{def.nomeOriginal}</td>
+                      <td style={{ ...tdS, color: 'var(--text)', fontWeight: 500 }}>{defLabel(def)}</td>
                       <td style={{ ...tdS, textAlign: 'center' }}>
                         {def.tipo === 'id'
-                          ? <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,.14)', color: '#a5b4fc' }}>Identif.</span>
-                          : <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(16,185,129,.12)', color: '#34d399' }}>Verba</span>}
+                          ? <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(13,124,61,.14)', color: '#15A050' }}>Identif.</span>
+                          : <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(16,185,129,.12)', color: '#047857' }}>Verba</span>}
                       </td>
                     </tr>
                   ))}
@@ -184,35 +184,35 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
 
           {/* Verbas detectadas / ausentes */}
           {formato === 'movimento' ? (
-            <div style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(99,102,241,.06)', border: '1px solid rgba(99,102,241,.18)', fontSize: 12, color: '#a5b4fc' }}>
+            <div style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(13,124,61,.06)', border: '1px solid rgba(13,124,61,.18)', fontSize: 12, color: '#15A050' }}>
               <strong>Verbas por código numérico:</strong> 171 = Falta · 335 = Atraso · 504 = DSR · 4 = HE 50% · 5 = HE 100% · 24 = Ad. Noturno.
               As verbas ausentes de cada servidor entram como zero automaticamente.
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
               <div>
-                <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
+                <div style={{ fontSize: 10, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
                   Verbas detectadas ({verbasDetectadas.length})
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {verbasDetectadas.length === 0
-                    ? <span style={{ fontSize: 11, color: '#475569' }}>Nenhuma</span>
+                    ? <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>Nenhuma</span>
                     : verbasDetectadas.map(b => (
-                      <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(16,185,129,.12)', color: '#34d399', fontWeight: 600 }}>
+                      <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(16,185,129,.12)', color: '#047857', fontWeight: 600 }}>
                         {b.label}
                       </span>
                     ))}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
+                <div style={{ fontSize: 10, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: 6 }}>
                   Verbas ausentes → 0
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {verbasAusentes.length === 0
-                    ? <span style={{ fontSize: 11, color: '#475569' }}>—</span>
+                    ? <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>—</span>
                     : verbasAusentes.map(b => (
-                      <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(100,116,139,.12)', color: '#64748b' }}>
+                      <span key={b.id} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(100,116,139,.12)', color: 'var(--muted-c)' }}>
                         {b.label}
                       </span>
                     ))}
@@ -232,11 +232,11 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
                 const val = mapeamentosTemp[normNome] ?? '';
                 return (
                   <div key={colIdx} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8, padding: '7px 10px', borderRadius: 7, background: 'rgba(245,158,11,.06)', border: '1px solid rgba(245,158,11,.14)' }}>
-                    <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#fbbf24', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nome}</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#b45309', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nome}</span>
                     <select
                       value={defParaSelect(val)}
                       onChange={e => aoMudar(normNome, e.target.value)}
-                      style={{ padding: '4px 8px', borderRadius: 6, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 11, minWidth: 180 }}
+                      style={{ padding: '4px 8px', borderRadius: 6, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 11, minWidth: 180 }}
                     >
                       <option value="">— Ignorar —</option>
                       <option disabled>── Identificação ──</option>
@@ -252,7 +252,7 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
                   </div>
                 );
               })}
-              <div style={{ fontSize: 10, color: '#475569', marginTop: 4, marginBottom: 12 }}>
+              <div style={{ fontSize: 10, color: 'var(--muted-c)', marginTop: 4, marginBottom: 12 }}>
                 Os mapeamentos definidos aqui serão lembrados automaticamente nas próximas importações.
               </div>
             </div>
@@ -260,13 +260,13 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
         </div>
 
         {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', paddingTop: 14, display: 'flex', gap: 10 }}>
+        <div style={{ borderTop: '1px solid rgba(0, 0, 0, 0.05)', paddingTop: 14, display: 'flex', gap: 10 }}>
           <button
             onClick={confirmar}
             disabled={erros.length > 0}
             style={{
               flex: 1, padding: '10px 16px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 13,
-              background: erros.length > 0 ? 'rgba(255,255,255,.06)' : 'linear-gradient(135deg,#3b82f6,#6366f1)',
+              background: erros.length > 0 ? 'rgba(0, 0, 0, 0.04)' : 'linear-gradient(135deg,#0D7C3D,#0D7C3D)',
               color: erros.length > 0 ? '#374151' : '#fff',
               cursor: erros.length > 0 ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -276,7 +276,7 @@ function ModalPrevia({ arquivo, analise, onConfirm, onCancel }) {
           </button>
           <button
             onClick={onCancel}
-            style={{ padding: '10px 18px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            style={{ padding: '10px 18px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
           >
             Cancelar
           </button>
@@ -293,7 +293,7 @@ function ModalConfirmarExclusao({ competencia, total, deletando, onConfirm, onCa
     <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && !deletando && onCancel()}>
       <div className="chamado-modal" style={{ maxWidth: 420 }}>
         <div className="chamado-modal-header">
-          <div className="chamado-modal-title" style={{ color: '#f87171' }}>
+          <div className="chamado-modal-title" style={{ color: '#dc2626' }}>
             <Trash2 size={14} style={{ display: 'inline', marginRight: 7 }} />
             Excluir folha importada
           </div>
@@ -301,14 +301,14 @@ function ModalConfirmarExclusao({ competencia, total, deletando, onConfirm, onCa
         </div>
 
         <div style={{ padding: '8px 0 20px' }}>
-          <div style={{ fontSize: 15, color: '#f1f5f9', fontWeight: 600, marginBottom: 8 }}>
+          <div style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>
             Excluir folha de {fmtCompetencia(competencia)}?
           </div>
-          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>
-            Todos os <strong style={{ color: '#fbbf24' }}>{total?.toLocaleString('pt-BR')} servidores</strong> desta
+          <div style={{ fontSize: 13, color: 'var(--muted-c)', marginBottom: 16 }}>
+            Todos os <strong style={{ color: '#b45309' }}>{total?.toLocaleString('pt-BR')} servidores</strong> desta
             competência serão removidos permanentemente. Esta ação não pode ser desfeita.
           </div>
-          <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', fontSize: 12, color: '#f87171' }}>
+          <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', fontSize: 12, color: '#dc2626' }}>
             Para recarregar esta competência, faça uma nova importação do arquivo XLS/XLSX.
           </div>
         </div>
@@ -317,7 +317,7 @@ function ModalConfirmarExclusao({ competencia, total, deletando, onConfirm, onCa
           <button
             onClick={onCancel}
             disabled={deletando}
-            style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', fontWeight: 600, fontSize: 13, cursor: deletando ? 'not-allowed' : 'pointer' }}
+            style={{ flex: 1, padding: '10px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', fontWeight: 600, fontSize: 13, cursor: deletando ? 'not-allowed' : 'pointer' }}
           >
             Cancelar
           </button>
@@ -333,7 +333,7 @@ function ModalConfirmarExclusao({ competencia, total, deletando, onConfirm, onCa
           >
             {deletando ? (
               <>
-                <div style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                <div style={{ width: 13, height: 13, border: '2px solid rgba(0, 0, 0, 0.18)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                 Excluindo...
               </>
             ) : (
@@ -375,31 +375,31 @@ function ModalCompetencia({ arquivo, onConfirm, onCancel }) {
           <button className="chamado-modal-close" onClick={onCancel}>×</button>
         </div>
 
-        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(59,130,246,.08)', border: '1px solid rgba(59,130,246,.2)', fontSize: 12, color: '#93c5fd' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(13,124,61,.08)', border: '1px solid rgba(13,124,61,.2)', fontSize: 12, color: '#047857' }}>
           <strong>Arquivo:</strong> {arquivo?.name}
         </div>
 
-        <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>
+        <p style={{ fontSize: 13, color: 'var(--muted-c)', marginBottom: 20 }}>
           Informe a competência (mês/ano) referente a esta folha de pagamento.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Mês</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Mês</label>
             <select
               value={mes}
               onChange={e => setMes(Number(e.target.value))}
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 7, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 13 }}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 7, background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 13 }}
             >
               {MESES.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ano</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'var(--muted-c)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ano</label>
             <select
               value={ano}
               onChange={e => setAno(Number(e.target.value))}
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 7, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#f1f5f9', fontSize: 13 }}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 7, background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 13 }}
             >
               {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
@@ -410,17 +410,17 @@ function ModalCompetencia({ arquivo, onConfirm, onCancel }) {
           <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.25)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             <AlertTriangle size={15} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
-              <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600 }}>Competência já importada</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+              <div style={{ fontSize: 12, color: '#b45309', fontWeight: 600 }}>Competência já importada</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>
                 {MESES[mes - 1]}/{ano} já possui {existentes.toLocaleString('pt-BR')} servidores.
-                Confirmar irá <strong style={{ color: '#fbbf24' }}>substituir</strong> todos os dados.
+                Confirmar irá <strong style={{ color: '#b45309' }}>substituir</strong> todos os dados.
               </div>
             </div>
           </div>
         )}
 
         {verificando && (
-          <div style={{ marginBottom: 16, fontSize: 11, color: '#64748b', padding: '8px 12px', borderRadius: 6, background: 'rgba(255,255,255,.03)' }}>
+          <div style={{ marginBottom: 16, fontSize: 11, color: 'var(--muted-c)', padding: '8px 12px', borderRadius: 6, background: 'rgba(0, 0, 0, 0.02)' }}>
             Verificando dados existentes...
           </div>
         )}
@@ -429,7 +429,7 @@ function ModalCompetencia({ arquivo, onConfirm, onCancel }) {
           onClick={() => onConfirm(competencia)}
           style={{
             width: '100%', padding: '11px', borderRadius: 8,
-            background: existentes > 0 ? 'linear-gradient(135deg,#f59e0b,#f97316)' : 'linear-gradient(135deg,#3b82f6,#6366f1)',
+            background: existentes > 0 ? 'linear-gradient(135deg,#f59e0b,#f97316)' : 'linear-gradient(135deg,#0D7C3D,#0D7C3D)',
             border: 'none', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer',
           }}
         >
@@ -446,11 +446,11 @@ function ProgressBar({ pct, label }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{ fontSize: 12, color: '#94a3b8' }}>{label}</span>
-        <span style={{ fontSize: 12, color: '#60a5fa', fontWeight: 700, fontFamily: 'monospace' }}>{pct}%</span>
+        <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>{label}</span>
+        <span style={{ fontSize: 12, color: '#15A050', fontWeight: 700, fontFamily: 'monospace' }}>{pct}%</span>
       </div>
-      <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg,#3b82f6,#6366f1)', width: `${pct}%`, transition: 'width .3s ease' }} />
+      <div style={{ height: 6, borderRadius: 3, background: 'rgba(0, 0, 0, 0.04)', overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg,#0D7C3D,#0D7C3D)', width: `${pct}%`, transition: 'width .3s ease' }} />
       </div>
     </div>
   );
@@ -634,8 +634,8 @@ export default function ImportarFolha() {
         {/* ── Analisando ── */}
         {fase === 'analisando' && (
           <div className="chart-card" style={{ textAlign: 'center', padding: '40px 24px' }}>
-            <div style={{ width: 40, height: 40, border: '3px solid rgba(59,130,246,.3)', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-            <div style={{ color: '#60a5fa', fontSize: 14 }}>Lendo e analisando o arquivo...</div>
+            <div style={{ width: 40, height: 40, border: '3px solid rgba(13,124,61,.3)', borderTop: '3px solid #0D7C3D', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+            <div style={{ color: '#15A050', fontSize: 14 }}>Lendo e analisando o arquivo...</div>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
@@ -657,16 +657,16 @@ export default function ImportarFolha() {
                 onDragLeave={() => setDragOver(false)}
                 onClick={() => inputRef.current?.click()}
                 style={{
-                  border: `2px dashed ${dragOver ? 'rgba(99,102,241,.6)' : 'rgba(255,255,255,.1)'}`,
+                  border: `2px dashed ${dragOver ? 'rgba(13,124,61,.6)' : 'rgba(0, 0, 0, 0.06)'}`,
                   borderRadius: 10, padding: '48px 24px', textAlign: 'center', cursor: 'pointer',
-                  background: dragOver ? 'rgba(99,102,241,.05)' : 'transparent', transition: 'all .2s',
+                  background: dragOver ? 'rgba(13,124,61,.05)' : 'transparent', transition: 'all .2s',
                 }}
               >
-                <FileSpreadsheet size={40} color="#60a5fa" style={{ margin: '0 auto 16px', display: 'block', opacity: .7 }} />
-                <div style={{ fontSize: 15, color: '#f1f5f9', fontWeight: 600, marginBottom: 6 }}>
+                <FileSpreadsheet size={40} color="#15A050" style={{ margin: '0 auto 16px', display: 'block', opacity: .7 }} />
+                <div style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 6 }}>
                   Arraste o arquivo .XLS / .XLSX ou clique para selecionar
                 </div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>
+                <div style={{ fontSize: 12, color: 'var(--muted-c)' }}>
                   Arquivo gerado pelo sistema de folha de pagamento
                 </div>
                 <input
@@ -679,7 +679,7 @@ export default function ImportarFolha() {
               </div>
 
               {(erro || fase === 'erro') && (
-                <div style={{ marginTop: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.2)', color: '#f87171', fontSize: 13, display: 'flex', gap: 10, alignItems: 'center' }}>
+                <div style={{ marginTop: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.2)', color: '#dc2626', fontSize: 13, display: 'flex', gap: 10, alignItems: 'center' }}>
                   <XCircle size={16} /> {erro}
                 </div>
               )}
@@ -696,7 +696,7 @@ export default function ImportarFolha() {
                   onClick={carregarFolhas}
                   disabled={carregandoFolhas}
                   title="Atualizar lista"
-                  style={{ padding: '6px 10px', borderRadius: 7, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: '#94a3b8', cursor: carregandoFolhas ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}
+                  style={{ padding: '6px 10px', borderRadius: 7, background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: carregandoFolhas ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}
                 >
                   <RefreshCw size={13} style={{ animation: carregandoFolhas ? 'spin 1s linear infinite' : 'none' }} />
                   Atualizar
@@ -704,12 +704,12 @@ export default function ImportarFolha() {
               </div>
 
               {carregandoFolhas ? (
-                <div style={{ textAlign: 'center', padding: '24px 0', color: '#475569', fontSize: 13 }}>
-                  <div style={{ width: 28, height: 28, border: '2px solid rgba(59,130,246,.3)', borderTop: '2px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 10px' }} />
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted-c)', fontSize: 13 }}>
+                  <div style={{ width: 28, height: 28, border: '2px solid rgba(13,124,61,.3)', borderTop: '2px solid #0D7C3D', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 10px' }} />
                   Carregando...
                 </div>
               ) : folhasImportadas.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '24px 0', color: '#475569', fontSize: 13 }}>
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted-c)', fontSize: 13 }}>
                   Nenhuma folha importada ainda.
                 </div>
               ) : (
@@ -720,14 +720,14 @@ export default function ImportarFolha() {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '10px 14px', borderRadius: 8,
-                        background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)',
+                        background: 'rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0,0,0,.07)',
                       }}
                     >
-                      <Calendar size={15} color="#60a5fa" style={{ flexShrink: 0 }} />
-                      <div style={{ flex: 1, fontWeight: 600, fontSize: 14, color: '#e2e8f0' }}>
+                      <Calendar size={15} color="#15A050" style={{ flexShrink: 0 }} />
+                      <div style={{ flex: 1, fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>
                         {fmtCompetencia(competencia)}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748b' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--muted-c)' }}>
                         <Users size={12} />
                         {total.toLocaleString('pt-BR')} servidores
                       </div>
@@ -736,7 +736,7 @@ export default function ImportarFolha() {
                         title={`Excluir folha de ${fmtCompetencia(competencia)}`}
                         style={{
                           padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(239,68,68,.25)',
-                          background: 'rgba(239,68,68,.08)', color: '#f87171',
+                          background: 'rgba(239,68,68,.08)', color: '#dc2626',
                           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600,
                         }}
                       >
@@ -756,14 +756,14 @@ export default function ImportarFolha() {
                   {
                     titulo: 'Formato VB (códigos)',
                     ext: '.xls',
-                    cor: '#6366f1',
+                    cor: '#0D7C3D',
                     itens: ['MATRICULA', 'nomecompleto', 'descargo_completa', 'descsubunidade', 'deslocal', 'VB335', 'VB504', 'VB24', 'VB4', 'VB171', 'VB5'],
                     obs: 'Cabeçalho pode estar após um banner de título — detectado automaticamente.',
                   },
                   {
                     titulo: 'Formato por extenso',
                     ext: '.xlsx',
-                    cor: '#3b82f6',
+                    cor: '#0D7C3D',
                     itens: ['MATRICULA', 'nomecompleto', 'descargo_completa', 'descsubunidade', 'deslocal', 'ATRASO/SAIDA MES ANTERIOR', 'D.S.R.', 'ADICIONAL NOTURNO', 'FALTAS INJUSTIFICADAS'],
                     obs: 'Verbas ausentes (ex.: HE 50%, HE 100%) entram como 0 automaticamente.',
                   },
@@ -774,9 +774,9 @@ export default function ImportarFolha() {
                       <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 3, background: `${cor}22`, color: cor, fontFamily: 'monospace' }}>{ext}</span>
                     </div>
                     {itens.map(col => (
-                      <div key={col} style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,.03)' }}>{col}</div>
+                      <div key={col} style={{ fontSize: 11, color: 'var(--muted-c)', fontFamily: 'monospace', padding: '2px 0', borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}>{col}</div>
                     ))}
-                    <div style={{ marginTop: 8, fontSize: 10, color: '#475569' }}>{obs}</div>
+                    <div style={{ marginTop: 8, fontSize: 10, color: 'var(--muted-c)' }}>{obs}</div>
                   </div>
                 ))}
               </div>
@@ -788,10 +788,10 @@ export default function ImportarFolha() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
                   {['Matrícula', 'Nome Funcionário', 'Verba', 'Descrição Verba', 'Quantidade', 'Descrição Contrato', 'Lotação', 'Descrição Lotação', 'Descrição Local Trabalho'].map(col => (
-                    <div key={col} style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,.03)' }}>{col}</div>
+                    <div key={col} style={{ fontSize: 11, color: 'var(--muted-c)', fontFamily: 'monospace', padding: '2px 0', borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}>{col}</div>
                   ))}
                 </div>
-                <div style={{ marginTop: 8, fontSize: 10, color: '#475569' }}>
+                <div style={{ marginTop: 8, fontSize: 10, color: 'var(--muted-c)' }}>
                   Layout longo: uma linha por verba por servidor. Verbas identificadas por código (171=Falta, 335=Atraso, 504=DSR…).
                   Cabeçalho detectado automaticamente — funciona mesmo com linhas em branco acima.
                 </div>
@@ -805,14 +805,14 @@ export default function ImportarFolha() {
           <div className="chart-card">
             <div style={{ textAlign: 'center', padding: '16px 0 20px' }}>
               <AlertTriangle size={48} color="#f59e0b" style={{ margin: '0 auto 16px', display: 'block' }} />
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#fbbf24', marginBottom: 8 }}>Layout não reconhecido</div>
-              <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#b45309', marginBottom: 8 }}>Layout não reconhecido</div>
+              <div style={{ fontSize: 13, color: 'var(--muted-c)', marginBottom: 20 }}>
                 O arquivo não possui as colunas mínimas necessárias:
               </div>
             </div>
             <div style={{ marginBottom: 20 }}>
               {errosLayout.map((e, i) => (
-                <div key={i} style={{ padding: '8px 12px', marginBottom: 6, borderRadius: 6, background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.18)', fontSize: 12, color: '#fbbf24', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <div key={i} style={{ padding: '8px 12px', marginBottom: 6, borderRadius: 6, background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.18)', fontSize: 12, color: '#b45309', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
                   {e}
                 </div>
@@ -829,7 +829,7 @@ export default function ImportarFolha() {
           <div className="chart-card">
             <div className="chart-title" style={{ marginBottom: 24 }}>Processando arquivo...</div>
             <ProgressBar pct={progresso} label={etapa} />
-            <p style={{ fontSize: 12, color: '#64748b', textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--muted-c)', textAlign: 'center' }}>
               Não feche esta aba durante o processamento.
             </p>
           </div>
@@ -840,15 +840,15 @@ export default function ImportarFolha() {
           <div className="chart-card">
             <div style={{ textAlign: 'center', padding: '16px 0 24px' }}>
               <CheckCircle size={48} color="#10b981" style={{ margin: '0 auto 16px', display: 'block' }} />
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>Importação concluída!</div>
-              <div style={{ fontSize: 13, color: '#64748b' }}>{resultado.arquivo}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>Importação concluída!</div>
+              <div style={{ fontSize: 13, color: 'var(--muted-c)' }}>{resultado.arquivo}</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
               {[
-                { label: 'Competência',          value: fmtCompetencia(resultado.competencia), color: '#60a5fa' },
-                { label: 'Servidores importados', value: resultado.total.toLocaleString('pt-BR'), color: '#34d399' },
-                { label: 'Linhas ignoradas',      value: resultado.ignorados.toLocaleString('pt-BR'), color: '#fbbf24' },
+                { label: 'Competência',          value: fmtCompetencia(resultado.competencia), color: '#15A050' },
+                { label: 'Servidores importados', value: resultado.total.toLocaleString('pt-BR'), color: '#047857' },
+                { label: 'Linhas ignoradas',      value: resultado.ignorados.toLocaleString('pt-BR'), color: '#b45309' },
               ].map(({ label, value, color }) => (
                 <div key={label} className="kpi-card" style={{ textAlign: 'center' }}>
                   <div className="kpi-label" style={{ justifyContent: 'center', paddingLeft: 0 }}>{label}</div>
@@ -858,13 +858,13 @@ export default function ImportarFolha() {
             </div>
 
             {resultado.ambiguos > 0 && (
-              <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(13,124,61,.08)', border: '1px solid rgba(13,124,61,.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Info size={15} color="#818cf8" style={{ flexShrink: 0, marginTop: 1 }} />
                 <div>
-                  <div style={{ fontSize: 12, color: '#a5b4fc', fontWeight: 600 }}>
+                  <div style={{ fontSize: 12, color: '#15A050', fontWeight: 600 }}>
                     {resultado.ambiguos} registro{resultado.ambiguos !== 1 ? 's' : ''} com VB335 ambíguo
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>
                     O valor de VB335 admite mais de uma decomposição. Foi usada a combinação que minimiza atrasos ≥1h.
                   </div>
                 </div>

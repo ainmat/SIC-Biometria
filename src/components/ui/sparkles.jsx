@@ -41,7 +41,7 @@ export const SparklesCore = (props) => {
       },
     },
     particles: {
-      color: { value: particleColor || "#ffffff" },
+      color: { value: particleColor || "#0D7C3D" },
       move: {
         direction: "none",
         enable: true,
@@ -55,10 +55,10 @@ export const SparklesCore = (props) => {
         value: particleDensity || 120,
       },
       opacity: {
-        value: { min: 0.1, max: 1 },
+        value: { min: 0.3, max: 0.7 },
         animation: {
           enable: true,
-          speed: speed || 4,
+          speed: speed || 2,
           sync: false,
           mode: "auto",
           startValue: "random",
@@ -75,14 +75,14 @@ export const SparklesCore = (props) => {
 
   return (
     <ParticlesProvider init={initEngine}>
-      <motion.div animate={controls} className={cn("opacity-0", className)}>
+      <div className={cn("w-full h-full opacity-100", className)}>
         <Particles
+          key={`${id}-${particleColor}-${minSize}-${maxSize}-${speed}`}
           id={id || generatedId}
-          className={cn("h-full w-full")}
-          particlesLoaded={particlesLoaded}
+          className="h-full w-full"
           options={options}
         />
-      </motion.div>
+      </div>
     </ParticlesProvider>
   );
 };

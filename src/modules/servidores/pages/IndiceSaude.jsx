@@ -45,14 +45,14 @@ function Tooltip_({ active, payload, label }) {
   const p = payload[0];
   const data = p?.payload;
   return (
-    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, padding: '10px 14px', fontSize: 12, minWidth: 200 }}>
-      <div style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>{label}</div>
+    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 10, padding: '10px 14px', fontSize: 12, minWidth: 200 }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>{label}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ color: '#94a3b8' }}>Score geral: <b style={{ color: corScore(data?.score) }}>{Math.round(data?.score)}</b></div>
-        <div style={{ color: '#64748b', fontSize: 11 }}>Idade média: {data?.idadeMedia?.toFixed(0)} anos</div>
-        <div style={{ color: '#64748b', fontSize: 11 }}>% comissionados: {data?.pctComiss?.toFixed(1)}%</div>
-        <div style={{ color: '#64748b', fontSize: 11 }}>Tempo médio: {data?.tempoMedio?.toFixed(0)} anos</div>
-        <div style={{ color: '#64748b', fontSize: 11 }}>Nível escol. médio: {data?.escolMedia?.toFixed(1)}/4</div>
+        <div style={{ color: 'var(--muted-c)' }}>Score geral: <b style={{ color: corScore(data?.score) }}>{Math.round(data?.score)}</b></div>
+        <div style={{ color: 'var(--muted-c)', fontSize: 11 }}>Idade média: {data?.idadeMedia?.toFixed(0)} anos</div>
+        <div style={{ color: 'var(--muted-c)', fontSize: 11 }}>% comissionados: {data?.pctComiss?.toFixed(1)}%</div>
+        <div style={{ color: 'var(--muted-c)', fontSize: 11 }}>Tempo médio: {data?.tempoMedio?.toFixed(0)} anos</div>
+        <div style={{ color: 'var(--muted-c)', fontSize: 11 }}>Nível escol. médio: {data?.escolMedia?.toFixed(1)}/4</div>
       </div>
     </div>
   );
@@ -144,15 +144,15 @@ export default function IndiceSaude() {
       </div>
 
       <div className="content">
-        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: '#475569', fontSize: 14 }}>Carregando...</div>}
-        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#f87171', fontSize: 13 }}>{erro}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted-c)', fontSize: 14 }}>Carregando...</div>}
+        {erro    && <div style={{ padding: '14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
 
         {!loading && !erro && ranking.length > 0 && (
           <>
             {/* Painel Informativo sobre o Índice de Saúde */}
             <div style={{
-              background: 'rgba(255,255,255,.01)',
-              border: '1px solid rgba(255,255,255,.06)',
+              background: 'rgba(0,0,0,.01)',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
               borderRadius: 12,
               padding: '16px 20px',
               marginBottom: 20,
@@ -163,69 +163,69 @@ export default function IndiceSaude() {
                 onClick={() => setExpandedInfo(!expandedInfo)}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Info size={18} color="#6366f1" />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>
+                  <Info size={18} color="#0D7C3D" />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
                     Entenda os Critérios de Apuração do Índice de Saúde
                   </span>
                 </div>
-                <button style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <button style={{ background: 'transparent', border: 'none', color: 'var(--muted-c)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                   {expandedInfo ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               </div>
 
               {!expandedInfo ? (
-                <p style={{ margin: '8px 0 0 28px', fontSize: 11, color: '#64748b', lineHeight: '1.5' }}>
+                <p style={{ margin: '8px 0 0 28px', fontSize: 11, color: 'var(--muted-c)', lineHeight: '1.5' }}>
                   O score de <b>0 a 100</b> avalia a sustentabilidade e qualificação do quadro de cada secretaria (mín. 5 servidores) com base em quatro pilares relativos. Clique para ver as regras de cálculo e faixas de risco.
                 </p>
               ) : (
-                <div style={{ marginTop: 16, borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 16 }}>
+                <div style={{ marginTop: 16, borderTop: '1px solid rgba(0, 0, 0, 0.04)', paddingTop: 16 }}>
                   {/* Grid de Critérios */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
-                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,.01)', border: '1px solid rgba(0, 0, 0, 0.02)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                        <Clock size={14} color="#a5b4fc" />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Experiência (Peso: 30%)</span>
+                        <Clock size={14} color="#15A050" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>Experiência (Peso: 30%)</span>
                       </div>
-                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                      <p style={{ fontSize: 11, color: 'var(--muted-c)', lineHeight: '1.4', margin: 0 }}>
                         Calculado pelo <b>tempo médio de contrato</b> (em anos). Pontua melhor as secretarias com maior retenção e permanência dos servidores.
                       </p>
                     </div>
 
-                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,.01)', border: '1px solid rgba(0, 0, 0, 0.02)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                        <GraduationCap size={14} color="#a5b4fc" />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Escolaridade (Peso: 30%)</span>
+                        <GraduationCap size={14} color="#15A050" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>Escolaridade (Peso: 30%)</span>
                       </div>
-                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                      <p style={{ fontSize: 11, color: 'var(--muted-c)', lineHeight: '1.4', margin: 0 }}>
                         Média ponderada do nível de instrução (de 0 a 4). Valoriza a qualificação formal (de Fundamental até Pós-graduação/Doutorado).
                       </p>
                     </div>
 
-                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,.01)', border: '1px solid rgba(0, 0, 0, 0.02)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                        <Shield size={14} color="#a5b4fc" />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Estabilidade (Peso: 25%)</span>
+                        <Shield size={14} color="#15A050" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>Estabilidade (Peso: 25%)</span>
                       </div>
-                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                      <p style={{ fontSize: 11, color: 'var(--muted-c)', lineHeight: '1.4', margin: 0 }}>
                         Inverso da porcentagem de cargos comissionados. Menor dependência de indicações políticas gera maior estabilidade e eleva o score.
                       </p>
                     </div>
 
-                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,255,255,.01)', border: '1px solid rgba(255,255,255,.04)' }}>
+                    <div style={{ padding: 12, borderRadius: 8, background: 'rgba(0,0,0,.01)', border: '1px solid rgba(0, 0, 0, 0.02)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                        <Calendar size={14} color="#a5b4fc" />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0' }}>Perfil Etário (Peso: 15%)</span>
+                        <Calendar size={14} color="#15A050" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>Perfil Etário (Peso: 15%)</span>
                       </div>
-                      <p style={{ fontSize: 11, color: '#64748b', lineHeight: '1.4', margin: 0 }}>
+                      <p style={{ fontSize: 11, color: 'var(--muted-c)', lineHeight: '1.4', margin: 0 }}>
                         Idade média geral do quadro. Secretarias com menor idade média pontuam melhor por apresentarem menor risco de aposentadorias em lote.
                       </p>
                     </div>
                   </div>
 
                   {/* Classificação e Regra de Cálculo */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 11, color: '#64748b', borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: 12 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 11, color: 'var(--muted-c)', borderTop: '1px solid rgba(0, 0, 0, 0.02)', paddingTop: 12 }}>
                     <div style={{ flex: '1 1 300px' }}>
-                      <span style={{ fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Faixas de Classificação:</span>
+                      <span style={{ fontWeight: 700, color: 'var(--muted-c)', display: 'block', marginBottom: 4 }}>Faixas de Classificação:</span>
                       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} /> <b>Saudável (≥ 70):</b> Quadro qualificado, estável e equilibrado.</span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} /> <b>Atenção (50-69):</b> Alerta em algum pilar específico.</span>
@@ -233,7 +233,7 @@ export default function IndiceSaude() {
                       </div>
                     </div>
                     <div style={{ flex: '1 1 250px' }}>
-                      <span style={{ fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Regra de Cálculo Relativo:</span>
+                      <span style={{ fontWeight: 700, color: 'var(--muted-c)', display: 'block', marginBottom: 4 }}>Regra de Cálculo Relativo:</span>
                       <span>
                         Os valores são calculados relativamente entre as secretarias ativas. O município de menor desempenho no critério serve como 0 e o de maior como 100.
                       </span>
@@ -251,10 +251,10 @@ export default function IndiceSaude() {
                 { label: 'Atenção (50–69)',    val: fmt(global.amarelos),  sub: 'secretarias em amarelo', cor: '#f59e0b' },
                 { label: 'Risco (< 50)',       val: fmt(global.vermelhos), sub: 'secretarias em vermelho',cor: '#ef4444' },
               ].map(({ label, val, sub, cor }) => (
-                <div key={label} style={{ flex: 1, minWidth: 160, padding: '14px 18px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.07)', borderTop: `3px solid ${cor}` }}>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>{label}</div>
-                  <div style={{ fontSize: 30, fontWeight: 800, color: '#f8fafc', fontVariantNumeric: 'tabular-nums' }}>{val}</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{sub}</div>
+                <div key={label} style={{ flex: 1, minWidth: 160, padding: '14px 18px', borderRadius: 12, background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0,0,0,.07)', borderTop: `3px solid ${cor}` }}>
+                  <div style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>{label}</div>
+                  <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{val}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 4 }}>{sub}</div>
                 </div>
               ))}
             </div>
@@ -262,7 +262,7 @@ export default function IndiceSaude() {
             {/* Abas */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               {[{ id: 'ranking', label: 'Gráfico de ranking' }, { id: 'tabela', label: 'Tabela detalhada' }].map(({ id, label }) => (
-                <button key={id} onClick={() => setAba(id)} style={{ padding: '6px 14px', borderRadius: 8, background: aba === id ? 'rgba(99,102,241,.2)' : 'rgba(255,255,255,.03)', border: `1px solid ${aba === id ? 'rgba(99,102,241,.5)' : 'rgba(255,255,255,.08)'}`, color: aba === id ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                <button key={id} onClick={() => setAba(id)} style={{ padding: '6px 14px', borderRadius: 8, background: aba === id ? 'rgba(13,124,61,.2)' : 'rgba(0, 0, 0, 0.02)', border: `1px solid ${aba === id ? 'rgba(13,124,61,.5)' : 'rgba(0, 0, 0, 0.05)'}`, color: aba === id ? '#15A050' : '#64748b', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                   {label}
                 </button>
               ))}
@@ -270,12 +270,12 @@ export default function IndiceSaude() {
 
             {aba === 'ranking' && (
               <div className="chart-card">
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 14 }}>Ranking de saúde por secretaria</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 14 }}>Ranking de saúde por secretaria</div>
                 <ResponsiveContainer width="100%" height={ranking.length * 34 + 20}>
                   <BarChart data={ranking} layout="vertical" margin={{ left: 8, right: 60, top: 0, bottom: 0 }}>
                     <XAxis type="number" hide domain={[0, 100]} />
                     <YAxis type="category" dataKey="sec" width={200} tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(255,255,255,.04)' }} />
+                    <Tooltip content={<Tooltip_ />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
                     <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={20}
                       label={{ position: 'right', fill: '#475569', fontSize: 10, formatter: v => Math.round(v) }}>
                       {ranking.map((d, i) => <Cell key={i} fill={corScore(d.score)} />)}
@@ -292,21 +292,21 @@ export default function IndiceSaude() {
                     <thead>
                       <tr>
                         {['#','Secretaria','Score','Idade média','Tempo médio','Escolaridade','% Comiss.','Servidores'].map(h => (
-                          <th key={h} style={{ padding: '9px 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: '#475569', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,.06)', whiteSpace: 'nowrap', background: 'rgba(0,0,0,.2)' }}>{h}</th>
+                          <th key={h} style={{ padding: '9px 12px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--muted-c)', textAlign: 'left', borderBottom: '1px solid rgba(0, 0, 0, 0.04)', whiteSpace: 'nowrap', background: 'rgba(0,0,0,.2)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {ranking.map((r, i) => (
-                        <tr key={r.sec} style={{ borderBottom: '1px solid rgba(255,255,255,.03)' }}>
-                          <td style={{ padding: '9px 12px', fontSize: 11, color: '#475569' }}>#{i + 1}</td>
-                          <td style={{ padding: '9px 12px', fontSize: 11, color: '#f1f5f9', whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.sec}</td>
+                        <tr key={r.sec} style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.02)' }}>
+                          <td style={{ padding: '9px 12px', fontSize: 11, color: 'var(--muted-c)' }}>#{i + 1}</td>
+                          <td style={{ padding: '9px 12px', fontSize: 11, color: 'var(--text)', whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.sec}</td>
                           <td style={{ padding: '9px 12px' }}><BadgeScore score={r.score} /></td>
-                          <td style={{ padding: '9px 12px', fontSize: 12, color: '#94a3b8', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.idadeMedia.toFixed(0)}a</td>
-                          <td style={{ padding: '9px 12px', fontSize: 12, color: '#94a3b8', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.tempoMedio.toFixed(0)}a</td>
-                          <td style={{ padding: '9px 12px', fontSize: 12, color: '#94a3b8', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.escolMedia.toFixed(1)}/4</td>
-                          <td style={{ padding: '9px 12px', fontSize: 12, color: r.pctComiss > 15 ? '#f87171' : '#94a3b8', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.pctComiss.toFixed(1)}%</td>
-                          <td style={{ padding: '9px 12px', fontSize: 12, color: '#64748b', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmt(r.total)}</td>
+                          <td style={{ padding: '9px 12px', fontSize: 12, color: 'var(--muted-c)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.idadeMedia.toFixed(0)}a</td>
+                          <td style={{ padding: '9px 12px', fontSize: 12, color: 'var(--muted-c)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.tempoMedio.toFixed(0)}a</td>
+                          <td style={{ padding: '9px 12px', fontSize: 12, color: 'var(--muted-c)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.escolMedia.toFixed(1)}/4</td>
+                          <td style={{ padding: '9px 12px', fontSize: 12, color: r.pctComiss > 15 ? '#dc2626' : '#64748b', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.pctComiss.toFixed(1)}%</td>
+                          <td style={{ padding: '9px 12px', fontSize: 12, color: 'var(--muted-c)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmt(r.total)}</td>
                         </tr>
                       ))}
                     </tbody>
