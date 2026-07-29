@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase, fetchChamados } from '@/lib/supabase';
 import { fmtDate, contarPor } from '@/lib/utils';
 import { COR_SEC } from '@/lib/constants';
+import { Upload } from 'lucide-react';
+import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
 
 const FILTROS_SEC = ['Todos', 'Saúde', 'Educação', 'Outros'];
 const FILTROS_MOT = ['Todos', 'EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE PONTO', 'CADASTRO'];
@@ -71,6 +73,7 @@ export default function TodosChamados() {
   const [dados, setDados] = useState([]);
   const [status, setStatus] = useState('Carregando...');
   const [modal, setModal] = useState(null);
+  const [modalImportacaoAberta, setModalImportacaoAberta] = useState(false);
   const [filtros, setFiltros] = useState({
     secretaria: 'Todos',
     motivo: 'Todos',
@@ -136,6 +139,17 @@ export default function TodosChamados() {
           <p>{status}</p>
         </div>
         <div className="topbar-right">
+          <button 
+            onClick={() => setModalImportacaoAberta(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: '#0D7C3D', color: '#fff', border: 'none', 
+              padding: '6px 12px', borderRadius: 8, fontSize: 13, 
+              fontWeight: 600, cursor: 'pointer'
+            }}
+          >
+            <Upload size={14} /> Importar
+          </button>
           <div className="badge-live"><div className="status-dot" />AO VIVO</div>
           <TopbarAvatar />
         </div>
@@ -220,6 +234,15 @@ export default function TodosChamados() {
       </div>
 
       <ChamadoModal chamado={modal} onClose={() => setModal(null)} />
+      {modalImportacaoAberta && (
+        <ModalImportacaoChamados 
+          onClose={() => setModalImportacaoAberta(false)} 
+          onSucesso={() => {
+            setModalImportacaoAberta(false);
+            carregar();
+          }} 
+        />
+      )}
     </div>
   );
 }

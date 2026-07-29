@@ -42,6 +42,7 @@ export default function AnaliseTendencias() {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   useEffect(() => {
     const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    handleTheme(); // Força a sincronização na montagem
     window.addEventListener('themechange', handleTheme);
     return () => window.removeEventListener('themechange', handleTheme);
   }, []);
