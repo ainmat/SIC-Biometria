@@ -215,7 +215,7 @@ const NAV = [
     ],
   },
   {
-    section: 'Folha Processada',
+    section: 'Folha de Pagamento',
     items: [
       {
         to: '/folha/importar',
