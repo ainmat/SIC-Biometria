@@ -645,60 +645,56 @@ export default function Sidebar() {
           {/* User card */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            marginBottom: 10, padding: '8px 10px', borderRadius: 8,
+            marginBottom: 16, padding: '14px 16px', borderRadius: 12,
             background: roleBg, border: `1px solid ${roleBorder}`,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
               {/* Avatar */}
               <div style={{
-                width: 28, height: 28, borderRadius: 6,
+                width: 36, height: 36, borderRadius: 8,
                 background: roleColor + '22',
                 border: `1px solid ${roleColor}44`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: 11, fontWeight: 700, color: roleColor,
+                fontSize: 14, fontWeight: 700, color: roleColor,
               }}>
                 {sessao?.nome ? sessao.nome.charAt(0).toUpperCase() : '?'}
               </div>
               <div style={{ minWidth: 0 }}>
                 {sessao?.nome && sessao.role !== 'visitor' && (
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {sessao.nome}
                   </div>
                 )}
-                <span style={{ fontSize: 10, fontWeight: 600, color: roleColor }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: roleColor }}>
                   {roleLabel}
                 </span>
               </div>
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <ActionBtn
                 title={theme === 'light' ? 'Modo Escuro' : 'Modo Claro'}
                 onClick={toggleTheme}
                 hoverColor="#15A050"
               >
-                {theme === 'light' ? <Moon size={13} /> : <Sun size={13} />}
+                {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
               </ActionBtn>
               <ActionBtn title="Alterar senha" onClick={() => setModalSenha(true)} hoverColor="#15A050">
-                <KeyRound size={13} />
+                <KeyRound size={15} />
               </ActionBtn>
               <ActionBtn title="Sair" onClick={handleLogout} hoverColor="#dc2626">
-                <LogOut size={13} />
+                <LogOut size={15} />
               </ActionBtn>
             </div>
           </div>
 
           {/* Status + icon bar */}
-          <div className="status-pill" style={{ marginBottom: 12 }}>
+          <div className="status-pill">
             <div className="status-dot" />
             Realtime ativo
           </div>
-          <IconBar>
-            <IconBarItem icon={RefreshCw} label="Atualizar"    onClick={() => window.location.reload()} />
-            <IconBarItem icon={Download}  label="Exportar PDF" onClick={() => window.print()} />
-          </IconBar>
         </div>
       </aside>
 

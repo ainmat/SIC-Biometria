@@ -758,24 +758,35 @@ input::placeholder, textarea::placeholder { color: rgba(100,116,139,.5); }
   }
 
   /* Elementos ocultos na impressão */
-  .sidebar,
   .topbar-right,
   .sidebar-footer,
   .no-print { display: none !important; }
 
-  /* Layout sem sidebar */
-  .layout { grid-template-columns: 1fr !important; }
+  /* Sidebar visível na impressão */
+  .sidebar { background: #fff !important; border-right: 1px solid #e2e8f0 !important; }
 
-  /* Sem alturas fixas que criam espaços negros */
+  /* Layout forçado para bloco (o #root já está como block abaixo) */
+  .layout { display: block !important; background: #fff !important; }
+
+  /* Sem alturas fixas que criam espaços negros e problemas de quebra */
   body, html, #root, .main, .content {
+    display: block !important;
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
+    background: #fff !important;
   }
 
   /* Conteúdo principal ocupa a página inteira */
   .main   { padding: 0 !important; }
   .content { padding: 8px 0 0 !important; }
+
+  /* Limpeza de fundos pesados e sombras */
+  .kpi-card, .chart-card, .table-card, .dash-card, .sec-card {
+    box-shadow: none !important;
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+  }
 
   /* Topbar compacta */
   .topbar {
@@ -788,16 +799,16 @@ input::placeholder, textarea::placeholder { color: rgba(100,116,139,.5); }
   /* Grids de seleção do Simulador — painel esquerdo removido, direito em full */
   .sim-grid { grid-template-columns: 1fr !important; }
 
-  /* Tabelas sem scroll — mostrar tudo */
+  /* Tabelas sem scroll — mostrar tudo e forçar largura total */
   .print-table-wrap {
     max-height: none !important;
     overflow: visible !important;
   }
+  table { width: 100% !important; }
 
-  /* Cards sem quebra interna */
+  /* Cards curtos sem quebra interna. Tabelas (.table-card) podem quebrar! */
   .kpi-card,
-  .chart-card,
-  .table-card {
+  .chart-card {
     break-inside: avoid;
     page-break-inside: avoid;
   }

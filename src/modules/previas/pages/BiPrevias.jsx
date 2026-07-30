@@ -629,12 +629,6 @@ export default function BiPrevias() {
           <p>{topbarSub}</p>
         </div>
         <div className="topbar-right">
-          <button
-            onClick={carregar}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 12 }}
-          >
-            <RefreshCw size={12} /> Atualizar
-          </button>
           <TopbarAvatar />
         </div>
       </div>

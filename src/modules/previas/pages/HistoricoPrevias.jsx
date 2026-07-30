@@ -171,19 +171,6 @@ export default function HistoricoPrevias() {
           <p>Prévias publicadas por secretaria</p>
         </div>
         <div className="topbar-right">
-          <button
-            onClick={carregar}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--muted-c)', cursor: 'pointer', fontSize: 12 }}
-          >
-            <RefreshCw size={12} /> Atualizar
-          </button>
-          <button
-            onClick={exportarCSV}
-            disabled={filtrados.length === 0}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: filtrados.length ? '#0D7C3D' : 'rgba(0, 0, 0, 0.04)', border: 'none', color: filtrados.length ? '#fff' : '#475569', cursor: filtrados.length ? 'pointer' : 'not-allowed', fontSize: 12, fontWeight: 600 }}
-          >
-            <Download size={12} /> Exportar
-          </button>
           <TopbarAvatar />
         </div>
       </div>
