@@ -45,13 +45,26 @@ const CORES_SEC   = ['#0D7C3D','#0D7C3D','#10b981','#f97316','#ec4899','#a855f7'
 const CORES_PIE   = ['#0D7C3D','#10b981','#f97316','#ec4899','#a855f7','#0D7C3D','#f59e0b','#14b8a6'];
 const CORES_FAIXA = ['#c7d2fe','#15A050','#818cf8','#0D7C3D','#0A6B33','#4338ca','#3730a3','#312e81','#64748b'];
 
+const shortName = (name) => {
+  if (!name) return '';
+  let s = name.replace('SECRETARIA EXECUTIVA ', 'SEC. EXEC. ');
+  s = s.replace('SECRETARIA DA ', 'SEC. DA ');
+  s = s.replace('SECRETARIA DE ', 'SEC. DE ');
+  s = s.replace('SECRETARIA DO ', 'SEC. DO ');
+  s = s.replace('SECRETARIA ', 'SEC. ');
+  return s.length > 35 ? s.substring(0, 32) + '...' : s;
+};
+
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)', borderRadius: 10, padding: '8px 14px', fontSize: 12, boxShadow: '0 8px 32px rgba(0,0,0,.6)' }}>
-      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{label}</div>
+    <div style={{ background: '#ffffff', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: 10, padding: '8px 14px', fontSize: 12, boxShadow: '0 8px 32px rgba(0,0,0,.15)' }}>
+      <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
-        <div key={i} style={{ color: p.fill || p.color, fontWeight: 600 }}>{fmt(p.value)} servidores</div>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill || p.color }} />
+          <span style={{ color: '#334155', fontWeight: 600 }}>{fmt(p.value)} servidores</span>
+        </div>
       ))}
     </div>
   );
@@ -272,7 +285,7 @@ export default function PainelServidores() {
                 <ResponsiveContainer width="100%" height={bySecretaria.length * 34 + 20}>
                   <BarChart data={bySecretaria} layout="vertical" margin={{ left: 8, right: 50, top: 0, bottom: 0 }}>
                     <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" width={200} tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <YAxis type="category" dataKey="name" width={220} tickFormatter={shortName} tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
                     <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={22} label={{ position: 'right', fill: '#475569', fontSize: 11, formatter: fmt }}>
                       {bySecretaria.map((_, i) => <Cell key={i} fill={CORES_SEC[i % CORES_SEC.length]} />)}
@@ -295,7 +308,7 @@ export default function PainelServidores() {
                 <ResponsiveContainer width="100%" height={Math.max(byEscol.length * 32 + 20, 80)}>
                   <BarChart data={byEscol} layout="vertical" margin={{ left: 8, right: 50, top: 0, bottom: 0 }}>
                     <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" width={200} tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <YAxis type="category" dataKey="name" width={220} tickFormatter={shortName} tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
                     <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={20} fill="#0D7C3D" label={{ position: 'right', fill: '#475569', fontSize: 11, formatter: fmt }} />
                   </BarChart>

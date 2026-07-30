@@ -18,8 +18,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 
 const TOOLTIP_STYLE = {
   backgroundColor: 'rgba(17,24,39,.95)',
-  titleColor: '#1e293b',
-  bodyColor: '#64748b',
+  titleColor: '#f8fafc',
+  bodyColor: '#cbd5e1',
   borderColor: 'rgba(13,124,61,.3)',
   borderWidth: 1,
   padding: 10,
@@ -387,6 +387,14 @@ function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
 // ─── Selection grid ──────────────────────────────────────────────────────────
 
 function SelectionGrid({ publicadas, onSelect }) {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    handleTheme();
+    window.addEventListener('themechange', handleTheme);
+    return () => window.removeEventListener('themechange', handleTheme);
+  }, []);
+
   const mapa = {};
   publicadas.forEach(d => {
     const k = d.secretaria_codigo;
@@ -415,99 +423,57 @@ function SelectionGrid({ publicadas, onSelect }) {
     );
   }
 
-  // Cards para o hero animado (DisplayCards) com dados reais
-  const heroCards = [
-    {
-      icon: <TrendingUp className="size-4 text-amber-300" />,
-      title: "Ocorrências",
-      description: `${fmt(totalOcorrConsol)} acumuladas`,
-      date: `${secretarias.length} secretarias ativas`,
-      iconClassName: "text-amber-500",
-      titleClassName: "text-amber-400",
-      className: "[grid-area:stack] hover:-translate-y-10 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0",
-    },
-    {
-      icon: <XCircle className="size-4 text-red-300" />,
-      title: "Faltas (171)",
-      description: `${fmt(totalFaltasConsol)} registradas`,
-      date: `${alertas > 0 ? `${alertas} alertas detectados` : 'Nenhum alerta'}`,
-      iconClassName: "text-red-500",
-      titleClassName: "text-red-400",
-      className: "[grid-area:stack] translate-x-16 translate-y-10 hover:-translate-y-1 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0",
-    },
-    {
-      icon: <Timer className="size-4 text-orange-300" />,
-      title: "Atrasos (335)",
-      description: `${fmt(totalAtrasosConsol)} registrados`,
-      date: `${publicadas.length} prévias publicadas`,
-      iconClassName: "text-orange-500",
-      titleClassName: "text-orange-400",
-      className: "[grid-area:stack] translate-x-32 translate-y-20 hover:translate-y-10",
-    },
-  ];
-
   return (
     <>
-      {/* ── Hero: DisplayCards com stats reais ── */}
-      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8, paddingBottom: 56 }}>
-        <DisplayCards cards={heroCards} />
+      {/* ── KPIs Superiores ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 24 }}>
+        <KpiCard label="Prévias" value={publicadas.length} sub={`${secretarias.length} secretarias ativas`} cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
+        <KpiCard label="Ocorrências" value={fmt(totalOcorrConsol)} sub="acumuladas" cor="#f59e0b" icon={<TrendingUp />} isDark={isDark} />
+        <KpiCard label="Faltas" value={fmt(totalFaltasConsol)} sub={alertas > 0 ? `${alertas} alertas detectados` : 'Nenhum alerta'} cor="#ef4444" icon={<XCircle />} isDark={isDark} />
+        <KpiCard label="Atrasos" value={fmt(totalAtrasosConsol)} sub="registrados" cor="#ea580c" icon={<Timer />} isDark={isDark} />
       </div>
 
-      {/* ── Divider ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-        <div style={{ flex: 1, height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
-        <span style={{ fontSize: 10, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
-          Selecione uma secretaria
-        </span>
-        <div style={{ flex: 1, height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
-      </div>
-
-      {/* ── Card consolidado ── */}
+      {/* ── Banner Consolidado ── */}
       <button
         onClick={() => onSelect('consolidado')}
-        className="sec-card chart-card"
         style={{
-          '--sec-color': '#0D7C3D',
-          display: 'block', width: '100%', marginBottom: 14, cursor: 'pointer',
-          textAlign: 'left', border: '1px solid rgba(13,124,61,.25)',
-          borderLeft: '4px solid #0D7C3D', padding: '16px 20px',
-          animationDelay: '0ms',
+          display: 'block', width: '100%', marginBottom: 32, cursor: 'pointer', textAlign: 'left',
+          background: 'linear-gradient(135deg, rgba(13,124,61,0.95), rgba(13,124,61,0.75))',
+          borderRadius: 20, padding: '24px 32px', color: '#fff',
+          boxShadow: '0 12px 32px rgba(13,124,61,0.25)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          position: 'relative', overflow: 'hidden'
         }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(13,124,61,0.35)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(13,124,61,0.25)'; }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 18 }}>📊</span>
+        <div style={{ position: 'absolute', top: -100, right: -50, width: 300, height: 300, background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ background: 'rgba(255,255,255,0.2)', padding: 14, borderRadius: 16, backdropFilter: 'blur(10px)' }}>
+              <TrendingUp size={28} color="#fff" />
+            </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#15A050' }}>Dashboard Consolidado</div>
-              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>Todas as secretarias · {publicadas.length} prévias</div>
+              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>Dashboard Consolidado</div>
+              <div style={{ fontSize: 14, opacity: 0.9, fontWeight: 500 }}>Visão geral e análises avançadas de todas as secretarias</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(13,124,61,.15)', color: '#15A050', fontSize: 11, fontWeight: 600 }}>
-              {secretarias.length} secretarias
-            </span>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             {alertas > 0 && (
-              <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(239,68,68,.15)', color: '#dc2626', fontSize: 11, fontWeight: 600 }}>
-                {alertas} alertas
+              <span style={{ padding: '6px 12px', borderRadius: 99, background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', fontSize: 13, fontWeight: 600, color: '#fca5a5' }}>
+                {alertas} Alertas
               </span>
             )}
+            <span style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, background: '#fff', color: '#0D7C3D', padding: '10px 20px', borderRadius: 99, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              Ver Análise <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
+            </span>
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>{fmt(totalOcorrConsol)}</span> ocorrências
-          </span>
-          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{fmt(totalFaltasConsol)}</span> faltas
-          </span>
-          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#c2410c', fontFamily: 'monospace' }}>{fmt(totalAtrasosConsol)}</span> atrasos
-          </span>
         </div>
       </button>
 
-      {/* ── Grid de secretarias com .sec-card ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 10 }}>
+      {/* ── Grid de Secretarias ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 16 }}>
         {secretarias.map((sec, idx) => {
           const periodosSorted = [...sec.periodos].sort((a, b) => b.competencia.localeCompare(a.competencia));
           const ultimo         = periodosSorted[0];
@@ -518,38 +484,47 @@ function SelectionGrid({ publicadas, onSelect }) {
             <button
               key={sec.codigo}
               onClick={() => onSelect(sec.codigo)}
-              className="sec-card chart-card"
               style={{
-                '--sec-color': sec.cor,
-                display: 'block', cursor: 'pointer', textAlign: 'left',
-                border: `1px solid ${sec.cor}20`,
-                borderLeft: `4px solid ${sec.cor}`,
-                padding: '14px 16px',
+                display: 'flex', flexDirection: 'column', cursor: 'pointer', textAlign: 'left',
+                background: 'var(--surface)', border: '1px solid var(--border-c)',
+                borderRadius: 16, padding: '18px 20px',
                 animationDelay: `${(idx + 1) * 35}ms`,
+                transition: 'all 0.2s',
+                position: 'relative', overflow: 'hidden',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = sec.cor; e.currentTarget.style.boxShadow = `0 8px 24px ${sec.cor}25`; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-c)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)'; e.currentTarget.style.transform = 'none'; }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: sec.cor, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{sec.numero} — {sec.sigla}</span>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: sec.cor }} />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <span style={{ width: 34, height: 34, borderRadius: '50%', background: `${sec.cor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sec.cor, fontSize: 12, fontWeight: 800 }}>
+                  {sec.numero}
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>{sec.sigla}</span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--muted-c)', marginBottom: 8 }}>
-                {sec.periodos.length} período{sec.periodos.length !== 1 ? 's' : ''}
-                {ultimo ? ` · último: ${formatarCompetencia(ultimo.competencia)}` : ''}
+              
+              <div style={{ fontSize: 24, fontWeight: 800, color: sec.cor, fontFamily: 'monospace', marginBottom: 4, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                {fmt(sec.totalOcorr)}<span style={{ fontSize: 11, fontWeight: 500, color: 'var(--muted-c)', marginLeft: 6, fontFamily: 'Inter' }}>ocorr.</span>
               </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: sec.cor, fontFamily: 'monospace', marginBottom: 4 }}>
-                {fmt(sec.totalOcorr)}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--muted-c)', marginLeft: 4 }}>ocorr.</span>
+              
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>{fmt(sec.totalFaltas)} F</span>
+                <span style={{ fontSize: 11, color: '#ea580c', fontWeight: 600 }}>{fmt(sec.totalAtrasos)} A</span>
               </div>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 10, color: '#dc2626' }}>{fmt(sec.totalFaltas)} F</span>
-                <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>·</span>
-                <span style={{ fontSize: 10, color: '#c2410c' }}>{fmt(sec.totalAtrasos)} A</span>
-              </div>
+              
               {total > 0 && (
-                <div style={{ height: 3, borderRadius: 2, background: 'rgba(0, 0, 0, 0.05)', overflow: 'hidden', display: 'flex' }}>
+                <div style={{ height: 4, borderRadius: 2, background: 'rgba(0, 0, 0, 0.05)', overflow: 'hidden', display: 'flex', marginBottom: 14 }}>
                   <div style={{ height: '100%', width: `${pctFaltas}%`, background: '#ef4444' }} />
                   <div style={{ height: '100%', flex: 1, background: '#f97316' }} />
                 </div>
               )}
+
+              <div style={{ fontSize: 11, color: 'var(--muted-c)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', fontWeight: 500 }}>
+                <span>{sec.periodos.length} per.</span>
+                <span>{ultimo ? formatarCompetencia(ultimo.competencia) : ''}</span>
+              </div>
             </button>
           );
         })}

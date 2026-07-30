@@ -83,17 +83,22 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: 'rgba(10,17,32,.97)', border: '1px solid rgba(0, 0, 0, 0.07)',
+      background: '#ffffff', border: '1px solid rgba(0, 0, 0, 0.1)',
       borderRadius: 10, padding: '10px 14px', fontSize: 12,
-      boxShadow: '0 8px 32px rgba(0,0,0,.6)',
+      boxShadow: '0 8px 32px rgba(0,0,0,.15)',
     }}>
-      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 8, fontSize: 11, letterSpacing: '.04em' }}>
+      <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: 8, fontSize: 11, letterSpacing: '.04em' }}>
         {label}
       </div>
       {payload.map((p, i) => (
-        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 20, padding: '2px 0' }}>
-          <span style={{ color: p.fill || p.color, fontWeight: 600 }}>{p.dataKey || p.name}</span>
-          <span style={{ color: 'var(--text)', fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>{fmt(p.value)}</span>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, padding: '2px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill || p.color }} />
+            <span style={{ color: '#334155', fontWeight: 600 }}>{p.dataKey || p.name}</span>
+          </div>
+          <span style={{ color: '#0f172a', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
+            {fmt(p.value)}
+          </span>
         </div>
       ))}
     </div>

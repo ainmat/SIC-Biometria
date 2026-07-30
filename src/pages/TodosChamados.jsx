@@ -150,7 +150,7 @@ export default function TodosChamados() {
           >
             <Upload size={14} /> Importar
           </button>
-          <div className="badge-live"><div className="status-dot" />AO VIVO</div>
+
           <TopbarAvatar />
         </div>
       </div>

@@ -181,10 +181,7 @@ export default function PainelChamados() {
           <p>{status}</p>
         </div>
         <div className="topbar-right">
-          <div className="badge-live">
-            <div className="status-dot" />
-            AO VIVO
-          </div>
+
           <TopbarAvatar />
         </div>
       </div>

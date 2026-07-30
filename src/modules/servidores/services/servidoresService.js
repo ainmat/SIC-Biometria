@@ -24,19 +24,35 @@ export async function fetchResumoServidores() {
     _resumoPromise = (async () => {
       try {
         const PAGE_SIZE = 1000;
-        let all = [];
-        let from = 0;
-        while (true) {
-          const { data, error } = await supabase
-            .from('funcionarios_infos')
-            .select(COLS_RESUMO)
-            .range(from, from + PAGE_SIZE - 1);
-          if (error) throw error;
-          if (!data || data.length === 0) break;
-          all = all.concat(data);
-          if (data.length < PAGE_SIZE) break;
-          from += PAGE_SIZE;
+        
+        // 1. Pegar o total de registros (1 requisição rápida)
+        const { count, error: countErr } = await supabase
+          .from('funcionarios_infos')
+          .select('*', { count: 'exact', head: true });
+          
+        if (countErr) throw countErr;
+        if (!count || count === 0) return [];
+        
+        // 2. Criar um array de promessas para baixar tudo em paralelo
+        const promises = [];
+        for (let i = 0; i < count; i += PAGE_SIZE) {
+          promises.push(
+            supabase
+              .from('funcionarios_infos')
+              .select(COLS_RESUMO)
+              .range(i, i + PAGE_SIZE - 1)
+          );
         }
+        
+        // 3. Executar todas as requisições simultaneamente
+        const results = await Promise.all(promises);
+        
+        let all = [];
+        for (const res of results) {
+          if (res.error) throw res.error;
+          if (res.data) all = all.concat(res.data);
+        }
+        
         _resumoCache = all;
         return all;
       } catch (e) {
@@ -84,21 +100,31 @@ export async function fetchServidorDetalhe(matricula) {
 export async function fetchOpcoesServidores() {
   const PAGE_SIZE = 1000;
   const sets = { Des_Secretaria: new Set(), Des_RegTrab: new Set(), Des_Padrao_Adm: new Set() };
-  let from = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from('funcionarios_infos')
-      .select('Des_Secretaria,Des_RegTrab,Des_Padrao_Adm')
-      .range(from, from + PAGE_SIZE - 1);
-    if (error) throw error;
-    if (!data || data.length === 0) break;
-    for (const r of data) {
-      if (r.Des_Secretaria) sets.Des_Secretaria.add(r.Des_Secretaria);
-      if (r.Des_RegTrab)    sets.Des_RegTrab.add(r.Des_RegTrab);
-      if (r.Des_Padrao_Adm) sets.Des_Padrao_Adm.add(r.Des_Padrao_Adm);
+  const { count } = await supabase
+    .from('funcionarios_infos')
+    .select('*', { count: 'exact', head: true });
+    
+  if (count) {
+    const promises = [];
+    for (let i = 0; i < count; i += PAGE_SIZE) {
+      promises.push(
+        supabase
+          .from('funcionarios_infos')
+          .select('Des_Secretaria,Des_RegTrab,Des_Padrao_Adm')
+          .range(i, i + PAGE_SIZE - 1)
+      );
     }
-    if (data.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
+    
+    const results = await Promise.all(promises);
+    for (const res of results) {
+      if (res.data) {
+        for (const r of res.data) {
+          if (r.Des_Secretaria) sets.Des_Secretaria.add(r.Des_Secretaria);
+          if (r.Des_RegTrab)    sets.Des_RegTrab.add(r.Des_RegTrab);
+          if (r.Des_Padrao_Adm) sets.Des_Padrao_Adm.add(r.Des_Padrao_Adm);
+        }
+      }
+    }
   }
   return {
     secretarias: [...sets.Des_Secretaria].sort(),

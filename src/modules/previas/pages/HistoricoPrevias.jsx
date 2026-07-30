@@ -1,8 +1,8 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Filter, Download, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, Download, RefreshCw, ChevronDown, ChevronUp, TrendingUp, XCircle, Timer, Activity } from 'lucide-react';
 import { SECRETARIAS, formatarCompetencia } from '@/modules/previas/constants';
-import { labelClassificacao, corClassificacao } from '@/modules/previas/utils/analise';
+import { labelClassificacao, corClassificacao, analisarComHistorico } from '@/modules/previas/utils/analise';
 import { fetchPublicadas } from '@/modules/previas/services/previasService';
 
 const ANOS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 4 + i).reverse();
@@ -190,29 +190,26 @@ export default function HistoricoPrevias() {
 
       <div className="content">
         {/* Filters */}
-        <div className="chart-card" style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 180 }}>
-              <Search size={14} color="#64748b" />
-              <input
-                value={busca}
-                onChange={e => setBusca(e.target.value)}
-                placeholder="Filtrar secretaria..."
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13 }}
-              />
-            </div>
-            <div style={{ width: 1, height: 20, background: 'rgba(0, 0, 0, 0.06)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Filter size={13} color="#64748b" />
-              <select
-                value={filtroAno}
-                onChange={e => setFiltroAno(e.target.value)}
-                style={{ background: 'var(--card-bg)', border: 'none', color: filtroAno ? '#1e293b' : '#64748b', fontSize: 12, outline: 'none' }}
-              >
-                <option value="">Todos os anos</option>
-                {ANOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
-              </select>
-            </div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 250, background: 'var(--surface)', padding: '12px 20px', borderRadius: 99, border: '1px solid var(--border-c)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <Search size={16} color="#64748b" />
+            <input
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              placeholder="Pesquisar secretaria por nome ou sigla..."
+              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 14, fontWeight: 500 }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface)', padding: '12px 20px', borderRadius: 99, border: '1px solid var(--border-c)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <Filter size={15} color="#64748b" />
+            <select
+              value={filtroAno}
+              onChange={e => setFiltroAno(e.target.value)}
+              style={{ background: 'transparent', border: 'none', color: filtroAno ? 'var(--text)' : '#64748b', fontSize: 13, fontWeight: 600, outline: 'none', cursor: 'pointer' }}
+            >
+              <option value="">Todos os anos</option>
+              {ANOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
+            </select>
           </div>
         </div>
 
@@ -235,41 +232,60 @@ export default function HistoricoPrevias() {
           </div>
         ) : (
           <>
-            {/* ── Consolidated overview card ── */}
+            {/* ── Consolidated overview banner ── */}
             <div
-              className="chart-card"
-              style={{ marginBottom: 16, borderLeft: '3px solid #0D7C3D' }}
+              style={{
+                display: 'flex', flexDirection: 'column', marginBottom: 32,
+                background: 'linear-gradient(135deg, rgba(13,124,61,0.95), rgba(13,124,61,0.75))',
+                borderRadius: 20, padding: '24px 32px', color: '#fff',
+                boxShadow: '0 12px 32px rgba(13,124,61,0.25)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                position: 'relative', overflow: 'hidden'
+              }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ position: 'absolute', top: -100, right: -50, width: 300, height: 300, background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+              
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, position: 'relative', zIndex: 1, flexWrap: 'wrap', gap: 16 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Visão Consolidada</div>
-                  {consolidado.primeiroPeriodo && (
-                    <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 3 }}>
-                      {formatarCompetencia(consolidado.primeiroPeriodo)}
-                      {' → '}
-                      {formatarCompetencia(consolidado.ultimoPeriodo)}
-                    </div>
-                  )}
+                  <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>Visão Consolidada do Histórico</div>
+                  <div style={{ fontSize: 14, opacity: 0.9, fontWeight: 500 }}>
+                    {consolidado.primeiroPeriodo 
+                      ? `Período analisado: ${formatarCompetencia(consolidado.primeiroPeriodo)} até ${formatarCompetencia(consolidado.ultimoPeriodo)}`
+                      : 'Nenhum período disponível'}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(13,124,61,.15)', color: '#15A050', fontSize: 11, fontWeight: 600 }}>
-                    {consolidado.secretariasAtivas} secretaria{consolidado.secretariasAtivas !== 1 ? 's' : ''}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ padding: '6px 14px', borderRadius: 99, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', fontSize: 13, fontWeight: 600 }}>
+                    {consolidado.secretariasAtivas} secretarias
                   </span>
-                  <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(0, 0, 0, 0.04)', color: 'var(--muted-c)', fontSize: 11, fontWeight: 600 }}>
+                  <span style={{ padding: '6px 14px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', fontSize: 13, fontWeight: 600 }}>
                     {consolidado.totalPrevias} prévias
                   </span>
                   {consolidado.alertas > 0 && (
-                    <span style={{ padding: '3px 9px', borderRadius: 6, background: 'rgba(239,68,68,.15)', color: '#dc2626', fontSize: 11, fontWeight: 600 }}>
-                      {consolidado.alertas} alerta{consolidado.alertas !== 1 ? 's' : ''}
+                    <span style={{ padding: '6px 14px', borderRadius: 99, background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: '#fca5a5', fontSize: 13, fontWeight: 600 }}>
+                      {consolidado.alertas} alertas
                     </span>
                   )}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <StatChip label="Ocorrências" value={consolidado.totalOcorrencias} color="#f59e0b" />
-                <StatChip label="Faltas"      value={consolidado.totalFaltas}      color="#ef4444" />
-                <StatChip label="Atrasos"     value={consolidado.totalAtrasos}     color="#f97316" />
-                <StatChip label="Servidores"  value={consolidado.totalServidores}  color="#10b981" />
+              
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+                <div style={{ flex: '1 1 200px', background: 'var(--surface)', borderRadius: 16, padding: '16px 20px', border: '1px solid var(--border-c)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={16} color="#f59e0b" /> Ocorrências Totais</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#f59e0b', fontFamily: 'monospace', letterSpacing: '-0.02em', lineHeight: 1 }}>{fmt(consolidado.totalOcorrencias)}</div>
+                </div>
+                <div style={{ flex: '1 1 200px', background: 'var(--surface)', borderRadius: 16, padding: '16px 20px', border: '1px solid var(--border-c)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><XCircle size={16} color="#ef4444" /> Faltas Acumuladas</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#ef4444', fontFamily: 'monospace', letterSpacing: '-0.02em', lineHeight: 1 }}>{fmt(consolidado.totalFaltas)}</div>
+                </div>
+                <div style={{ flex: '1 1 200px', background: 'var(--surface)', borderRadius: 16, padding: '16px 20px', border: '1px solid var(--border-c)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Timer size={16} color="#f97316" /> Atrasos Acumulados</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#f97316', fontFamily: 'monospace', letterSpacing: '-0.02em', lineHeight: 1 }}>{fmt(consolidado.totalAtrasos)}</div>
+                </div>
+                <div style={{ flex: '1 1 200px', background: 'var(--surface)', borderRadius: 16, padding: '16px 20px', border: '1px solid var(--border-c)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Activity size={16} color="#10b981" /> Servidores</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: '#10b981', fontFamily: 'monospace', letterSpacing: '-0.02em', lineHeight: 1 }}>{fmt(consolidado.totalServidores)}</div>
+                </div>
               </div>
             </div>
 
@@ -298,75 +314,105 @@ export default function HistoricoPrevias() {
                 return (
                   <div
                     key={sec.codigo}
-                    className="chart-card"
-                    style={{ padding: 0, overflow: 'hidden', borderLeft: `3px solid ${sec.cor}` }}
+                    style={{
+                      background: 'var(--surface)', borderRadius: 16, overflow: 'hidden',
+                      border: '1px solid var(--border-c)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                      transition: 'all 0.2s', position: 'relative'
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = sec.cor; e.currentTarget.style.boxShadow = `0 8px 24px ${sec.cor}20`; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-c)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)'; }}
                   >
+                    <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: sec.cor }} />
+
                     {/* Header — always visible */}
                     <button
                       onClick={() => toggleExpand(sec.codigo)}
                       style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '11px 16px', background: 'transparent', border: 'none',
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 16,
+                        padding: '16px 20px', background: 'transparent', border: 'none',
                         cursor: 'pointer', textAlign: 'left',
                       }}
                     >
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: sec.cor, flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
-                        {sec.numero} — {sec.sigla || sec.codigo}
+                      <span style={{ width: 36, height: 36, borderRadius: '50%', background: `${sec.cor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sec.cor, fontSize: 13, fontWeight: 800 }}>
+                        {sec.numero}
                       </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+                      <span style={{ flex: 1, fontSize: 16, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>
+                        {sec.sigla || sec.codigo}
+                      </span>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 500 }}>
                           {sec.periodos.length} período{sec.periodos.length !== 1 ? 's' : ''}
                           {ultimo ? ` · último: ${formatarCompetencia(ultimo.competencia)}` : ''}
                         </span>
-                        <PillTag value={`${fmt(totOcorr)} ocorr.`}   color="#f59e0b" />
-                        <PillTag value={`${fmt(totFaltas)} faltas`}   color="#ef4444" />
-                        <PillTag value={`${fmt(totAtrasos)} atrasos`} color="#f97316" />
-                        {aberta
-                          ? <ChevronUp   size={14} color="#64748b" />
-                          : <ChevronDown size={14} color="#64748b" />}
+                        
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <span style={{ padding: '4px 10px', borderRadius: 99, background: '#fef3c7', color: '#b45309', fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>
+                            {fmt(totOcorr)} ocorr.
+                          </span>
+                          <span style={{ padding: '4px 10px', borderRadius: 99, background: '#fee2e2', color: '#b91c1c', fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>
+                            {fmt(totFaltas)} F
+                          </span>
+                          <span style={{ padding: '4px 10px', borderRadius: 99, background: '#ffedd5', color: '#c2410c', fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>
+                            {fmt(totAtrasos)} A
+                          </span>
+                        </div>
+                        
+                        <div style={{ background: 'rgba(0,0,0,0.04)', padding: 6, borderRadius: 50 }}>
+                          {aberta
+                            ? <ChevronUp   size={16} color="#64748b" />
+                            : <ChevronDown size={16} color="#64748b" />}
+                        </div>
                       </div>
                     </button>
 
-                    {/* Periods table — visible when expanded */}
+                    {/* Periods list — visible when expanded */}
                     {aberta && (
-                      <div style={{ borderTop: '1px solid rgba(0, 0, 0, 0.04)', overflowX: 'auto' }}>
-                        <table style={{ width: '100%' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ paddingLeft: 32 }}>Competência</th>
-                              <th style={{ textAlign: 'right' }}>Ocorrências</th>
-                              <th style={{ textAlign: 'right' }}>Faltas</th>
-                              <th style={{ textAlign: 'right' }}>Atrasos</th>
-                              <th style={{ textAlign: 'right' }}>Servidores</th>
-                              <th style={{ textAlign: 'right' }}>Méd. Desc.</th>
-                              <th>Classificação</th>
-                              <th>Publicado em</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sec.periodos.map(d => (
-                              <tr key={d.id || d.competencia}>
-                                <td style={{ paddingLeft: 32, fontFamily: 'monospace', fontSize: 12, color: '#15A050' }}>
+                      <div style={{ borderTop: '1px solid var(--border-c)', background: 'var(--bg)', padding: '16px 20px' }}>
+                        
+                        {/* Table Header pseudo-grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 80px 80px 140px 100px', gap: 16, padding: '0 16px 12px 16px', fontSize: 11, fontWeight: 600, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          <div>Competência</div>
+                          <div style={{ textAlign: 'right' }}>Ocorrências</div>
+                          <div style={{ textAlign: 'right' }}>Faltas</div>
+                          <div style={{ textAlign: 'right' }}>Atrasos</div>
+                          <div style={{ textAlign: 'right' }}>Servidores</div>
+                          <div style={{ textAlign: 'right' }}>Méd. Desc.</div>
+                          <div>Classificação</div>
+                          <div style={{ textAlign: 'right' }}>Publicado em</div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {sec.periodos.map((d, i) => {
+                            const historicoPassado = sec.periodos.slice(i + 1);
+                            const analise = analisarComHistorico(d.total_ocorrencias, historicoPassado);
+                            const classificacaoFinal = analise.classificacao !== 'sem_historico' ? analise.classificacao : d.classificacao_alerta;
+                            
+                            return (
+                              <div key={d.id || d.competencia} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 80px 80px 140px 100px', gap: 16, alignItems: 'center', padding: '12px 16px', background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border-c)', transition: 'background 0.2s' }}>
+                                
+                                <div style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#15A050' }}>
                                   {formatarCompetencia(d.competencia)}
-                                </td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12 }}>{fmt(d.total_ocorrencias)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#dc2626' }}>{fmt(d.total_faltas || 0)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: '#c2410c' }}>{fmt(d.total_atrasos || 0)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12 }}>{fmt(d.servidores_impactados)}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: 'var(--muted-c)' }}>
+                                </div>
+                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 600 }}>{fmt(d.total_ocorrencias)}</div>
+                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#dc2626' }}>{fmt(d.total_faltas || 0)}</div>
+                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#ea580c' }}>{fmt(d.total_atrasos || 0)}</div>
+                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 600 }}>{fmt(d.servidores_impactados)}</div>
+                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: 'var(--muted-c)', fontWeight: 600 }}>
                                   {d.media_desconto != null ? `${d.media_desconto}%` : '—'}
-                                </td>
-                                <td><BadgeAlerta classificacao={d.classificacao_alerta} /></td>
-                                <td style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+                                </div>
+                                <div><BadgeAlerta classificacao={classificacaoFinal} /></div>
+                                <div style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 500, textAlign: 'right' }}>
                                   {d.data_publicacao
                                     ? new Date(d.data_publicacao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
                                     : '—'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                </div>
+                                
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
