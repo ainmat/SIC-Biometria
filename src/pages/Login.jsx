@@ -67,11 +67,11 @@ export default function Login() {
       {/* Partículas de fundo */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
         <SparklesCore
-          id="login-sparkles-active-green"
+          id={`login-sparkles-${Math.random()}`} // Força novo ID para ignorar cache do tsparticles
           background="transparent"
-          minSize={1.0}
-          maxSize={2.5}
-          particleDensity={70}
+          minSize={2.0}
+          maxSize={4.0}
+          particleDensity={80}
           particleColor="#0D7C3D"
           speed={0.4}
           className="w-full h-full"
