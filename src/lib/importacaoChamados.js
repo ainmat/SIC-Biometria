@@ -2,10 +2,38 @@ import * as XLSX from 'xlsx';
 import { supabase } from './supabase';
 import { GoogleGenAI } from '@google/genai';
 
-// Instancia o cliente do Gemini
-// A chave deve estar no arquivo .env (VITE_GEMINI_API_KEY)
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+let cachedAiClient = null;
+
+async function getAiClient() {
+  if (cachedAiClient) return cachedAiClient;
+  
+  // Tenta pegar do .env primeiro (desenvolvimento local)
+  let apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  
+  // Se não tiver no .env, busca no Supabase
+  if (!apiKey) {
+    try {
+      const { data, error } = await supabase
+        .from('configuracoes')
+        .select('valor')
+        .eq('chave', 'gemini_api_key')
+        .single();
+        
+      if (!error && data && data.valor) {
+        apiKey = data.valor;
+      }
+    } catch (e) {
+      console.warn('Aviso: falha ao buscar chave no banco de dados', e);
+    }
+  }
+
+  if (!apiKey) {
+    throw new Error('A chave de IA não foi encontrada no banco. Crie a tabela "configuracoes" no Supabase e insira a chave "gemini_api_key".');
+  }
+
+  cachedAiClient = new GoogleGenAI({ apiKey });
+  return cachedAiClient;
+}
 
 // Esquema JSON esperado pela LLM (Structured Outputs)
 const schema = {
@@ -71,9 +99,7 @@ export async function lerArquivoPlanilha(file) {
  * @param {Array<{titulo: string, descricao: string}>} chamadosLote 
  */
 async function classificarLoteLLM(chamadosLote, contextoEquipamentos = "") {
-  if (!ai) {
-    throw new Error('Chave VITE_GEMINI_API_KEY não configurada no arquivo .env');
-  }
+  const ai = await getAiClient();
 
   const prompt = chamadosLote.map((c, idx) => 
     `Chamado ${idx + 1}\nTítulo: ${c.titulo}\nDescrição: ${c.descricao}`

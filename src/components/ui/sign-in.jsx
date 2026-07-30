@@ -75,7 +75,8 @@ export const SignInPage = ({
                       name="email"
                       type={emailType}
                       placeholder={emailPlaceholder}
-                      className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none text-slate-800 placeholder-slate-400 font-medium"
+                      className="w-full text-sm p-4 rounded-2xl focus:outline-none placeholder-slate-400 font-medium"
+                      style={{ color: '#1E293B', WebkitTextFillColor: '#1E293B', backgroundColor: 'transparent' }}
                     />
                   </GlassInputWrapper>
                 </div>
@@ -89,7 +90,8 @@ export const SignInPage = ({
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder={passwordPlaceholder}
-                      className="w-full bg-transparent text-sm p-4 pr-12 rounded-2xl focus:outline-none text-slate-800 placeholder-slate-400 font-medium"
+                      className="w-full text-sm p-4 pr-12 rounded-2xl focus:outline-none placeholder-slate-400 font-medium"
+                      style={{ color: '#1E293B', WebkitTextFillColor: '#1E293B', backgroundColor: 'transparent' }}
                     />
                     <button
                       type="button"
