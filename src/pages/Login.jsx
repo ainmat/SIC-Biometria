@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { SignInPage } from '@/components/ui/sign-in';
-import { SparklesCore } from '@/components/ui/sparkles';
 import logoPrefeitura from '../../img/logo-prefeitura-osasco.png';
 import logoDarh from '../../img/logo-darh.png';
 
@@ -64,21 +63,7 @@ export default function Login() {
 
   return (
     <div style={{ position: 'relative', width: '100dvw', height: '100dvh', overflow: 'hidden', background: '#F5F7FA' }}>
-      {/* Partículas de fundo */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-        <SparklesCore
-          id={`login-sparkles-${Math.random()}`} // Força novo ID para ignorar cache do tsparticles
-          background="transparent"
-          minSize={2.0}
-          maxSize={4.0}
-          particleDensity={80}
-          particleColor="#0D7C3D"
-          speed={0.4}
-          className="w-full h-full"
-        />
-      </div>
-
-      {/* SignInPage acima das partículas */}
+      {/* SignInPage */}
       <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%' }}>
         <SignInPage
           title={
