@@ -22,13 +22,29 @@ export async function fetchChamados() {
     .select('*')
     .order('ticket', { ascending: false });
   if (error) throw error;
-  return (data || []).map((r) => ({
-    ...r,
-    ticket: sanitize(r.ticket),
-    unidade: sanitize(r.unidade),
-    problema: sanitize(r.problema),
-    responsavel: sanitize(r.responsavel),
-  }));
+  return (data || []).map((r) => {
+    let sec = sanitize(r.secretaria);
+    let und = sanitize(r.unidade);
+    const mot = sanitize(r.motivo);
+    
+    // Se for problema de sistema e não tiver secretaria/unidade identificada, atribui à ADVANCIS
+    const ehSistema = (mot === 'ESPELHO DE PONTO' || mot === 'CADASTRO');
+    const isNaoId = (s) => !s || s.toUpperCase() === 'NÃO IDENTIFICADO' || s.toUpperCase() === 'NAO IDENTIFICADO' || s.toUpperCase() === 'N/I';
+    
+    if (ehSistema) {
+      if (isNaoId(sec)) sec = 'ADVANCIS';
+      if (isNaoId(und)) und = 'ADVANCIS';
+    }
+
+    return {
+      ...r,
+      ticket: sanitize(r.ticket),
+      secretaria: sec,
+      unidade: und,
+      problema: sanitize(r.problema),
+      responsavel: sanitize(r.responsavel),
+    };
+  });
 }
 
 export async function fetchEquipamentos() {

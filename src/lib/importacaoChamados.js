@@ -63,11 +63,13 @@ const SYSTEM_INSTRUCTION = `Você é um assistente encarregado de classificar ch
 Analise a lista de chamados fornecida (onde cada um possui um ID interno da requisição, TÍTULO e DESCRIÇÃO).
 Para cada chamado, extraia os campos secretaria, unidade e motivo.
 
+ATENÇÃO: Se a secretaria ou unidade não puderem ser identificadas (ficariam como 'NÃO IDENTIFICADO'), E o problema relatado for referente a falhas no sistema/software (ex: erros no sistema, falhas no espelho de ponto, problemas de cadastro no sistema central), você DEVE preencher a secretaria e/ou unidade como 'ADVANCIS' em vez de 'NÃO IDENTIFICADO'.
+
 Retorne uma lista em JSON estrito contendo um objeto para cada chamado analisado, exatamente na mesma ordem em que foram enviados.
 A matriz JSON deve conter objetos com o formato:
 {
-  "secretaria": "Nome da Secretaria ou 'NÃO IDENTIFICADO'",
-  "unidade": "Nome do equipamento, escola ou unidade ou 'NÃO IDENTIFICADO'",
+  "secretaria": "Nome da Secretaria, 'ADVANCIS' (se falha de sistema sem secretaria), ou 'NÃO IDENTIFICADO'",
+  "unidade": "Nome do equipamento/unidade, 'ADVANCIS' (se falha de sistema sem unidade), ou 'NÃO IDENTIFICADO'",
   "motivo": "Categoria estrita. Escolha EXATAMENTE UMA destas quatro: EQUIPAMENTO, RECONHECIMENTO, ESPELHO DE PONTO, CADASTRO. Nenhuma outra é permitida."
 }`;
 
