@@ -26,8 +26,8 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const TOOLTIP_STYLE = {
   backgroundColor: 'rgba(17,24,39,.95)',
-  titleColor: '#1e293b',
-  bodyColor: '#64748b',
+  titleColor: '#f8fafc',
+  bodyColor: '#cbd5e1',
   borderColor: 'rgba(13,124,61,.3)',
   borderWidth: 1,
   padding: 10,

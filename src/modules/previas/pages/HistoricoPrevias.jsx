@@ -140,22 +140,29 @@ export default function HistoricoPrevias() {
   };
 
   const exportarCSV = () => {
-    const headers = ['Secretaria','Competência','Publicado em','Ocorrências','Faltas','Atrasos','Servidores','Desc. Total','Méd. Desconto','Z-Score','Classificação'];
-    const rows = filtrados.map(d => [
-      d.secretaria_nome,
-      formatarCompetencia(d.competencia),
-      d.data_publicacao ? new Date(d.data_publicacao).toLocaleDateString('pt-BR') : '',
-      d.total_ocorrencias,
-      d.total_faltas || 0,
-      d.total_atrasos || 0,
-      d.servidores_impactados,
-      d.total_desconto_acumulado,
-      d.media_desconto,
-      d.z_score ?? '',
-      d.classificacao_alerta ?? '',
-    ]);
+    const headers = ['Secretaria','Competência','Publicado em','Ocorrências','Faltas','Atrasos','Servidores','Desc. Total','Var. Volume 3M','Z-Score','Classificação'];
+    const rows = filtrados.map(d => {
+      const historicoPassado = dados
+        .filter(x => x.secretaria_codigo === d.secretaria_codigo && x.competencia < d.competencia)
+        .sort((a, b) => b.competencia.localeCompare(a.competencia));
+      const analise = analisarComHistorico(d.total_ocorrencias, historicoPassado);
+      
+      return [
+        d.secretaria_nome,
+        formatarCompetencia(d.competencia),
+        d.data_publicacao ? new Date(d.data_publicacao).toLocaleDateString('pt-BR') : '',
+        d.total_ocorrencias,
+        d.total_faltas || 0,
+        d.total_atrasos || 0,
+        d.servidores_impactados,
+        d.total_desconto_acumulado,
+        analise.deltaPct3m != null ? `${analise.deltaPct3m > 0 ? '+' : ''}${analise.deltaPct3m}%` : '',
+        analise.zScore ?? d.z_score ?? '',
+        analise.classificacao !== 'sem_historico' ? analise.classificacao : (d.classificacao_alerta ?? ''),
+      ];
+    });
     const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url;
     a.download = `historico_previas_${new Date().toISOString().slice(0, 10)}.csv`;
@@ -365,7 +372,7 @@ export default function HistoricoPrevias() {
                           <div style={{ textAlign: 'right' }}>Faltas</div>
                           <div style={{ textAlign: 'right' }}>Atrasos</div>
                           <div style={{ textAlign: 'right' }}>Servidores</div>
-                          <div style={{ textAlign: 'right' }}>Méd. Desc.</div>
+                          <div style={{ textAlign: 'right' }}>Var. Vol.</div>
                           <div>Classificação</div>
                           <div style={{ textAlign: 'right' }}>Publicado em</div>
                         </div>
@@ -386,8 +393,8 @@ export default function HistoricoPrevias() {
                                 <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#dc2626' }}>{fmt(d.total_faltas || 0)}</div>
                                 <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#ea580c' }}>{fmt(d.total_atrasos || 0)}</div>
                                 <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 13, fontWeight: 600 }}>{fmt(d.servidores_impactados)}</div>
-                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: 'var(--muted-c)', fontWeight: 600 }}>
-                                  {d.media_desconto != null ? `${d.media_desconto}%` : '—'}
+                                <div style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: 12, color: analise.deltaPct3m != null ? (analise.deltaPct3m > 0 ? '#ef4444' : (analise.deltaPct3m < 0 ? '#10b981' : 'var(--muted-c)')) : 'var(--muted-c)', fontWeight: 600 }}>
+                                  {analise.deltaPct3m != null ? `${analise.deltaPct3m > 0 ? '+' : ''}${analise.deltaPct3m}%` : '—'}
                                 </div>
                                 <div><BadgeAlerta classificacao={classificacaoFinal} /></div>
                                 <div style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 500, textAlign: 'right' }}>

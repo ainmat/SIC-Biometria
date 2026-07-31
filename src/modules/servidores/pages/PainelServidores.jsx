@@ -58,8 +58,8 @@ const shortName = (name) => {
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#ffffff', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: 10, padding: '8px 14px', fontSize: 12, boxShadow: '0 8px 32px rgba(0,0,0,.15)' }}>
-      <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>{label}</div>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, padding: '8px 14px', fontSize: 12, boxShadow: '0 8px 32px rgba(0,0,0,.15)' }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill || p.color }} />

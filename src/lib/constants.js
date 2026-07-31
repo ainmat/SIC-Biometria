@@ -21,8 +21,8 @@ export const CATEGORIAS_MOTIVO = ['EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE P
 
 export const CHART_DEFAULTS = {
   backgroundColor: 'rgba(17, 24, 39, 0.95)',
-  titleColor: '#1e293b',
-  bodyColor: '#64748b',
+  titleColor: '#f8fafc',
+  bodyColor: '#cbd5e1',
   borderColor: 'rgba(13, 124, 61, 0.3)',
   borderWidth: 1,
   padding: 12,

@@ -83,11 +83,11 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: '#ffffff', border: '1px solid rgba(0, 0, 0, 0.1)',
+      background: 'var(--surface)', border: '1px solid var(--border-c)',
       borderRadius: 10, padding: '10px 14px', fontSize: 12,
       boxShadow: '0 8px 32px rgba(0,0,0,.15)',
     }}>
-      <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: 8, fontSize: 11, letterSpacing: '.04em' }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 8, fontSize: 11, letterSpacing: '.04em' }}>
         {label}
       </div>
       {payload.map((p, i) => (

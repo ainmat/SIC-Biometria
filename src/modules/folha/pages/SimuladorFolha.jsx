@@ -53,8 +53,8 @@ function HistTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
-    <div style={{ background: 'rgba(15,23,42,.96)', border: '1px solid rgba(13,124,61,.3)', borderRadius: 8, padding: '10px 14px', fontSize: 11 }}>
-      <div style={{ fontWeight: 700, color: '#15A050', marginBottom: 6 }}>{label}</div>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 8, padding: '10px 14px', fontSize: 11, boxShadow: '0 4px 16px rgba(0,0,0,.08)' }}>
+      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{label}</div>
       <div style={{ color: '#dc2626' }}>Faltas: <strong>{d?.faltas ?? 0}</strong></div>
       <div style={{ color: '#f59e0b' }}>Atr. &lt;1h: <strong>{d?.atrasos_fracao ?? 0}</strong></div>
       <div style={{ color: '#f97316' }}>Atr. ≥1h: <strong>{d?.atrasos_dia ?? 0}</strong></div>
