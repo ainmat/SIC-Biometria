@@ -4,6 +4,7 @@ import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, Arro
 import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo } from '../services/protocoloService';
 import { lerArquivoXLS, processarLinhasPlanilha } from '../utils/processarProtocoloXLS';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const STATUS_OPCOES = ['Aberto', 'Em Análise', 'Concluído'];
 const SECRETARIAS = ['Administração', 'Saúde', 'Educação', 'Finanças', 'Obras', 'Outros'];
@@ -14,14 +15,6 @@ const TIPOS = [
   'Licença Prêmio',
   'Opção por Acúmulo de Cargo',
   'Outros'
-];
-
-const OPERADORES = [
-  'Mateus Carvalho',
-  'Cassia Fernanda',
-  'Catarina Rodrigues',
-  'Luiz Marcio',
-  'Vinicius Reis'
 ];
 
 const CORES_STATUS = {
@@ -260,6 +253,24 @@ export default function ConsultaProtocolo() {
   const [erro, setErro] = useState('');
   const [modal, setModal] = useState(null);
   const [modalImportar, setModalImportar] = useState(false);
+  const [operadores, setOperadores] = useState([]);
+
+  useEffect(() => {
+    async function fetchOperadores() {
+      try {
+        const { data, error } = await supabase.rpc('listar_usuarios_rpc', { p_token: sessao?.token });
+        if (!error && data) {
+          const ops = data.filter(u => 
+            u.ativo && 
+            u.role !== 'viewer' && 
+            !u.nome.toLowerCase().includes('teste')
+          );
+          setOperadores(ops.map(u => u.nome));
+        }
+      } catch (e) {}
+    }
+    if (sessao) fetchOperadores();
+  }, [sessao]);
 
   // Abas estilo Asana (Todos vs Meus)
   const [abaAtiva, setAbaAtiva] = useState('todos'); // 'todos' ou 'meus'
@@ -372,17 +383,6 @@ export default function ConsultaProtocolo() {
           >
             <Upload size={14} />
             Importar Planilha
-          </button>
-          <button
-            onClick={carregar}
-            title="Atualizar"
-            style={{
-              padding: 8, borderRadius: 8,
-              background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
-              color: 'var(--muted-c)', cursor: 'pointer', display: 'flex', alignItems: 'center'
-            }}
-          >
-            <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
           </button>
           <TopbarAvatar />
         </div>
@@ -649,30 +649,67 @@ export default function ConsultaProtocolo() {
                       {/* Responsável (Estilo Asana com Bloqueio de Teammates) */}
                       <td style={{ padding: '14px 18px' }} onClick={e => e.stopPropagation()}>
                         {editingRespId === p.id ? (
-                          <select
-                            value={p.responsavel || ''}
-                            onChange={async (e) => {
-                              const nv = e.target.value || null;
-                              setEditingRespId(null);
-                              try {
-                                await atualizarProtocolo(p.id, { responsavel: nv });
-                                carregar();
-                              } catch (err) {
-                                alert('Erro ao atualizar responsável: ' + err.message);
-                              }
-                            }}
-                            onBlur={() => setEditingRespId(null)}
-                            autoFocus
-                            style={{
-                              padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
-                              border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
-                            }}
-                          >
-                            <option value="">Ninguém</option>
-                            {OPERADORES.map(op => (
-                              <option key={op} value={op}>{op}</option>
-                            ))}
-                          </select>
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <div
+                              style={{
+                                padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                                border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12,
+                                display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+                                minWidth: 120
+                              }}
+                            >
+                              {p.responsavel || 'Ninguém'}
+                            </div>
+                            <div
+                              style={{
+                                position: 'absolute', top: '100%', left: 0, zIndex: 9999,
+                                background: 'var(--surface)', border: '1px solid var(--border-c)',
+                                borderRadius: 8, padding: 4, minWidth: 200,
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                                display: 'flex', flexDirection: 'column', gap: 2,
+                                marginTop: 4, maxHeight: 200, overflowY: 'auto'
+                              }}
+                            >
+                              <div
+                                onClick={async () => {
+                                  setEditingRespId(null);
+                                  try {
+                                    await atualizarProtocolo(p.id, { responsavel: null });
+                                    carregar();
+                                  } catch (err) { alert('Erro ao atualizar responsável: ' + err.message); }
+                                }}
+                                style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 6, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                Ninguém
+                              </div>
+                              {operadores.map(op => (
+                                <div
+                                  key={op}
+                                  onClick={async () => {
+                                    setEditingRespId(null);
+                                    try {
+                                      await atualizarProtocolo(p.id, { responsavel: op });
+                                      carregar();
+                                    } catch (err) { alert('Erro ao atualizar responsável: ' + err.message); }
+                                  }}
+                                  style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 6, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}
+                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                >
+                                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {obterIniciais(op)}
+                                  </div>
+                                  {op}
+                                </div>
+                              ))}
+                            </div>
+                            <div 
+                              style={{ position: 'fixed', inset: 0, zIndex: 9998 }} 
+                              onClick={(e) => { e.stopPropagation(); setEditingRespId(null); }}
+                            />
+                          </div>
                         ) : p.responsavel ? (
                           (p.responsavel === meuNome || isMaster) ? (
                             <div 

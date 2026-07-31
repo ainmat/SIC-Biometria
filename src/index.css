@@ -350,6 +350,8 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
+  min-width: 0;
 }
 
 /* ── Topbar ─────────────────────────────────────────────────────────────────── */
@@ -389,12 +391,6 @@ body {
   text-transform: uppercase;
 }
 
-.avatar {
-  height: 34px; width: 110px;
-  border-radius: 6px;
-  background: url('/logo-prefeitura-osasco.png') center/contain no-repeat;
-  font-size: 0;
-}
 
 /* ── Content ────────────────────────────────────────────────────────────────── */
 .content { padding: 24px 32px 48px; }
