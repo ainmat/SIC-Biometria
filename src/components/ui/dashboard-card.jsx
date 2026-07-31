@@ -54,7 +54,7 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
   const accentBrd = accentRgb ? `rgba(${accentRgb},0.25)` : 'rgba(13,124,61,0.25)';
 
   return (
-    <div style={{
+    <div className="kpi-card" style={{
       background:    t.card,
       border:        `1px solid ${t.border}`,
       borderRadius:  18,
@@ -77,7 +77,7 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
       }} />
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.muted }}>
+        <span className="text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.muted }}>
           {label}
         </span>
         {icon && (
@@ -92,7 +92,7 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
       </div>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-        <span style={{ fontSize: 28, fontWeight: 800, color: t.text, letterSpacing: '-0.02em', lineHeight: 1 }}>
+        <span className="text-primary" style={{ fontSize: 28, fontWeight: 800, color: t.text, letterSpacing: '-0.02em', lineHeight: 1 }}>
           {value}
         </span>
         {trend && trendLabel && (
@@ -136,7 +136,7 @@ export function ChartCard({ title, subtitle, badge, icon, actions, children, isD
   const t = useDashboardTheme(isDark);
 
   return (
-    <div style={{
+    <div className="chart-card" style={{
       background:    t.card,
       border:        `1px solid ${t.border}`,
       borderRadius:  18,
@@ -154,8 +154,8 @@ export function ChartCard({ title, subtitle, badge, icon, actions, children, isD
             </div>
           )}
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: t.text, lineHeight: 1.3 }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 11, color: t.muted, marginTop: 2 }}>{subtitle}</div>}
+            <div className="text-primary" style={{ fontSize: 13, fontWeight: 700, color: t.text, lineHeight: 1.3 }}>{title}</div>
+            {subtitle && <div className="text-muted" style={{ fontSize: 11, color: t.muted, marginTop: 2 }}>{subtitle}</div>}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

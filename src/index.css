@@ -759,10 +759,12 @@ input::placeholder, textarea::placeholder { color: rgba(100,116,139,.5); }
   .no-print { display: none !important; }
 
   /* Sidebar visível na impressão */
-  .sidebar { background: #fff !important; border-right: 1px solid #e2e8f0 !important; }
+  .sidebar { }
 
   /* Layout forçado para bloco (o #root já está como block abaixo) */
-  .layout { display: block !important; background: #fff !important; }
+  .layout { display: block !important; }
+
+
 
   /* Sem alturas fixas que criam espaços negros e problemas de quebra */
   body, html, #root, .main, .content {
@@ -770,20 +772,16 @@ input::placeholder, textarea::placeholder { color: rgba(100,116,139,.5); }
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
-    background: #fff !important;
   }
 
   /* Conteúdo principal ocupa a página inteira */
   .main   { padding: 0 !important; }
   .content { padding: 8px 0 0 !important; }
 
-  /* Limpeza de fundos pesados e sombras */
+  /* Limpeza de fundos pesados e sombras (sem forçar bg branco para manter o dark mode) */
   .kpi-card, .chart-card, .table-card, .dash-card, .sec-card {
     box-shadow: none !important;
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
   }
-
   /* Topbar compacta */
   .topbar {
     padding: 8px 0 12px !important;
