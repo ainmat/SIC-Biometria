@@ -50,7 +50,7 @@ export async function fetchChamados() {
 export async function fetchEquipamentos() {
   const { data, error } = await supabase
     .from('equipamentos')
-    .select('id, codigo, nome, ip_equipamento, secretaria, modulo, fabricante')
+    .select('id, codigo, nome, ip_equipamento, secretaria, modulo, fabricante, endereco, cep, latitude, longitude')
     .order('codigo', { ascending: true });
   if (error) throw error;
   return data || [];

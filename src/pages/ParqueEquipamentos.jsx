@@ -74,7 +74,7 @@ export default function ParqueEquipamentos() {
   const filtrado = dados.filter((eq) => {
     const q = busca.toLowerCase();
     const matchBusca = !busca || [
-      String(eq.codigo), eq.nome, eq.ip_equipamento, eq.secretaria, eq.fabricante, String(eq.modulo),
+      String(eq.codigo), eq.nome, eq.ip_equipamento, eq.secretaria, eq.fabricante, String(eq.modulo), eq.endereco, eq.cep,
     ].some((v) => v?.toLowerCase().includes(q));
     const matchFab =
       fabricanteFilter === 'Todos' ||
@@ -149,6 +149,8 @@ export default function ParqueEquipamentos() {
                 <th>Nome do Equipamento</th>
                 <th>IP do Equipamento</th>
                 <th style={{ textAlign: 'center' }}>Secretaria</th>
+                <th>Endereço</th>
+                <th>CEP</th>
                 <th style={{ textAlign: 'center' }}>Módulo</th>
                 <th style={{ textAlign: 'center' }}>Fabricante</th>
               </tr>
@@ -156,7 +158,7 @@ export default function ParqueEquipamentos() {
             <tbody>
               {filtrado.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--muted-c)' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--muted-c)' }}>
                     Nenhum equipamento encontrado.
                   </td>
                 </tr>
@@ -180,6 +182,12 @@ export default function ParqueEquipamentos() {
                     </td>
                     <td style={{ textAlign: 'center', fontSize: 11 }}>
                       {eq.secretaria || '—'}
+                    </td>
+                    <td style={{ fontSize: 11, color: 'var(--text)' }}>
+                      {eq.endereco || '—'}
+                    </td>
+                    <td style={{ fontSize: 11, color: 'var(--text)' }}>
+                      {eq.cep || '—'}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <Badge style={moduloBadge(eq.modulo)} />

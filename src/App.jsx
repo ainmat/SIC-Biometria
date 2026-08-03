@@ -9,6 +9,7 @@ import TodosChamados from '@/pages/TodosChamados';
 import AnaliseTendencias from '@/pages/AnaliseTendencias';
 import ChamadoDetalhe from '@/pages/ChamadoDetalhe';
 import ParqueEquipamentos from '@/pages/ParqueEquipamentos';
+import MapaEquipamentos from '@/pages/MapaEquipamentos';
 import UnidadesMultiplosChamados from '@/pages/UnidadesMultiplosChamados';
 
 // Prévias de Frequência
@@ -70,6 +71,7 @@ export default function App() {
         <Route path="analise-tendencias" element={<AnaliseTendencias />} />
         <Route path="chamado-detalhe" element={<ChamadoDetalhe />} />
         <Route path="parque-equipamentos" element={<ParqueEquipamentos />} />
+        <Route path="mapa-equipamentos" element={<MapaEquipamentos />} />
         <Route path="unidades-multiplos-chamados" element={<UnidadesMultiplosChamados />} />
 
         {/* Prévias de Frequência */}
