@@ -23,6 +23,7 @@ import DashboardFolha from '@/modules/folha/pages/DashboardFolha';
 import SimuladorFolha from '@/modules/folha/pages/SimuladorFolha';
 import ComparativoFolha from '@/modules/folha/pages/ComparativoFolha';
 import ConferenciaFolha from '@/modules/folha/pages/ConferenciaFolha';
+import MapaDescontos    from '@/modules/folha/pages/MapaDescontos';
 import GerenciarUsuarios from '@/modules/admin/pages/GerenciarUsuarios';
 
 // Servidores
@@ -91,6 +92,7 @@ export default function App() {
           <Route path="simulador" element={<SimuladorFolha />} />
           <Route path="comparativo" element={<ComparativoFolha />} />
           <Route path="conferencia" element={<ConferenciaFolha />} />
+          <Route path="mapa" element={<MapaDescontos />} />
         </Route>
 
         {/* Servidores */}

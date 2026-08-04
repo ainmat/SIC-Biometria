@@ -8,32 +8,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Network, MapPin } from 'lucide-react';
 
-// Ícone premium (SVG embutido) menor
+// Ícone premium (Pino Estilo Card Airbnb com o Coletor Gigante)
 const premiumIcon = new L.divIcon({
   className: 'custom-div-icon',
   html: `
-    <div style="
-      background-color: #0D7C3D;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      border: 2px solid white;
-      box-shadow: 0 3px 5px rgba(0,0,0,0.3);
-    ">
-      <div style="transform: rotate(45deg); color: white;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; width: 48px; height: 60px;">
+      <!-- Sombra da base -->
+      <div style="position: absolute; bottom: -2px; width: 20px; height: 6px; background: rgba(0,0,0,0.5); border-radius: 50%; filter: blur(3px);"></div>
+      <!-- Card Branco do Coletor -->
+      <div style="width: 44px; height: 50px; background: white; border: 2.5px solid #0D7C3D; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 2; overflow: hidden; position: relative;">
+         <!-- Fundo em degradê para dar destaque à maquininha preta -->
+         <div style="position: absolute; inset: 0; background: radial-gradient(circle, #ffffff 0%, #e2e8f0 100%);"></div>
+         <!-- Imagem do Coletor (Aumentada em 3x) -->
+         <img src="/Coletor.png" style="width: 32px; height: 42px; object-fit: contain; z-index: 1; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));" />
       </div>
+      <!-- Triângulo apontador do Pino -->
+      <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #0D7C3D; margin-top: -2px; z-index: 1;"></div>
     </div>
   `,
-  iconSize: [24, 24],
-  iconAnchor: [12, 24],
-  popupAnchor: [0, -24],
+  iconSize: [48, 60],
+  iconAnchor: [24, 60],
+  popupAnchor: [0, -60],
 });
-
 // Função para gerar coordenadas em Osasco baseadas no nome (distribuição uniforme)
 function getMockCoords(eq) {
   let seed = 0;
@@ -206,63 +202,84 @@ export default function MapaEquipamentos() {
                 showCoverageOnHover={false}
                 maxClusterRadius={60}
               >
-                {dados.map(eq => {
-                  const lat = eq.latitude || getMockCoords(eq)[0];
-                  const lng = eq.longitude || getMockCoords(eq)[1];
+                {(() => {
+                  const markers = [];
+                  let mockIdCounter = 10000;
                   
-                  const n = normalize(eq.nome);
-                  let unitChamados = [];
-                  for (const [key, val] of Object.entries(unitTickets)) {
-                    if (n.includes(key) || key.includes(n)) {
-                      unitChamados = [...unitChamados, ...val];
+                  for (const [unitKey, tickets] of Object.entries(unitTickets)) {
+                    const eq = dados.find(e => {
+                      const n = normalize(e.nome);
+                      return n.includes(unitKey) || unitKey.includes(n);
+                    });
+                    
+                    let lat, lng, title, id;
+                    
+                    if (eq) {
+                      lat = eq.latitude || getMockCoords(eq)[0];
+                      lng = eq.longitude || getMockCoords(eq)[1];
+                      title = tickets[0]?.unidade || eq.nome;
+                      id = `unit-eq-${eq.id}-${unitKey}`;
+                    } else {
+                      mockIdCounter++;
+                      const mockEq = { nome: tickets[0]?.unidade || unitKey, id: mockIdCounter };
+                      lat = getMockCoords(mockEq)[0];
+                      lng = getMockCoords(mockEq)[1];
+                      title = tickets[0]?.unidade || unitKey;
+                      id = `unit-mock-${mockIdCounter}`;
                     }
+                    
+                    markers.push({
+                      id,
+                      lat,
+                      lng,
+                      title,
+                      tickets,
+                      count: tickets.length
+                    });
                   }
                   
-                  const count = unitChamados.length;
-                  
-                  // No modo de conjuntos, exibimos apenas locais que tem chamados ativos
-                  if (count === 0) return null;
+                  return markers.map(marker => {
+                    let singleColor = '#0D7C3D';
+                    if (marker.count > 10) singleColor = '#f5a623';
+                    if (marker.count > 40) singleColor = '#ff4d4f';
 
-                  let singleColor = '#0D7C3D';
-                  if (count > 10) singleColor = '#f5a623';
-                  if (count > 40) singleColor = '#ff4d4f';
+                    const singleIcon = L.divIcon({
+                       html: `<div style="background-color: ${singleColor}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${marker.count}</div>`,
+                       className: 'custom-single-marker',
+                       iconSize: [30, 30],
+                    });
 
-                  const singleIcon = L.divIcon({
-                     html: `<div style="background-color: ${singleColor}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${count}</div>`,
-                     className: 'custom-single-marker',
-                     iconSize: [30, 30],
-                  });
-
-                  return (
-                    <Marker 
-                      key={eq.id} 
-                      position={[lat, lng]} 
-                      icon={singleIcon}
-                      ticketCount={count}
-                    >
-                      <Popup>
-                        <div style={{ fontFamily: 'Inter, sans-serif', minWidth: '240px' }}>
-                          <h3 style={{ margin: '0 0 4px 0', fontSize: 14, color: 'var(--text)' }}>{eq.nome}</h3>
-                          <p style={{ margin: '0 0 12px 0', fontSize: 12, fontWeight: 'bold', color: singleColor, borderBottom: '1px solid var(--border-c)', paddingBottom: '8px' }}>
-                            {count} {count === 1 ? 'chamado registrado' : 'chamados registrados'}
-                          </p>
-                          
-                          <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
-                            {unitChamados.map((c, i) => (
-                              <div key={i} style={{ background: 'var(--bg-c)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-c)', fontSize: '11px' }}>
-                                <strong style={{ display: 'block', color: 'var(--text)', marginBottom: '2px' }}>#{c.ticket} - {c.problema}</strong>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--muted-c)' }}>
-                                  <span>{c.responsavel || 'Sem atribuição'}</span>
-                                  <span>{c.data_abertura ? new Date(c.data_abertura).toLocaleDateString('pt-BR') : '—'}</span>
+                    return (
+                      <Marker 
+                        key={marker.id} 
+                        position={[marker.lat, marker.lng]} 
+                        icon={singleIcon}
+                        ticketCount={marker.count}
+                      >
+                        <Popup>
+                          <div style={{ fontFamily: 'Inter, sans-serif', minWidth: '240px' }}>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: 14, color: 'var(--text)' }}>{marker.title}</h3>
+                            <p style={{ margin: '0 0 12px 0', fontSize: 12, fontWeight: 'bold', color: singleColor, borderBottom: '1px solid var(--border-c)', paddingBottom: '8px' }}>
+                              {marker.count} {marker.count === 1 ? 'chamado registrado' : 'chamados registrados'}
+                            </p>
+                            
+                            <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                              {marker.tickets.map((c, i) => (
+                                <div key={i} style={{ background: 'var(--bg-c)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-c)', fontSize: '11px' }}>
+                                  <strong style={{ display: 'block', color: 'var(--text)', marginBottom: '2px' }}>#{c.ticket} - {c.problema}</strong>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--muted-c)' }}>
+                                    <span>{c.responsavel || 'Sem atribuição'}</span>
+                                    <span>{c.data_abertura ? new Date(c.data_abertura).toLocaleDateString('pt-BR') : '—'}</span>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  );
-                })}
+                        </Popup>
+                      </Marker>
+                    );
+                  });
+                })()}
               </MarkerClusterGroup>
             ) : (
               dados.map(eq => {

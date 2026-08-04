@@ -252,3 +252,23 @@ export async function fetchConferencia({ competencia, secretaria = null }) {
     atrasos_dia_folha:    Number(r.atrasos_dia_folha    || 0),
   }));
 }
+
+export async function fetchFolhaDescontos(competencia) {
+  if (!competencia) return [];
+  const { data, error } = await supabase
+    .from('folha_previas')
+    .select('unidade, matricula, nome, faltas, atrasos_fracao, atrasos_dia, dsr, secretaria_sigla')
+    .eq('competencia', competencia)
+    .or('faltas.gt.0,atrasos_fracao.gt.0,atrasos_dia.gt.0,dsr.gt.0')
+    .limit(MAX_ROWS);
+  if (error) throw error;
+  
+  return (data || []).map(r => ({
+    ...r,
+    faltas: Number(r.faltas || 0),
+    atrasos_fracao: Number(r.atrasos_fracao || 0),
+    atrasos_dia: Number(r.atrasos_dia || 0),
+    dsr: Number(r.dsr || 0),
+    totalOcorrencias: Number(r.faltas || 0) + Number(r.atrasos_fracao || 0) + Number(r.atrasos_dia || 0)
+  }));
+}

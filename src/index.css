@@ -1,4 +1,21 @@
 @import "tailwindcss";
+
+/* -------------------------------------------------------------------------- */
+/* CORREÇÃO DO LEAFLET (MAPA) PARA DARK MODE                                  */
+/* -------------------------------------------------------------------------- */
+.dark .leaflet-layer,
+.dark .leaflet-control-zoom-in,
+.dark .leaflet-control-zoom-out,
+.dark .leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: var(--surface);
+  color: var(--text);
+}
+
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:where(.dark, .dark *));
