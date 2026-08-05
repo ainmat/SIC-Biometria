@@ -9,7 +9,7 @@ import {
   fetchCompetencias,
   fetchSecretariasDaCompetencia,
   fetchUnidadesDaCompetencia,
-  fetchServidoresDaUnidade,
+  fetchServidoresDaCompetencia,
   fetchEvolucaoServidor,
 } from '@/modules/folha/services/folhaService';
 import { fmtCompetencia } from '@/modules/folha/constants';
@@ -112,10 +112,10 @@ export default function SimuladorFolha() {
   }, [selComp, selSec]);
 
   useEffect(() => {
-    if (!selComp || !selUnd) { setServidores([]); setSelMat(''); return; }
-    fetchServidoresDaUnidade(selComp, selUnd).then(setServidores).catch(console.error);
+    if (!selComp) { setServidores([]); setSelMat(''); return; }
+    fetchServidoresDaCompetencia(selComp).then(setServidores).catch(console.error);
     setSelMat('');
-  }, [selComp, selUnd]);
+  }, [selComp]);
 
   // P09 — carregar histórico longitudinal quando servidor é selecionado
   useEffect(() => {
@@ -124,6 +124,8 @@ export default function SimuladorFolha() {
   }, [selMat]);
 
   const servidoresFiltrados = servidores.filter(s => {
+    if (selSec && s.secretaria !== selSec && s.secretaria_sigla !== selSec) return false;
+    if (selUnd && s.unidade !== selUnd) return false;
     if (!busca) return true;
     const q = busca.toLowerCase();
     return String(s.matricula).includes(q) || (s.nome || '').toLowerCase().includes(q);
@@ -178,7 +180,7 @@ export default function SimuladorFolha() {
               </select>
             </div>
 
-            <StepLabel n="2" label="Secretaria" done={!!selSec} />
+            <StepLabel n="2" label="Secretaria (Opcional)" done={!!selSec} />
             <div style={{ marginBottom: 16, marginLeft: 30 }}>
               <SearchSelect
                 value={selSec}
@@ -190,13 +192,13 @@ export default function SimuladorFolha() {
               />
             </div>
 
-            <StepLabel n="3" label="Unidade" done={!!selUnd} />
+            <StepLabel n="3" label="Unidade (Opcional)" done={!!selUnd} />
             <div style={{ marginBottom: 16, marginLeft: 30 }}>
               <SearchSelect
                 value={selUnd}
                 onChange={setSelUnd}
                 disabled={!selComp}
-                placeholder="Selecione a unidade..."
+                placeholder="Todas as unidades..."
                 minWidth="100%"
                 options={unidades.map(u => ({ value: u, label: u }))}
               />
@@ -209,13 +211,13 @@ export default function SimuladorFolha() {
                 placeholder="Buscar por nome ou matrícula..."
                 value={busca}
                 onChange={e => setBusca(e.target.value)}
-                disabled={!selUnd}
+                disabled={!selComp}
                 style={{ width: '100%', marginBottom: 8 }}
               />
               <div style={{ maxHeight: 220, overflowY: 'auto', borderRadius: 6, border: '1px solid rgba(0,0,0,.07)' }}>
-                {servidoresFiltrados.length === 0 && selUnd && (
+                {servidoresFiltrados.length === 0 && selComp && (
                   <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--muted-c)', textAlign: 'center' }}>
-                    {servidores.length === 0 ? 'Nenhum servidor nesta unidade' : 'Nenhum resultado'}
+                    {servidores.length === 0 ? 'Nenhum servidor encontrado' : 'Nenhum resultado'}
                   </div>
                 )}
                 {servidoresFiltrados.map(s => (

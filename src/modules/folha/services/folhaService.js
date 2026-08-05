@@ -214,6 +214,17 @@ export async function fetchServidoresDaUnidade(competencia, unidade) {
   return data || [];
 }
 
+export async function fetchServidoresDaCompetencia(competencia) {
+  const { data, error } = await supabase
+    .from('folha_previas')
+    .select('*')
+    .eq('competencia', competencia)
+    .order('nome')
+    .limit(15000);
+  if (error) throw error;
+  return data || [];
+}
+
 // P07 — Conferência Biômetro × Folha
 export async function listarFolhasImportadas() {
   const { data, error } = await supabase.rpc('get_competencias_folha');

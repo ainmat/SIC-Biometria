@@ -326,39 +326,7 @@ export default function MapaEquipamentos() {
                           <span>{eq.cep || '—'}</span>
                         </div>
 
-                        {(!isVisitor && (isAdmin || isMaster)) && (
-                          <div style={{ borderTop: '1px solid var(--border-c)', paddingTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                            {isEditing ? (
-                              <>
-                                <button 
-                                  onClick={() => setEditingId(null)}
-                                  style={{ flex: 1, padding: '6px 10px', fontSize: 11, background: 'transparent', border: '1px solid var(--border-c)', borderRadius: 4, cursor: 'pointer', color: 'var(--muted-c)' }}
-                                >
-                                  Cancelar
-                                </button>
-                                <button 
-                                  onClick={() => handleEditSave(eq.id)}
-                                  style={{ flex: 1, padding: '6px 10px', fontSize: 11, background: '#0D7C3D', border: 'none', borderRadius: 4, cursor: 'pointer', color: 'white', fontWeight: 600 }}
-                                >
-                                  Salvar Posição
-                                </button>
-                              </>
-                            ) : (
-                              <button 
-                                onClick={() => handleEditStart(eq, lat, lng)}
-                                style={{ width: '100%', padding: '6px 10px', fontSize: 11, background: 'var(--bg-c)', border: '1px solid var(--border-c)', borderRadius: 4, cursor: 'pointer', color: 'var(--text)', fontWeight: 500 }}
-                              >
-                                📍 Editar Localização
-                              </button>
-                            )}
-                          </div>
-                        )}
-                        
-                        {isEditing && (
-                          <div style={{ fontSize: 10, color: '#0D7C3D', marginTop: 8, textAlign: 'center', background: 'rgba(13, 124, 61, 0.1)', padding: '6px 4px', borderRadius: 4, fontWeight: 500 }}>
-                            Arraste este pino no mapa para ajustar.
-                          </div>
-                        )}
+
                       </div>
                     </Popup>
                   </Marker>
