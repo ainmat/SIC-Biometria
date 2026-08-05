@@ -13,7 +13,7 @@ export default defineConfig({
   ],
 
   root: '.',
-  base: './',
+  base: '/',
 
   resolve: {
     alias: {
