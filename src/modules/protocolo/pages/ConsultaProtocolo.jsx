@@ -281,6 +281,15 @@ export default function ConsultaProtocolo() {
   const [filtroSecretaria, setFiltroSecretaria] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
 
+  // Tipos dinâmicos + estáticos
+  const tiposDisponiveis = useMemo(() => {
+    const ts = new Set(TIPOS);
+    dados.forEach(d => {
+      if (d.tipo_demanda) ts.add(d.tipo_demanda);
+    });
+    return Array.from(ts).sort();
+  }, [dados]);
+
   // Ordenação (Estilo Excel/Asana)
   const [sortField, setSortField] = useState('data_abertura');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -461,7 +470,7 @@ export default function ConsultaProtocolo() {
               style={{ ...SEL, maxWidth: 220 }}
             >
               <option value="">Todos os tipos</option>
-              {TIPOS.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+              {tiposDisponiveis.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
             </select>
           </div>
 
