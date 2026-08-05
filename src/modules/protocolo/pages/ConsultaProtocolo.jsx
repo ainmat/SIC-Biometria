@@ -281,11 +281,10 @@ export default function ConsultaProtocolo() {
   const [filtroSecretaria, setFiltroSecretaria] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
 
-  // Tipos dinâmicos + estáticos
   const tiposDisponiveis = useMemo(() => {
     const ts = new Set(TIPOS);
     dados.forEach(d => {
-      if (d.tipo_demanda) ts.add(d.tipo_demanda);
+      if (d.tipo_solicitacao) ts.add(d.tipo_solicitacao);
     });
     return Array.from(ts).sort();
   }, [dados]);
