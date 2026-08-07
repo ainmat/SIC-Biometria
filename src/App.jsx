@@ -60,28 +60,35 @@ function RequireMaster({ children }) {
   return isMaster ? children : <Navigate to="/" replace />;
 }
 
+function BlockApoio({ children }) {
+  const { isApoio } = useAuth();
+  return isApoio ? <Navigate to="/folha/dashboard" replace /> : children;
+}
+
 export default function App() {
+  const { isApoio } = useAuth();
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
 
       <Route element={<RequireAuth><Layout /></RequireAuth>}>
         {/* Equipamentos e Chamados */}
-        <Route index element={<PainelChamados />} />
-        <Route path="todos-chamados" element={<TodosChamados />} />
-        <Route path="analise-tendencias" element={<AnaliseTendencias />} />
-        <Route path="chamado-detalhe" element={<ChamadoDetalhe />} />
-        <Route path="parque-equipamentos" element={<ParqueEquipamentos />} />
-        <Route path="mapa-equipamentos" element={<MapaEquipamentos />} />
-        <Route path="unidades-multiplos-chamados" element={<UnidadesMultiplosChamados />} />
+        <Route index element={isApoio ? <Navigate to="/folha/dashboard" replace /> : <PainelChamados />} />
+        <Route path="todos-chamados" element={<BlockApoio><TodosChamados /></BlockApoio>} />
+        <Route path="analise-tendencias" element={<BlockApoio><AnaliseTendencias /></BlockApoio>} />
+        <Route path="chamado-detalhe" element={<BlockApoio><ChamadoDetalhe /></BlockApoio>} />
+        <Route path="parque-equipamentos" element={<BlockApoio><ParqueEquipamentos /></BlockApoio>} />
+        <Route path="mapa-equipamentos" element={<BlockApoio><MapaEquipamentos /></BlockApoio>} />
+        <Route path="unidades-multiplos-chamados" element={<BlockApoio><UnidadesMultiplosChamados /></BlockApoio>} />
 
         {/* Prévias de Frequência */}
         <Route path="previas">
-          <Route index element={<Navigate to="simulador" replace />} />
-          <Route path="simulador" element={<SimuladorPrevia />} />
+          <Route index element={isApoio ? <Navigate to="historico" replace /> : <Navigate to="simulador" replace />} />
+          <Route path="simulador" element={<BlockApoio><SimuladorPrevia /></BlockApoio>} />
           <Route path="historico" element={<HistoricoPrevias />} />
           <Route path="bi" element={<BiPrevias />} />
-          <Route path="ponto" element={<Navigate to="/previas/simulador" replace />} />
+          <Route path="ponto" element={<Navigate to="/previas/historico" replace />} />
         </Route>
 
         {/* Folha de Pagamento */}
@@ -99,26 +106,26 @@ export default function App() {
         <Route path="servidores">
           <Route index element={<Navigate to="painel" replace />} />
           <Route path="cockpit"       element={<Navigate to="/servidores/painel" replace />} />
-          <Route path="painel"        element={<PainelServidores />} />
-          <Route path="diretorio"     element={<DiretorioServidores />} />
-          <Route path="aposentadoria" element={<RadarAposentadoria />} />
-          <Route path="comissionados" element={<ComissionadosEfetivos />} />
-          <Route path="auditoria"     element={<AuditoriaServidores />} />
-          <Route path="escolaridade"  element={<DescompassoEscolaridade />} />
-          <Route path="perfil"        element={<PerfilQuadro />} />
+          <Route path="painel"        element={<BlockApoio><PainelServidores /></BlockApoio>} />
+          <Route path="diretorio"     element={<BlockApoio><DiretorioServidores /></BlockApoio>} />
+          <Route path="aposentadoria" element={<BlockApoio><RadarAposentadoria /></BlockApoio>} />
+          <Route path="comissionados" element={<BlockApoio><ComissionadosEfetivos /></BlockApoio>} />
+          <Route path="auditoria"     element={<BlockApoio><AuditoriaServidores /></BlockApoio>} />
+          <Route path="escolaridade"  element={<BlockApoio><DescompassoEscolaridade /></BlockApoio>} />
+          <Route path="perfil"        element={<BlockApoio><PerfilQuadro /></BlockApoio>} />
           <Route path="genero"        element={<Navigate to="/servidores/perfil" replace />} />
           <Route path="ondas"         element={<Navigate to="/servidores/perfil" replace />} />
-          <Route path="saude"         element={<IndiceSaude />} />
-          <Route path="simulador"     element={<SimuladorCenarios />} />
-          <Route path="sentinel"      element={<SentinelJornada />} />
+          <Route path="saude"         element={<BlockApoio><IndiceSaude /></BlockApoio>} />
+          <Route path="simulador"     element={<BlockApoio><SimuladorCenarios /></BlockApoio>} />
+          <Route path="sentinel"      element={<BlockApoio><SentinelJornada /></BlockApoio>} />
         </Route>
 
         {/* Protocolo Digital */}
         <Route path="protocolos">
           <Route index element={<Navigate to="painel" replace />} />
-          <Route path="painel" element={<PainelProtocolo />} />
-          <Route path="consulta" element={<ConsultaProtocolo />} />
-          <Route path="novo" element={<NovoProtocolo />} />
+          <Route path="painel" element={<BlockApoio><PainelProtocolo /></BlockApoio>} />
+          <Route path="consulta" element={<BlockApoio><ConsultaProtocolo /></BlockApoio>} />
+          <Route path="novo" element={<BlockApoio><NovoProtocolo /></BlockApoio>} />
         </Route>
 
         {/* Administração */}

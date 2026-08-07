@@ -1,4 +1,5 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -40,7 +41,7 @@ const METRICAS = [
   { key: 'atrasos_dia',    label: 'Atr. ≥1h',      valor: r => r.atrasos_dia,                        cor: '#dc2626' },
   { key: 'he_total',       label: 'HE Total',      valor: r => r.hora_extra_50 + r.hora_extra_100,   cor: '#10b981' },
   { key: 'he50',           label: 'HE 50%',        valor: r => r.hora_extra_50,                      cor: '#047857' },
-  { key: 'he100',          label: 'HE 100%',       valor: r => r.hora_extra_100,                     cor: '#6ee7b7' },
+  { key: 'he100',          label: 'HE 100%',       valor: r => r.hora_extra_100,                      cor: '#6ee7b7' },
 ];
 
 const CHART_OPTS = {
@@ -101,7 +102,7 @@ function ModalDetalhe({ unidade, rows, loading, onClose }) {
                   key={v}
                   onClick={() => setVista(v)}
                   style={{
-                    padding: '3px 10px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                    padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer',
                     fontSize: 11, fontWeight: 600, textTransform: 'capitalize',
                     background: vista === v ? 'rgba(13,124,61,.25)' : 'transparent',
                     color: vista === v ? '#15A050' : '#64748b',
@@ -193,6 +194,7 @@ function ModalDetalhe({ unidade, rows, loading, onClose }) {
 }
 
 export default function DashboardFolha() {
+  const { sessao, isApoio } = useAuth();
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   useEffect(() => {
     const handleTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
@@ -251,32 +253,66 @@ export default function DashboardFolha() {
   const POR_PAG = 20;
 
   useEffect(() => {
-    fetchCompetencias().then(setCompetencias).catch(console.error);
+    fetchCompetencias().then(c => {
+      setCompetencias(c);
+      if (c.length && !filtroComp) setFiltroComp(c[0]);
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
     if (!filtroComp) { setSecretarias([]); setUnidades([]); setRanking([]); return; }
-    fetchSecretariasDaCompetencia(filtroComp).then(setSecretarias).catch(console.error);
-    setFiltroSec('');
+    fetchSecretariasDaCompetencia(filtroComp).then(secs => {
+      if (isApoio && sessao?.secretaria) {
+        const secF = secs.filter(s => s === sessao.secretaria || s.includes(sessao.secretaria));
+        setSecretarias(secF.length ? secF : secs);
+        setFiltroSec(sessao.secretaria);
+      } else {
+        setSecretarias(secs);
+        setFiltroSec('');
+      }
+    }).catch(console.error);
     setFiltroUnd('');
     setUnidades([]);
-  }, [filtroComp]);
+  }, [filtroComp, isApoio, sessao]);
 
   useEffect(() => {
     if (!filtroComp) return;
-    fetchUnidadesDaCompetencia(filtroComp, filtroSec || null).then(setUnidades).catch(console.error);
-    setFiltroUnd('');
-  }, [filtroComp, filtroSec]);
+    const targetSec = isApoio && sessao?.secretaria ? sessao.secretaria : (filtroSec || null);
+    fetchUnidadesDaCompetencia(filtroComp, targetSec).then(unds => {
+      if (isApoio && sessao?.unidades && !sessao.unidades.includes('*')) {
+        const userUndsUpper = sessao.unidades.map(u => String(u).toUpperCase().trim());
+        const undF = unds.filter(u => {
+          const uu = String(u).toUpperCase().trim();
+          return userUndsUpper.some(x => uu === x || uu.includes(x) || x.includes(uu));
+        });
+        setUnidades(undF);
+        if (undF.length === 1) setFiltroUnd(undF[0]);
+        else setFiltroUnd('');
+      } else {
+        setUnidades(unds);
+        setFiltroUnd('');
+      }
+    }).catch(console.error);
+  }, [filtroComp, filtroSec, isApoio, sessao]);
 
   const carregar = useCallback(async () => {
     if (!filtroComp) return;
     setLoading(true);
     try {
-      const data = await fetchFolhaRanking({
+      const targetSec = isApoio && sessao?.secretaria ? sessao.secretaria : (filtroSec || null);
+      let data = await fetchFolhaRanking({
         competencia: filtroComp,
-        secretaria: filtroSec || null,
+        secretaria: targetSec,
         unidade: filtroUnd || null,
       });
+      if (isApoio && sessao?.unidades && !sessao.unidades.includes('*') && !filtroUnd) {
+        const userUndsUpper = sessao.unidades.map(u => String(u).toUpperCase().trim());
+        data = data.filter(r => {
+          if (!r.unidade) return false;
+          const ru = String(r.unidade).toUpperCase().trim();
+          return userUndsUpper.some(u => ru === u || ru.includes(u) || u.includes(ru));
+        });
+      }
       setRanking(data);
       const totalServ = data.reduce((s, r) => s + r.servidores, 0);
       setStatusMsg(`${totalServ.toLocaleString('pt-BR')} servidores — ${fmtCompetencia(filtroComp)}`);
@@ -286,7 +322,7 @@ export default function DashboardFolha() {
     } finally {
       setLoading(false);
     }
-  }, [filtroComp, filtroSec, filtroUnd]);
+  }, [filtroComp, filtroSec, filtroUnd, isApoio, sessao]);
 
   useEffect(() => {
     carregar();
@@ -338,7 +374,8 @@ export default function DashboardFolha() {
   // Quando nenhuma secretaria selecionada: agrupa por secretaria
   // Quando secretaria selecionada: top 10 unidades
   const chartItems = useMemo(() => {
-    if (filtroSec) {
+    const isApoioRestrito = isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0;
+    if (filtroSec || (isApoio && sessao?.secretaria) || isApoioRestrito) {
       return [...ranking]
         .sort((a, b) => metrica.valor(b) - metrica.valor(a))
         .slice(0, 10);
@@ -363,21 +400,29 @@ export default function DashboardFolha() {
     return Object.values(map).sort((a, b) => metrica.valor(b) - metrica.valor(a)).slice(0, 5);
   }, [ranking, filtroSec, metrica]);
 
-  const chartData = useMemo(() => ({
-    labels: chartItems.map(r => {
-      const nome = filtroSec ? (r.unidade || 'N/I') : (r.secretaria_sigla || 'N/I');
-      return nome.length > 38 ? nome.slice(0, 36) + '…' : nome;
-    }),
-    datasets: [{
-      label: metrica.label,
-      data: chartItems.map(r => metrica.valor(r)),
-      backgroundColor: chartItems.map(r => (COR_SEC_FOLHA[r.secretaria_sigla] || '#0D7C3D') + 'bb'),
-      borderColor:     chartItems.map(r => (COR_SEC_FOLHA[r.secretaria_sigla] || '#0D7C3D')),
-      borderWidth: 1,
-      borderRadius: 4,
-      borderSkipped: false,
-    }],
-  }), [chartItems, metrica, filtroSec]);
+  const chartData = useMemo(() => {
+    const isApoioRestrito = isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0;
+    const isUnidadeView = filtroSec || (isApoio && sessao?.secretaria) || isApoioRestrito;
+
+    return {
+      labels: chartItems.map(r => {
+        let nome = isUnidadeView ? (r.unidade || 'N/I') : (r.secretaria_sigla || 'N/I');
+        if (isUnidadeView && nome !== 'N/I') {
+           nome = nome.split('-').pop().trim(); // simplify unit name for chart
+        }
+        return nome.length > 38 ? nome.slice(0, 36) + '…' : nome;
+      }),
+      datasets: [{
+        label: metrica.label,
+        data: chartItems.map(r => metrica.valor(r)),
+        backgroundColor: chartItems.map(r => (COR_SEC_FOLHA[r.secretaria_sigla] || '#0D7C3D') + 'bb'),
+        borderColor:     chartItems.map(r => (COR_SEC_FOLHA[r.secretaria_sigla] || '#0D7C3D')),
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false,
+      }],
+    };
+  }, [chartItems, metrica, filtroSec, isApoio, sessao]);
 
   const inlineFiltered = useMemo(() => {
     const q = inlineSearch.toLowerCase();
@@ -464,24 +509,54 @@ export default function DashboardFolha() {
               {competencias.map(c => <option key={c} value={c}>{fmtCompetencia(c)}</option>)}
             </select>
           </div>
-          <SearchSelect
-            label="Secretaria"
-            value={filtroSec}
-            onChange={setFiltroSec}
-            disabled={!filtroComp}
-            placeholder="Todas"
-            minWidth={140}
-            options={secretarias.map(s => ({ value: s.sigla, label: `${s.sigla}${s.nome ? ` — ${s.nome}` : ''}` }))}
-          />
-          <SearchSelect
-            label="Unidade"
-            value={filtroUnd}
-            onChange={setFiltroUnd}
-            disabled={!filtroComp}
-            placeholder="Todas"
-            minWidth={280}
-            options={unidades.map(u => ({ value: u, label: u }))}
-          />
+          {isApoio ? (
+            <div>
+              <div className="filter-label" style={{ marginBottom: 5 }}>Secretaria</div>
+              <div style={{
+                padding: '8px 14px', borderRadius: 6,
+                background: 'rgba(13,124,61,0.08)', border: '1px solid rgba(13,124,61,0.2)',
+                color: '#0D7C3D', fontSize: 13, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 6, height: 38, boxSizing: 'border-box'
+              }}>
+                🔒 {sessao?.secretaria || filtroSec}
+              </div>
+            </div>
+          ) : (
+            <SearchSelect
+              label="Secretaria"
+              value={filtroSec}
+              onChange={setFiltroSec}
+              disabled={!filtroComp}
+              placeholder="Todas"
+              minWidth={140}
+              options={secretarias.map(s => ({ value: s.sigla, label: `${s.sigla}${s.nome ? ` — ${s.nome}` : ''}` }))}
+            />
+          )}
+
+          {isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length === 1 ? (
+            <div>
+              <div className="filter-label" style={{ marginBottom: 5 }}>Unidade</div>
+              <div style={{
+                padding: '8px 14px', borderRadius: 6,
+                background: 'rgba(13,124,61,0.08)', border: '1px solid rgba(13,124,61,0.2)',
+                color: '#0D7C3D', fontSize: 12, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 6, height: 38, boxSizing: 'border-box',
+                maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }} title={sessao.unidades[0]}>
+                🔒 {sessao.unidades[0]}
+              </div>
+            </div>
+          ) : (
+            <SearchSelect
+              label="Unidade"
+              value={filtroUnd}
+              onChange={setFiltroUnd}
+              disabled={!filtroComp}
+              placeholder="Todas"
+              minWidth={280}
+              options={unidades.map(u => ({ value: u, label: u }))}
+            />
+          )}
         </div>
 
         {!filtroComp && (
@@ -668,8 +743,8 @@ export default function DashboardFolha() {
             {/* Gráfico — secretarias ou top 10 unidades */}
             {!filtroUnd && chartItems.length > 0 ? (
               <ChartCard
-                title={`${filtroSec ? 'Top 10 unidades' : 'Secretarias'} — ${metrica.label}`}
-                subtitle={`${fmtCompetencia(filtroComp)}${filtroSec ? ` · ${filtroSec}` : ''}`}
+                title={`${filtroSec || (isApoio && sessao?.secretaria) ? 'Top 10 unidades' : 'Secretarias'} — ${metrica.label}`}
+                subtitle={`${fmtCompetencia(filtroComp)}${filtroSec || (isApoio && sessao?.secretaria) ? ` · ${filtroSec || sessao.secretaria}` : ''}`}
                 icon={<BarChart2 />}
                 isDark={isDark}
                 style={{ marginBottom: 20 }}

@@ -21,8 +21,8 @@ export default function TopbarAvatar() {
 
   const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
 
-  const roleLabels = { master: 'Master', admin: 'Administrador', visitor: 'Visitante' };
-  const roleColors = { master: '#f59e0b', admin: '#0D7C3D', visitor: '#64748b' };
+  const roleLabels = { master: 'Master', admin: 'Administrador', apoio: 'Apoio', viewer: 'Visitante', visitor: 'Visitante' };
+  const roleColors = { master: '#f59e0b', admin: '#0D7C3D', apoio: '#3b82f6', viewer: '#64748b', visitor: '#64748b' };
   const roleLabel = roleLabels[sessao?.role] || 'Visitante';
   const roleColor = roleColors[sessao?.role] || '#64748b';
 

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, fetchAllSupabase } from '@/lib/supabase';
 
 const BATCH = 100;
 const MAX_ROWS = 100000;
@@ -61,12 +61,11 @@ export async function fetchFolhaRanking({ competencia, secretaria = null, unidad
 }
 
 export async function fetchSecretariasDaCompetencia(competencia) {
-  const { data, error } = await supabase
+  const query = supabase
     .from('folha_previas')
     .select('secretaria_sigla, secretaria')
-    .eq('competencia', competencia)
-    .limit(MAX_ROWS);
-  if (error) throw error;
+    .eq('competencia', competencia);
+  const data = await fetchAllSupabase(query);
 
   const uniq = {};
   (data || []).forEach(r => {
@@ -83,22 +82,21 @@ export async function fetchUnidadesDaCompetencia(competencia, secretaria = null)
   let q = supabase
     .from('folha_previas')
     .select('unidade')
-    .eq('competencia', competencia)
-    .limit(MAX_ROWS);
+    .eq('competencia', competencia);
   if (secretaria) q = q.eq('secretaria_sigla', secretaria);
-  const { data, error } = await q;
-  if (error) throw error;
+  
+  const data = await fetchAllSupabase(q);
   return [...new Set((data || []).map(r => r.unidade).filter(Boolean))].sort();
 }
 
 export async function fetchEvolucaoUnidade(unidade) {
-  const { data, error } = await supabase
+  const query = supabase
     .from('folha_previas')
     .select('competencia, faltas, atrasos_fracao, atrasos_dia, dsr, hora_extra_50, hora_extra_100')
     .eq('unidade', unidade)
-    .order('competencia', { ascending: true })
-    .limit(MAX_ROWS);
-  if (error) throw error;
+    .order('competencia', { ascending: true });
+  
+  const data = await fetchAllSupabase(query);
 
   const map = {};
   (data || []).forEach(r => {
@@ -203,26 +201,22 @@ export async function fetchComparativoUnidade(competencias, secretaria = null) {
 }
 
 export async function fetchServidoresDaUnidade(competencia, unidade) {
-  const { data, error } = await supabase
+  const query = supabase
     .from('folha_previas')
     .select('*')
     .eq('competencia', competencia)
     .eq('unidade', unidade)
-    .order('nome')
-    .limit(5000);
-  if (error) throw error;
-  return data || [];
+    .order('nome');
+  return await fetchAllSupabase(query);
 }
 
 export async function fetchServidoresDaCompetencia(competencia) {
-  const { data, error } = await supabase
+  const query = supabase
     .from('folha_previas')
     .select('*')
     .eq('competencia', competencia)
-    .order('nome')
-    .limit(15000);
-  if (error) throw error;
-  return data || [];
+    .order('nome');
+  return await fetchAllSupabase(query);
 }
 
 // P07 — Conferência Biômetro × Folha
@@ -266,13 +260,13 @@ export async function fetchConferencia({ competencia, secretaria = null }) {
 
 export async function fetchFolhaDescontos(competencia) {
   if (!competencia) return [];
-  const { data, error } = await supabase
+  const query = supabase
     .from('folha_previas')
     .select('unidade, matricula, nome, faltas, atrasos_fracao, atrasos_dia, dsr, secretaria_sigla')
     .eq('competencia', competencia)
-    .or('faltas.gt.0,atrasos_fracao.gt.0,atrasos_dia.gt.0,dsr.gt.0')
-    .limit(MAX_ROWS);
-  if (error) throw error;
+    .or('faltas.gt.0,atrasos_fracao.gt.0,atrasos_dia.gt.0,dsr.gt.0');
+  
+  const data = await fetchAllSupabase(query);
   
   return (data || []).map(r => ({
     ...r,

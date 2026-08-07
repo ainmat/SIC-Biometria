@@ -4,6 +4,31 @@ import { Search, Filter, Download, RefreshCw, ChevronDown, ChevronUp, TrendingUp
 import { SECRETARIAS, formatarCompetencia } from '@/modules/previas/constants';
 import { labelClassificacao, corClassificacao, analisarComHistorico } from '@/modules/previas/utils/analise';
 import { fetchPublicadas } from '@/modules/previas/services/previasService';
+import { useAuth } from '@/contexts/AuthContext';
+import { matchUnidade } from '@/lib/utils';
+import { supabase, fetchAllSupabase } from '@/lib/supabase';
+
+function isExactSecretariaMatch(secCandidate, userSecretaria) {
+  if (!userSecretaria || !secCandidate) return false;
+  const target = String(userSecretaria).toUpperCase().trim();
+  const candidate = String(secCandidate).toUpperCase().trim();
+
+  if (candidate === target) return true;
+
+  const secMeta = SECRETARIAS.find(s => 
+    s.sigla.toUpperCase() === target || 
+    s.codigo.toUpperCase() === target || 
+    s.numero === target
+  );
+
+  if (secMeta) {
+    if (candidate === secMeta.sigla.toUpperCase()) return true;
+    if (candidate === secMeta.codigo.toUpperCase()) return true;
+    if (candidate === secMeta.numero) return true;
+    if (candidate === secMeta.nome.toUpperCase()) return true;
+  }
+  return false;
+}
 
 const ANOS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 4 + i).reverse();
 
@@ -57,18 +82,117 @@ export default function HistoricoPrevias() {
   const [expandidos, setExpandidos]     = useState(new Set());
   const [todosAbertos, setTodosAbertos] = useState(false);
 
+  const { sessao, isApoio } = useAuth();
+  
   const carregar = useCallback(async () => {
     setLoading(true);
     setErro(null);
     try {
-      const data = await fetchPublicadas();
+      let data = await fetchPublicadas();
+      if (isApoio) {
+        let unidadesParaBuscar = (sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0) ? [...sessao.unidades] : [];
+        let secValid = false;
+
+        if (sessao?.secretaria) {
+          secValid = data.some(d => 
+            isExactSecretariaMatch(d.secretaria_codigo, sessao.secretaria) ||
+            isExactSecretariaMatch(d.secretaria_sigla, sessao.secretaria) ||
+            isExactSecretariaMatch(d.secretaria_nome, sessao.secretaria)
+          );
+
+          if (secValid) {
+            data = data.filter(d => 
+              isExactSecretariaMatch(d.secretaria_codigo, sessao.secretaria) ||
+              isExactSecretariaMatch(d.secretaria_sigla, sessao.secretaria) ||
+              isExactSecretariaMatch(d.secretaria_nome, sessao.secretaria)
+            );
+          } else {
+            // Fallback: O usuário preencheu a unidade no campo de secretaria por engano
+            if (!unidadesParaBuscar.includes(sessao.secretaria)) {
+              unidadesParaBuscar.push(sessao.secretaria);
+            }
+          }
+        }
+
+        if (unidadesParaBuscar.length > 0) {
+          let query = supabase
+            .from('folha_previas')
+            .select('competencia, secretaria_sigla, secretaria, unidade, faltas, atrasos_fracao, atrasos_dia, matricula');
+
+          const orConditions = unidadesParaBuscar.map(u => {
+            const words = u.split(' ').filter(w => w.length > 2);
+            if (words.length > 0) return `unidade.ilike.%${words[0]}%`;
+            return `unidade.ilike.%${u}%`;
+          }).join(',');
+
+          if (orConditions) {
+            query = query.or(orConditions);
+          }
+
+          let folhaRows = [];
+          let folhaErr = null;
+          try {
+             folhaRows = await fetchAllSupabase(query);
+          } catch(e) {
+             folhaErr = e;
+          }
+
+          if (!folhaErr && folhaRows && folhaRows.length > 0) {
+            const filteredRows = folhaRows.filter(r => {
+              if (!r.unidade) return false;
+              return unidadesParaBuscar.some(u => matchUnidade(u, r.unidade));
+            });
+
+            if (filteredRows.length > 0) {
+              const porComp = {};
+              filteredRows.forEach(r => {
+                const c = r.competencia;
+                const u = r.unidade;
+                const k = `${c}|${u}`;
+                if (!porComp[k]) {
+                  porComp[k] = {
+                    id: `custom_${c}_${u}`,
+                    competencia: c,
+                    secretaria_codigo: u,
+                    secretaria_sigla: u,
+                    secretaria_nome: u,
+                    total_ocorrencias: 0,
+                    total_faltas: 0,
+                    total_atrasos: 0,
+                    servidores_impactados: 0,
+                    total_desconto_acumulado: 0,
+                    data_publicacao: null,
+                    matriculasSet: new Set(),
+                  };
+                }
+                const p = porComp[k];
+                p.total_faltas += Number(r.faltas || 0);
+                p.total_atrasos += Number(r.atrasos_dia || 0) + Number(r.atrasos_fracao || 0);
+                p.total_ocorrencias = p.total_faltas + p.total_atrasos;
+                p.matriculasSet.add(r.matricula);
+                const descCalc = (Number(r.faltas || 0) * 200) + ((Number(r.atrasos_dia || 0) + (Number(r.atrasos_fracao || 0) * 0.333)) * 60);
+                p.total_desconto_acumulado += descCalc;
+              });
+
+              data = Object.values(porComp).map(item => ({
+                ...item,
+                servidores_impactados: item.matriculasSet.size || item.servidores_impactados,
+              })).sort((a, b) => b.competencia.localeCompare(a.competencia));
+            } else {
+              data = []; // found no specific units matching
+            }
+          } else {
+            data = []; // found no rows for these units
+          }
+        }
+      }
       setDados(data);
     } catch (err) {
       setErro(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isApoio, sessao]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -89,10 +213,18 @@ export default function HistoricoPrevias() {
     Object.values(mapa).forEach(s => {
       s.periodos.sort((a, b) => b.competencia.localeCompare(a.competencia));
     });
-    return SECRETARIAS
-      .filter(s => mapa[s.codigo])
-      .map(s => ({ ...mapa[s.codigo], cor: s.cor, numero: s.numero, sigla: s.sigla }));
-  }, [filtrados]);
+    const isApoioRestrito = isApoio && sessao?.unidades && sessao.unidades.length > 0 && !sessao.unidades.includes('*');
+
+    return Object.values(mapa).map((m, i) => {
+      const s = SECRETARIAS.find(sec => sec.codigo === m.codigo);
+      if (s) return { ...m, cor: s.cor, numero: s.numero, sigla: s.sigla };
+
+      // Fallback para unidades!
+      const color = i % 2 === 0 ? '#10b981' : '#3b82f6';
+      const shortName = m.nome.split('-').pop().substring(0, 30).trim();
+      return { ...m, cor: color, numero: `U${i + 1}`, sigla: shortName };
+    });
+  }, [filtrados, isApoio, sessao]);
 
   // Apply search filter on secretaria cards
   const secretariasFiltradas = useMemo(() => {

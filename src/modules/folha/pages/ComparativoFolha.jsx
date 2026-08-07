@@ -1,4 +1,5 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -14,6 +15,23 @@ import {
   fetchComparativoUnidade,
 } from '@/modules/folha/services/folhaService';
 import { fmtCompetencia } from '@/modules/folha/constants';
+import { SECRETARIAS } from '@/lib/secretarias';
+import { matchUnidade } from '@/lib/utils';
+
+function findSecKey(target, keys) {
+  if (!target || !keys?.length) return null;
+  const t = String(target).toUpperCase().trim();
+  const secMeta = SECRETARIAS.find(s => s.sigla.toUpperCase() === t || s.codigo.toUpperCase() === t || s.nome.toUpperCase() === t);
+  return keys.find(k => {
+    const ku = k.toUpperCase();
+    if (ku === t) return true;
+    if (secMeta) {
+      if (ku.includes(secMeta.sigla.toUpperCase()) || ku.includes(secMeta.nome.toUpperCase())) return true;
+      if (secMeta.nomesXLS && secMeta.nomesXLS.some(n => ku.includes(n.toUpperCase()))) return true;
+    }
+    return ku.includes(t);
+  }) || null;
+}
 
 /* ─────────────────────────── constants ─────────────────────────── */
 
@@ -201,6 +219,7 @@ function PeriodCard({ comp, dados, prevDados, cor, metrica, detalhada = true }) 
 /* ─────────────────────────── main component ────────────────────── */
 
 export default function ComparativoFolha() {
+  const { sessao, isApoio } = useAuth();
   const [todasComp,    setTodasComp]    = useState([]);
   const [selecionadas, setSelecionadas] = useState([]);
   const [nivel,        setNivel]        = useState('geral');
@@ -240,9 +259,40 @@ export default function ComparativoFolha() {
     Promise.all([
       fetchComparativoGeral(selecionadas),
       fetchComparativoSecretaria(selecionadas),
-    ]).then(([g, s]) => { setDadosGeral(g); setDadosSec(s); setDadosUnd({}); setFiltroUnd(''); })
+    ]).then(([g, s]) => {
+      let isRestrictedApoio = isApoio && sessao?.unidades && !sessao.unidades.includes('*');
+      let unidadesParaBuscar = isRestrictedApoio ? [...sessao.unidades] : [];
+
+      setDadosGeral(isRestrictedApoio ? {} : g);
+      setDadosSec(isRestrictedApoio ? {} : s);
+
+      if (isApoio) {
+        let secName = null;
+        if (sessao?.secretaria) {
+          secName = findSecKey(sessao.secretaria, Object.keys(s));
+          if (!secName) {
+            // O usuário provavelmente digitou a unidade no campo secretaria
+            if (!unidadesParaBuscar.includes(sessao.secretaria)) {
+              unidadesParaBuscar.push(sessao.secretaria);
+            }
+            // Força Apoio restrito se ele colocou a unidade na secretaria
+            isRestrictedApoio = true;
+          }
+        }
+        
+        // Se secName for null, define um fallback (SS ou o primeiro que vier)
+        if (!secName) {
+           secName = findSecKey('SS', Object.keys(s)) || Object.keys(s)[0];
+        }
+        
+        if (secName) setFiltroSec(secName);
+      } else {
+        setDadosUnd({});
+        setFiltroUnd('');
+      }
+    })
       .catch(console.error).finally(() => setLoading(false));
-  }, [selecionadas]);
+  }, [selecionadas, isApoio, sessao]);
 
   /* unidades sempre que uma secretaria é filtrada */
   useEffect(() => {
@@ -252,10 +302,28 @@ export default function ComparativoFolha() {
       return;
     }
     setLoading(true);
-    setFiltroUnd('');
     fetchComparativoUnidade(selecionadas, filtroSec)
-      .then(setDadosUnd).catch(console.error).finally(() => setLoading(false));
-  }, [filtroSec, selecionadas]);
+      .then(undMap => {
+        let isRestrictedApoio = isApoio && sessao?.unidades && !sessao.unidades.includes('*');
+        let unidadesParaBuscar = isRestrictedApoio ? [...sessao.unidades] : [];
+
+        if (isRestrictedApoio && unidadesParaBuscar.length > 0) {
+          const filteredUnds = {};
+          Object.keys(undMap).forEach(u => {
+            if (unidadesParaBuscar.some(su => matchUnidade(su, u))) {
+              filteredUnds[u] = undMap[u];
+            }
+          });
+          setDadosUnd(filteredUnds);
+          const keys = Object.keys(filteredUnds);
+          if (keys.length === 1) setFiltroUnd(keys[0]);
+          else setFiltroUnd('');
+        } else {
+          setDadosUnd(undMap);
+          setFiltroUnd('');
+        }
+      }).catch(console.error).finally(() => setLoading(false));
+  }, [filtroSec, selecionadas, isApoio, sessao]);
 
   const compsOrdenadas = useMemo(() => [...selecionadas].sort(), [selecionadas]);
 
@@ -267,6 +335,30 @@ export default function ComparativoFolha() {
       compsOrdenadas.forEach(c => { result[c] = dadosUnd[filtroUnd]?.[c] ?? null; });
       return result;
     }
+
+    const isApoioRestrito = isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0;
+    if (isApoioRestrito) {
+      // Agrega os dados de todas as unidades permitidas (que já estão em dadosUnd)
+      const result = {};
+      compsOrdenadas.forEach(c => {
+        let aggregated = null;
+        Object.values(dadosUnd).forEach(undData => {
+          if (undData[c]) {
+            if (!aggregated) aggregated = { servidores: 0, faltas: 0, atrasos_fracao: 0, atrasos_dia: 0, dsr: 0, hora_extra_50: 0, hora_extra_100: 0 };
+            aggregated.servidores += undData[c].servidores || 0;
+            aggregated.faltas += undData[c].faltas || 0;
+            aggregated.atrasos_fracao += undData[c].atrasos_fracao || 0;
+            aggregated.atrasos_dia += undData[c].atrasos_dia || 0;
+            aggregated.dsr += undData[c].dsr || 0;
+            aggregated.hora_extra_50 += undData[c].hora_extra_50 || 0;
+            aggregated.hora_extra_100 += undData[c].hora_extra_100 || 0;
+          }
+        });
+        result[c] = aggregated;
+      });
+      return result;
+    }
+
     if (filtroSec) {
       // totais da secretaria selecionada
       const result = {};
@@ -274,13 +366,17 @@ export default function ComparativoFolha() {
       return result;
     }
     return dadosGeral;
-  }, [filtroUnd, filtroSec, dadosGeral, dadosSec, dadosUnd, compsOrdenadas]);
+  }, [filtroUnd, filtroSec, dadosGeral, dadosSec, dadosUnd, compsOrdenadas, isApoio, sessao]);
 
   /* fonte para o ranking (secretarias ou unidades, conforme filtro) */
   const rankingSource = useMemo(() => {
     const source = filtroSec ? dadosUnd : dadosSec;
-    return Object.fromEntries(Object.entries(source).filter(([k]) => filtrarSecretaria(k)));
-  }, [filtroSec, dadosSec, dadosUnd]);
+    let entries = Object.entries(source).filter(([k]) => filtrarSecretaria(k));
+    if (isApoio && filtroSec && sessao?.unidades && !sessao.unidades.includes('*')) {
+      entries = entries.filter(([k]) => sessao.unidades.includes(k));
+    }
+    return Object.fromEntries(entries);
+  }, [filtroSec, dadosSec, dadosUnd, isApoio, sessao]);
 
   const rankingLabel = filtroSec ? 'Unidade' : 'Secretaria';
 
@@ -361,9 +457,12 @@ export default function ComparativoFolha() {
   const isGrouped       = nivel !== 'geral';
   const showRanking     = nivel !== 'geral' && !filtroUnd;
 
-  /* escopo textual para subtítulo */
+  const isApoioRestrito = isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0;
+  
   const escopoLabel = filtroUnd
     ? filtroUnd
+    : isApoioRestrito
+    ? 'Todas as unidades'
     : filtroSec
     ? filtroSec
     : 'Todos';
@@ -448,7 +547,7 @@ export default function ComparativoFolha() {
             }}>
               {[
                 { key: 'geral',      label: 'Geral' },
-                { key: 'secretaria', label: 'Secretarias' },
+                { key: 'secretaria', label: isApoioRestrito ? 'Unidades' : 'Secretarias' },
               ].map(({ key, label }) => (
                 <button key={key} type="button" onClick={() => setNivel(key)} style={{
                   padding: '6px 16px', borderRadius: 7, border: 'none', cursor: 'pointer',
@@ -510,23 +609,48 @@ export default function ComparativoFolha() {
             {/* filtros de escopo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <Filter size={13} color="#475569" />
-              <SearchSelect
-                value={filtroSec}
-                onChange={(v) => { setFiltroSec(v); setFiltroUnd(''); }}
-                options={secOptions}
-                placeholder="Secretaria"
-                minWidth={160}
-                disabled={!secOptions.length}
-              />
-              <SearchSelect
-                value={filtroUnd}
-                onChange={setFiltroUnd}
-                options={undOptions}
-                placeholder="Unidade"
-                minWidth={220}
-                disabled={!filtroSec || !undOptions.length}
-              />
-              {(filtroSec || filtroUnd) && (
+              {isApoio ? (
+                <div style={{
+                  padding: '6px 12px', borderRadius: 6,
+                  background: 'rgba(13,124,61,0.08)', border: '1px solid rgba(13,124,61,0.2)',
+                  color: '#0D7C3D', fontSize: 12, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 5, boxSizing: 'border-box'
+                }}>
+                  🔒 {isApoioRestrito ? 'Todas as unidades' : (sessao?.secretaria || filtroSec)}
+                </div>
+              ) : (
+                <SearchSelect
+                  value={filtroSec}
+                  onChange={(v) => { setFiltroSec(v); setFiltroUnd(''); }}
+                  options={secOptions}
+                  placeholder="Secretaria"
+                  minWidth={160}
+                  disabled={!secOptions.length}
+                />
+              )}
+
+              {isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length === 1 ? (
+                <div style={{
+                  padding: '6px 12px', borderRadius: 6,
+                  background: 'rgba(13,124,61,0.08)', border: '1px solid rgba(13,124,61,0.2)',
+                  color: '#0D7C3D', fontSize: 12, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 5, boxSizing: 'border-box',
+                  maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                }} title={sessao.unidades[0]}>
+                  🔒 {sessao.unidades[0]}
+                </div>
+              ) : (
+                <SearchSelect
+                  value={filtroUnd}
+                  onChange={setFiltroUnd}
+                  options={undOptions}
+                  placeholder={isApoioRestrito ? "Todas as unidades" : "Unidade"}
+                  minWidth={220}
+                  disabled={!filtroSec || !undOptions.length}
+                />
+              )}
+
+              {!isApoio && (filtroSec || filtroUnd) && (
                 <button type="button"
                   onClick={() => { setFiltroSec(''); setFiltroUnd(''); }}
                   style={{
@@ -550,13 +674,22 @@ export default function ComparativoFolha() {
             }}>
               <span style={{ color: 'var(--text)' }}>Escopo:</span>
               <span style={{ color: '#15A050', fontWeight: 600 }}>Todos os meses</span>
-              {filtroSec && (
+              {filtroSec && !isApoioRestrito && (
                 <>
                   <span style={{ color: 'var(--text)' }}>›</span>
                   <span style={{
                     color: '#0D7C3D', fontWeight: 700, padding: '1px 8px',
                     borderRadius: 8, background: 'rgba(13,124,61,.12)',
                   }}>{filtroSec}</span>
+                </>
+              )}
+              {isApoioRestrito && !filtroUnd && (
+                <>
+                  <span style={{ color: 'var(--text)' }}>›</span>
+                  <span style={{
+                    color: '#0D7C3D', fontWeight: 700, padding: '1px 8px',
+                    borderRadius: 8, background: 'rgba(13,124,61,.12)',
+                  }}>Todas as unidades</span>
                 </>
               )}
               {filtroUnd && (

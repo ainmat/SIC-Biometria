@@ -9,6 +9,30 @@ import { fmtCompetencia } from '@/modules/folha/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { MapPin } from 'lucide-react';
+import { matchUnidade } from '@/lib/utils';
+import { SECRETARIAS } from '@/lib/secretarias';
+
+function isExactSecretariaMatch(secCandidate, userSecretaria) {
+  if (!userSecretaria || !secCandidate) return false;
+  const target = String(userSecretaria).toUpperCase().trim();
+  const candidate = String(secCandidate).toUpperCase().trim();
+
+  if (candidate === target) return true;
+
+  const secMeta = SECRETARIAS.find(s => 
+    s.sigla.toUpperCase() === target || 
+    s.codigo.toUpperCase() === target || 
+    s.numero === target
+  );
+
+  if (secMeta) {
+    if (candidate === secMeta.sigla.toUpperCase()) return true;
+    if (candidate === secMeta.codigo.toUpperCase()) return true;
+    if (candidate === secMeta.numero) return true;
+    if (candidate === secMeta.nome.toUpperCase()) return true;
+  }
+  return false;
+}
 
 // Tabela "De-Para" para forçar o cruzamento de órgãos da Folha com prédios físicos
 const CUSTOM_ALIASES = {
@@ -42,6 +66,7 @@ function getMockCoords(eq) {
 const normalize = (s) => s ? s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/face/g, '').replace(/[^a-z0-9]/g, ' ').replace(/\bsed\b/g, 'sede').replace(/\s+/g, ' ').trim() : '';
 
 export default function MapaDescontos() {
+  const { sessao, isApoio } = useAuth();
   const [competencias, setCompetencias] = useState([]);
   const [competencia, setCompetencia] = useState('');
   const [equipamentos, setEquipamentos] = useState([]);
@@ -74,7 +99,40 @@ export default function MapaDescontos() {
     if (!competencia) return;
     setStatus('Carregando dados da folha...');
     try {
-      const descData = await fetchFolhaDescontos(competencia);
+      let descData = await fetchFolhaDescontos(competencia);
+      
+      // Aplicar filtro de perfil Apoio
+      if (isApoio) {
+        let unidadesParaBuscar = (sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0) ? [...sessao.unidades] : [];
+        let filterSec = !!sessao?.secretaria;
+
+        if (sessao?.secretaria) {
+          const isRealSecretaria = isExactSecretariaMatch('SS', sessao.secretaria) || 
+                                   SECRETARIAS.some(s => isExactSecretariaMatch(s.sigla, sessao.secretaria) || isExactSecretariaMatch(s.nome, sessao.secretaria));
+          
+          if (!isRealSecretaria) {
+            filterSec = false;
+            if (!unidadesParaBuscar.includes(sessao.secretaria)) unidadesParaBuscar.push(sessao.secretaria);
+          }
+        }
+
+        if (filterSec) {
+          descData = descData.filter(d => 
+            isExactSecretariaMatch(d.secretaria_codigo, sessao.secretaria) ||
+            isExactSecretariaMatch(d.secretaria_sigla, sessao.secretaria) ||
+            isExactSecretariaMatch(d.secretaria_nome, sessao.secretaria) ||
+            isExactSecretariaMatch(d.secretaria, sessao.secretaria)
+          );
+        }
+
+        if (unidadesParaBuscar.length > 0) {
+          descData = descData.filter(d => {
+            if (!d.unidade) return false;
+            return unidadesParaBuscar.some(u => matchUnidade(u, d.unidade));
+          });
+        }
+      }
+
       setDescontos(descData);
       
       const totalOcorrencias = descData.reduce((acc, d) => acc + (d.totalOcorrencias || 0), 0);
@@ -85,7 +143,7 @@ export default function MapaDescontos() {
       console.error(err);
       setStatus('Erro ao carregar dados da folha');
     }
-  }, [competencia]);
+  }, [competencia, isApoio, sessao]);
 
   useEffect(() => {
     carregarCompetencias();

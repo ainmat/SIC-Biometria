@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { SECRETARIAS } from '@/lib/secretarias';
 
 const ROLES_MASTER = [
   { value: 'admin',  label: 'Administrador', desc: 'Pode importar folha e publicar prévias' },
+  { value: 'apoio',  label: 'Apoio',         desc: 'Acesso restrito a Prévias e Folha' },
   { value: 'viewer', label: 'Visitante',      desc: 'Somente leitura dos dashboards' },
 ];
 const ROLES_ADMIN = [
+  { value: 'apoio',  label: 'Apoio',         desc: 'Acesso restrito a Prévias e Folha' },
   { value: 'viewer', label: 'Visitante',      desc: 'Somente leitura dos dashboards' },
 ];
 
-const ROLE_LABELS = { master: 'Master', admin: 'Administrador', viewer: 'Visitante' };
-const ROLE_COLORS = { master: '#f59e0b', admin: '#0D7C3D', viewer: '#10b981' };
+const ROLE_LABELS = { master: 'Master', admin: 'Administrador', apoio: 'Apoio', viewer: 'Visitante' };
+const ROLE_COLORS = { master: '#f59e0b', admin: '#0D7C3D', apoio: '#3b82f6', viewer: '#10b981' };
 
 const inputSt = {
   width: '100%', background: 'rgba(0, 0, 0, 0.04)',
@@ -27,9 +30,35 @@ const labelSt = {
 
 function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
   const { sessao } = useAuth();
-  const [form, setForm] = useState({ nome: '', username: '', senha: '', role: 'viewer' });
+  const [form, setForm] = useState({ nome: '', username: '', senha: '', role: 'viewer', secretaria: '', unidades: [] });
+  const [listaUnidades, setListaUnidades] = useState([]);
+  const [buscaUnidade, setBuscaUnidade] = useState('');
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setBuscaUnidade('');
+    if (form.role !== 'apoio' || !form.secretaria) {
+      setListaUnidades([]);
+      setForm(f => ({ ...f, unidades: [] }));
+      return;
+    }
+    async function fetchUnidades() {
+      const { data, error } = await supabase
+        .from('folha_previas')
+        .select('unidade')
+        .eq('secretaria_sigla', form.secretaria)
+        .limit(10000);
+      if (!error && data) {
+        setListaUnidades([...new Set(data.map(d => d.unidade).filter(Boolean))].sort());
+      }
+    }
+    fetchUnidades();
+  }, [form.secretaria, form.role]);
+
+  const unidadesFiltradas = listaUnidades.filter(u =>
+    u.toLowerCase().includes(buscaUnidade.toLowerCase().trim())
+  );
 
   async function salvar(e) {
     e.preventDefault();
@@ -41,6 +70,8 @@ function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
         p_token: sessao?.token,
         p_nome: form.nome, p_username: form.username,
         p_senha: form.senha, p_role: form.role,
+        p_secretaria: form.role === 'apoio' ? form.secretaria : null,
+        p_unidades: form.role === 'apoio' ? form.unidades : null,
       });
       if (error) throw error;
       onSalvo();
@@ -106,6 +137,69 @@ function ModalNovoUsuario({ onClose, onSalvo, rolesDisponiveis }) {
               ))}
             </div>
           </div>
+
+          {form.role === 'apoio' && (
+            <>
+              <div>
+                <label style={labelSt}>Secretaria</label>
+                <select 
+                  value={form.secretaria} 
+                  onChange={e => setForm(f => ({ ...f, secretaria: e.target.value, unidades: [] }))}
+                  style={inputSt}
+                >
+                  <option value="">Selecione...</option>
+                  {SECRETARIAS.map(s => (
+                    <option key={s.sigla} value={s.sigla}>{s.sigla} - {s.nome}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {form.secretaria && (
+                <div>
+                  <label style={labelSt}>Unidades (selecione uma ou mais)</label>
+                  <input
+                    type="text"
+                    placeholder="🔍 Buscar unidade por nome..."
+                    value={buscaUnidade}
+                    onChange={e => setBuscaUnidade(e.target.value)}
+                    style={{ ...inputSt, marginBottom: 8, fontSize: 12, padding: '7px 10px' }}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 150, overflowY: 'auto', background: 'rgba(0,0,0,0.02)', padding: 10, borderRadius: 6, border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={form.unidades.includes('*')}
+                        onChange={e => {
+                          if (e.target.checked) setForm(f => ({ ...f, unidades: ['*'] }));
+                          else setForm(f => ({ ...f, unidades: [] }));
+                        }}
+                      />
+                      <b>Todas as unidades ({listaUnidades.length})</b>
+                    </label>
+                    {unidadesFiltradas.map(u => (
+                      <label key={u} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer', opacity: form.unidades.includes('*') ? 0.5 : 1 }}>
+                        <input 
+                          type="checkbox" 
+                          disabled={form.unidades.includes('*')}
+                          checked={form.unidades.includes(u)}
+                          onChange={e => {
+                            if (e.target.checked) setForm(f => ({ ...f, unidades: [...f.unidades, u] }));
+                            else setForm(f => ({ ...f, unidades: f.unidades.filter(x => x !== u) }));
+                          }}
+                        />
+                        {u}
+                      </label>
+                    ))}
+                    {unidadesFiltradas.length === 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--muted-c)', fontStyle: 'italic', padding: '6px 0', textAlign: 'center' }}>
+                        Nenhuma unidade encontrada para "{buscaUnidade}"
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
           {erro && <div style={{ fontSize: 12, color: '#dc2626', padding: '8px 12px', background: 'rgba(239,68,68,.1)', borderRadius: 6 }}>{erro}</div>}
 
@@ -343,12 +437,19 @@ export default function GerenciarUsuarios() {
                     const cor = ROLE_COLORS[u.role] || '#64748b';
                     return (
                       <tr key={u.id}>
-                        <td style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
-                          {u.nome}
-                          {isSelf && (
-                            <span style={{ marginLeft: 7, fontSize: 9, color: '#0D7C3D', fontWeight: 800, letterSpacing: '.05em' }}>
-                              VOCÊ
-                            </span>
+                        <td className="p-4 align-middle font-medium" style={{ color: 'var(--text)' }}>
+                          <div>
+                            {u.nome}
+                            {isSelf && (
+                              <span style={{ marginLeft: 7, fontSize: 9, color: '#0D7C3D', fontWeight: 800, letterSpacing: '.05em' }}>
+                                VOCÊ
+                              </span>
+                            )}
+                          </div>
+                          {u.role === 'apoio' && u.secretaria && (
+                            <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 2 }}>
+                              Secretaria: {u.secretaria} {u.unidades?.includes('*') ? '(Todas)' : `(${u.unidades?.length || 0} unidades)`}
+                            </div>
                           )}
                         </td>
                         <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--muted-c)' }}>{u.username}</td>

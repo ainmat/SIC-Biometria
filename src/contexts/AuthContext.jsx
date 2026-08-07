@@ -25,7 +25,15 @@ export function AuthProvider({ children }) {
     if (!data || data.length === 0) throw new Error('Usuário ou senha inválidos');
 
     const user = data[0];
-    const s = { id: user.id, nome: user.nome, username: user.username, role: user.role, token: user.token };
+    const s = { 
+      id: user.id, 
+      nome: user.nome, 
+      username: user.username, 
+      role: user.role, 
+      token: user.token,
+      secretaria: user.secretaria,
+      unidades: user.unidades
+    };
     setSessao(s);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
     return s;
@@ -39,6 +47,7 @@ export function AuthProvider({ children }) {
   const role      = sessao?.role ?? null;
   const isMaster  = role === 'master';
   const isAdmin   = role === 'master' || role === 'admin';
+  const isApoio   = role === 'apoio';
   const isVisitor = role === 'viewer';
   const isLoggedIn = role !== null;
 
@@ -48,6 +57,7 @@ export function AuthProvider({ children }) {
       role,
       isMaster,
       isAdmin,
+      isApoio,
       isVisitor,
       isLoggedIn,
       loading: false,

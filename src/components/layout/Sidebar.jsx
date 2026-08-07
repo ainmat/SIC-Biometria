@@ -95,6 +95,7 @@ const NAV = [
       {
         to: '/previas/historico',
         label: 'Histórico',
+        apoioAllowed: true,
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M12 8v4l3 3" />
@@ -105,6 +106,7 @@ const NAV = [
       {
         to: '/previas/bi',
         label: 'BI / Indicadores',
+        apoioAllowed: true,
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <line x1="18" y1="20" x2="18" y2="10" />
@@ -133,6 +135,7 @@ const NAV = [
       {
         to: '/folha/dashboard',
         label: 'Painel',
+        apoioAllowed: true,
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -145,6 +148,7 @@ const NAV = [
       {
         to: '/folha/simulador',
         label: 'Simulador Folha',
+        apoioAllowed: true,
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="11" cy="11" r="8" />
@@ -157,6 +161,7 @@ const NAV = [
       {
         to: '/folha/comparativo',
         label: 'Comparativo',
+        apoioAllowed: true,
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <line x1="2" y1="20" x2="22" y2="20" />
@@ -409,11 +414,12 @@ function NavItem({ to, label, icon, end }) {
 
 /* ─── NavSection (collapsible) ────────────────────────────────────────────── */
 
-function NavSection({ section, items, isAdmin, isMaster }) {
+function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
   const location = useLocation();
-  const visibleItems = items.filter(({ adminOnly, masterOnly }) => {
+  const visibleItems = items.filter(({ adminOnly, masterOnly, apoioAllowed }) => {
     if (masterOnly && !isMaster) return false;
     if (adminOnly  && !isAdmin)  return false;
+    if (isApoio && !apoioAllowed) return false;
     return true;
   });
   if (!visibleItems.length) return null;
@@ -484,7 +490,7 @@ function NavSection({ section, items, isAdmin, isMaster }) {
 /* ─── Layout/Sidebar ──────────────────────────────────────────────────────── */
 
 export default function Sidebar() {
-  const { sessao, isAdmin, isMaster, logout } = useAuth();
+  const { sessao, isAdmin, isMaster, isApoio, logout } = useAuth();
   const [modalSenha, setModalSenha] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
@@ -505,10 +511,10 @@ export default function Sidebar() {
     navigate('/login', { replace: true });
   }
 
-  const roleColor  = isMaster ? '#f59e0b' : isAdmin ? '#0D7C3D' : '#10b981';
-  const roleLabel  = isMaster ? 'Master'  : isAdmin ? 'Administrador' : 'Visitante';
-  const roleBg     = isMaster ? 'rgba(245,158,11,.08)' : isAdmin ? 'rgba(13,124,61,.08)' : 'rgba(16,185,129,.08)';
-  const roleBorder = isMaster ? 'rgba(245,158,11,.2)'  : isAdmin ? 'rgba(13,124,61,.2)'  : 'rgba(16,185,129,.2)';
+  const roleColor  = isMaster ? '#f59e0b' : isAdmin ? '#0D7C3D' : isApoio ? '#3b82f6' : '#10b981';
+  const roleLabel  = isMaster ? 'Master'  : isAdmin ? 'Administrador' : isApoio ? 'Apoio' : 'Visitante';
+  const roleBg     = isMaster ? 'rgba(245,158,11,.08)' : isAdmin ? 'rgba(13,124,61,.08)' : isApoio ? 'rgba(59,130,246,.08)' : 'rgba(16,185,129,.08)';
+  const roleBorder = isMaster ? 'rgba(245,158,11,.2)'  : isAdmin ? 'rgba(13,124,61,.2)'  : isApoio ? 'rgba(59,130,246,.2)' : 'rgba(16,185,129,.2)';
 
   return (
     <>
@@ -539,15 +545,18 @@ export default function Sidebar() {
             gap: 8,
           }}
         >
-          {NAV.map(({ section, items }) => (
-            <NavSection
-              key={section}
-              section={section}
-              items={items}
-              isAdmin={isAdmin}
-              isMaster={isMaster}
-            />
-          ))}
+          <div className="flex flex-col mb-4" style={{ gap: 20 }}>
+            {NAV.map(section => (
+              <NavSection
+                key={section.section}
+                section={section.section}
+                items={section.items}
+                isAdmin={isAdmin}
+                isMaster={isMaster}
+                isApoio={isApoio}
+              />
+            ))}
+          </div>
         </nav>
 
         {/* ── Footer ── */}

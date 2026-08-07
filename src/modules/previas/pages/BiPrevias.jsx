@@ -1,4 +1,5 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
@@ -13,6 +14,29 @@ import {
 } from '@/modules/previas/constants';
 import { fetchBIPublicadas, fetchTopMatriculas } from '@/modules/previas/services/previasService';
 import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
+import { supabase, fetchAllSupabase } from '@/lib/supabase';
+
+function isExactSecretariaMatch(secCandidate, userSecretaria) {
+  if (!userSecretaria || !secCandidate) return false;
+  const target = String(userSecretaria).toUpperCase().trim();
+  const candidate = String(secCandidate).toUpperCase().trim();
+
+  if (candidate === target) return true;
+
+  const secMeta = SECRETARIAS.find(s => 
+    s.sigla.toUpperCase() === target || 
+    s.codigo.toUpperCase() === target || 
+    s.numero === target
+  );
+
+  if (secMeta) {
+    if (candidate === secMeta.sigla.toUpperCase()) return true;
+    if (candidate === secMeta.codigo.toUpperCase()) return true;
+    if (candidate === secMeta.numero) return true;
+    if (candidate === secMeta.nome.toUpperCase()) return true;
+  }
+  return false;
+}
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
@@ -404,9 +428,15 @@ function SelectionGrid({ publicadas, onSelect }) {
     mapa[k].totalFaltas  += d.total_faltas || 0;
     mapa[k].totalAtrasos += d.total_atrasos || 0;
   });
-  const secretarias = SECRETARIAS
-    .filter(s => mapa[s.codigo])
-    .map(s => ({ ...mapa[s.codigo], cor: s.cor, numero: s.numero, sigla: s.sigla }));
+  const secretarias = Object.values(mapa).map((m, i) => {
+    const s = SECRETARIAS.find(sec => sec.codigo === m.codigo);
+    if (s) return { ...m, cor: s.cor, numero: s.numero, sigla: s.sigla };
+    
+    // Fallback para quando o código é uma unidade (Apoio restrito)
+    const color = i % 2 === 0 ? '#10b981' : '#3b82f6';
+    const shortName = m.nome.split('-').pop().substring(0, 30).trim();
+    return { ...m, cor: color, numero: `U${i + 1}`, sigla: shortName };
+  });
 
   const totalOcorrConsol  = publicadas.reduce((s, d) => s + (d.total_ocorrencias || 0), 0);
   const totalFaltasConsol = publicadas.reduce((s, d) => s + (d.total_faltas || 0), 0);
@@ -536,6 +566,7 @@ function SelectionGrid({ publicadas, onSelect }) {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export default function BiPrevias() {
+  const { sessao, isApoio } = useAuth();
   const [publicadas, setPublicadas] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [erro, setErro]             = useState(null);
@@ -547,14 +578,97 @@ export default function BiPrevias() {
     setLoading(true);
     setErro(null);
     try {
-      const pub = await fetchBIPublicadas();
+      let pub = await fetchBIPublicadas();
+      if (isApoio && sessao?.secretaria) {
+        pub = pub.filter(d => 
+          isExactSecretariaMatch(d.secretaria_codigo, sessao.secretaria) ||
+          isExactSecretariaMatch(d.secretaria_sigla, sessao.secretaria) ||
+          isExactSecretariaMatch(d.secretaria_nome, sessao.secretaria)
+        );
+
+        if (sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0) {
+          const sec = sessao.secretaria || 'SS';
+          let query = supabase
+            .from('folha_previas')
+            .select('competencia, secretaria_sigla, secretaria, unidade, faltas, atrasos_fracao, atrasos_dia, matricula');
+
+          const orConditions = sessao.unidades.map(u => {
+            const words = u.split(' ').filter(w => w.length > 2);
+            if (words.length > 0) return `unidade.ilike.%${words[0]}%`;
+            return `unidade.ilike.%${u}%`;
+          }).join(',');
+
+          if (orConditions) {
+            query = query.or(orConditions);
+          }
+
+          let folhaRows = [];
+          let folhaErr = null;
+          try {
+             folhaRows = await fetchAllSupabase(query);
+          } catch(e) {
+             folhaErr = e;
+          }
+
+          if (!folhaErr && folhaRows && folhaRows.length > 0) {
+            const userUndsUpper = sessao.unidades.map(u => String(u).toUpperCase().trim());
+            const filteredRows = folhaRows.filter(r => {
+              if (!r.unidade) return false;
+              const ru = String(r.unidade).toUpperCase().trim();
+              return userUndsUpper.some(u => ru === u || ru.includes(u) || u.includes(ru));
+            });
+
+            if (filteredRows.length > 0) {
+              const porComp = {};
+              filteredRows.forEach(r => {
+                const c = r.competencia;
+                const u = r.unidade;
+                const k = `${c}|${u}`;
+                if (!porComp[k]) {
+                  porComp[k] = {
+                    id: `custom_${c}_${u}`,
+                    competencia: c,
+                    secretaria_codigo: u,
+                    secretaria_sigla: u,
+                    secretaria_nome: u,
+                    total_ocorrencias: 0,
+                    total_faltas: 0,
+                    total_atrasos: 0,
+                    servidores_impactados: 0,
+                    total_desconto_acumulado: 0,
+                    matriculasSet: new Set(),
+                  };
+                }
+                const f = Number(r.faltas || 0);
+                const af = Number(r.atrasos_fracao || 0);
+                const ad = Number(r.atrasos_dia || 0);
+
+                porComp[k].total_faltas += f;
+                porComp[k].total_atrasos += (af + ad);
+                porComp[k].total_ocorrencias += (f + af + ad);
+                if (r.matricula) porComp[k].matriculasSet.add(r.matricula);
+              });
+
+              pub = Object.values(porComp).map(item => ({
+                ...item,
+                servidores_impactados: item.matriculasSet.size || item.servidores_impactados,
+              })).sort((a, b) => b.competencia.localeCompare(a.competencia)); // descending order
+            }
+          }
+        }
+      }
       setPublicadas(pub);
+      
+      const isApoioRestrito = isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length > 0;
+      if (isApoio && sessao?.secretaria && !isApoioRestrito) {
+        setView(sessao.secretaria);
+      }
     } catch (err) {
       setErro(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isApoio, sessao]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -581,12 +695,21 @@ export default function BiPrevias() {
     [publicadas, view],
   );
 
-  const secInfo = useMemo(
-    () => view && view !== 'consolidado'
-      ? (SECRETARIAS.find(s => s.codigo === view) || { codigo: view, numero: '?', sigla: view, cor: '#64748b' })
-      : null,
-    [view],
-  );
+  const secInfo = useMemo(() => {
+    if (!view || view === 'consolidado') return null;
+    const info = SECRETARIAS.find(s => s.codigo === view);
+    if (info) return info;
+
+    // Se não encontrou, assumimos que é uma unidade específica
+    const shortName = view.split('-').pop().substring(0, 30).trim();
+    return {
+      codigo: view,
+      numero: 'UN',
+      sigla: shortName,
+      nome: view,
+      cor: '#3b82f6',
+    };
+  }, [view]);
 
   const topbarSub = !view
     ? `${new Set(publicadas.map(d => d.secretaria_codigo)).size} secretarias com dados`

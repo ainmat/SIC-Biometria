@@ -1,4 +1,5 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useMemo } from 'react';
 import { User, Calendar } from 'lucide-react';
 import {
@@ -13,6 +14,31 @@ import {
   fetchEvolucaoServidor,
 } from '@/modules/folha/services/folhaService';
 import { fmtCompetencia } from '@/modules/folha/constants';
+import { matchUnidade } from '@/lib/utils';
+import { SECRETARIAS } from '@/lib/secretarias';
+
+function isExactSecretariaMatch(secCandidate, userSecretaria) {
+  if (!userSecretaria || !secCandidate) return false;
+  const target = String(userSecretaria).toUpperCase().trim();
+  const candidate = String(secCandidate).toUpperCase().trim();
+
+  if (candidate === target) return true;
+
+  const secMeta = SECRETARIAS.find(s => 
+    s.sigla.toUpperCase() === target || 
+    s.codigo.toUpperCase() === target || 
+    s.numero === target
+  );
+
+  if (secMeta) {
+    if (candidate === secMeta.sigla.toUpperCase()) return true;
+    if (candidate === secMeta.codigo.toUpperCase()) return true;
+    if (candidate === secMeta.numero) return true;
+    if (candidate === secMeta.nome.toUpperCase()) return true;
+  }
+  return false;
+}
+
 
 function NumBadge({ valor, label, cor, negativo = false }) {
   const v = Number(valor) || 0;
@@ -79,6 +105,7 @@ function calcConsecutivos(historico) {
 }
 
 export default function SimuladorFolha() {
+  const { sessao, isApoio } = useAuth();
   const [competencias, setCompetencias] = useState([]);
   const [secretarias,  setSecretarias]  = useState([]);
   const [unidades,     setUnidades]     = useState([]);
@@ -96,20 +123,43 @@ export default function SimuladorFolha() {
   const servidor = servidores.find(s => String(s.matricula) === selMat) || null;
 
   useEffect(() => {
-    fetchCompetencias().then(setCompetencias).catch(console.error);
+    fetchCompetencias().then(c => {
+      setCompetencias(c);
+      if (c.length && !selComp) setSelComp(c[0]);
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
     if (!selComp) { setSecretarias([]); setSelSec(''); return; }
-    fetchSecretariasDaCompetencia(selComp).then(setSecretarias).catch(console.error);
-    setSelSec(''); setSelUnd(''); setSelMat('');
-  }, [selComp]);
+    fetchSecretariasDaCompetencia(selComp).then(secs => {
+      if (isApoio && sessao?.secretaria) {
+        const secF = secs.filter(s => s === sessao.secretaria || s.includes(sessao.secretaria));
+        setSecretarias(secF.length ? secF : secs);
+        setSelSec(sessao.secretaria);
+      } else {
+        setSecretarias(secs);
+        setSelSec('');
+      }
+    }).catch(console.error);
+    setSelUnd(''); setSelMat('');
+  }, [selComp, isApoio, sessao]);
 
   useEffect(() => {
     if (!selComp) return;
-    fetchUnidadesDaCompetencia(selComp, selSec || null).then(setUnidades).catch(console.error);
-    setSelUnd(''); setSelMat('');
-  }, [selComp, selSec]);
+    const targetSec = isApoio && sessao?.secretaria ? sessao.secretaria : (selSec || null);
+    fetchUnidadesDaCompetencia(selComp, targetSec).then(unds => {
+      if (isApoio && sessao?.unidades && !sessao.unidades.includes('*')) {
+        const undF = unds.filter(u => sessao.unidades.includes(u));
+        setUnidades(undF);
+        if (undF.length === 1) setSelUnd(undF[0]);
+        else setSelUnd('');
+      } else {
+        setUnidades(unds);
+        setSelUnd('');
+      }
+    }).catch(console.error);
+    setSelMat('');
+  }, [selComp, selSec, isApoio, sessao]);
 
   useEffect(() => {
     if (!selComp) { setServidores([]); setSelMat(''); return; }
@@ -123,13 +173,39 @@ export default function SimuladorFolha() {
     fetchEvolucaoServidor(selMat).then(setHistorico).catch(console.error);
   }, [selMat]);
 
-  const servidoresFiltrados = servidores.filter(s => {
-    if (selSec && s.secretaria !== selSec && s.secretaria_sigla !== selSec) return false;
-    if (selUnd && s.unidade !== selUnd) return false;
-    if (!busca) return true;
-    const q = busca.toLowerCase();
-    return String(s.matricula).includes(q) || (s.nome || '').toLowerCase().includes(q);
-  });
+  const servidoresFiltrados = useMemo(() => {
+    let isRestrictedApoio = isApoio && sessao?.unidades && !sessao.unidades.includes('*');
+    let unidadesParaBuscar = isRestrictedApoio ? [...sessao.unidades] : [];
+
+    let targetSec = isApoio && sessao?.secretaria ? sessao.secretaria : selSec;
+
+    if (isApoio && sessao?.secretaria) {
+      const isRealSecretaria = isExactSecretariaMatch('SS', sessao.secretaria) || 
+                               SECRETARIAS.some(s => isExactSecretariaMatch(s.sigla, sessao.secretaria) || isExactSecretariaMatch(s.nome, sessao.secretaria));
+      
+      if (!isRealSecretaria) {
+        // Usuário digitou unidade no campo de secretaria
+        targetSec = null;
+        if (!unidadesParaBuscar.includes(sessao.secretaria)) unidadesParaBuscar.push(sessao.secretaria);
+        isRestrictedApoio = true;
+      }
+    }
+
+    return servidores.filter(s => {
+      if (targetSec && s.secretaria !== targetSec && s.secretaria_sigla !== targetSec) return false;
+      
+      if (isRestrictedApoio) {
+        if (!s.unidade) return false;
+        if (!unidadesParaBuscar.some(u => matchUnidade(u, s.unidade))) return false;
+      } else if (selUnd && s.unidade !== selUnd) {
+        return false;
+      }
+
+      if (!busca) return true;
+      const q = busca.toLowerCase();
+      return String(s.matricula).includes(q) || (s.nome || '').toLowerCase().includes(q);
+    });
+  }, [servidores, isApoio, sessao, selSec, selUnd, busca]);
 
   const faltas          = servidor ? (servidor.faltas           || 0) : 0;
   const atrasosDia      = servidor ? (servidor.atrasos_dia      || 0) : 0;
@@ -180,28 +256,51 @@ export default function SimuladorFolha() {
               </select>
             </div>
 
-            <StepLabel n="2" label="Secretaria (Opcional)" done={!!selSec} />
+            <StepLabel n="2" label="Secretaria" done={!!selSec} />
             <div style={{ marginBottom: 16, marginLeft: 30 }}>
-              <SearchSelect
-                value={selSec}
-                onChange={setSelSec}
-                disabled={!selComp}
-                placeholder="Todas as secretarias"
-                minWidth="100%"
-                options={secretarias.map(s => ({ value: s.sigla, label: `${s.sigla}${s.nome ? ` — ${s.nome}` : ''}` }))}
-              />
+              {isApoio ? (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 6,
+                  background: 'rgba(13,124,61,0.08)', border: '1px solid rgba(13,124,61,0.2)',
+                  color: '#0D7C3D', fontSize: 13, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 6, boxSizing: 'border-box'
+                }}>
+                  🔒 {sessao?.secretaria || selSec}
+                </div>
+              ) : (
+                <SearchSelect
+                  value={selSec}
+                  onChange={setSelSec}
+                  disabled={!selComp}
+                  placeholder="Todas as secretarias"
+                  minWidth="100%"
+                  options={secretarias.map(s => ({ value: s.sigla, label: `${s.sigla}${s.nome ? ` — ${s.nome}` : ''}` }))}
+                />
+              )}
             </div>
 
-            <StepLabel n="3" label="Unidade (Opcional)" done={!!selUnd} />
+            <StepLabel n="3" label="Unidade" done={!!selUnd} />
             <div style={{ marginBottom: 16, marginLeft: 30 }}>
-              <SearchSelect
-                value={selUnd}
-                onChange={setSelUnd}
-                disabled={!selComp}
-                placeholder="Todas as unidades..."
-                minWidth="100%"
-                options={unidades.map(u => ({ value: u, label: u }))}
-              />
+              {isApoio && sessao?.unidades && !sessao.unidades.includes('*') && sessao.unidades.length === 1 ? (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 6,
+                  background: 'rgba(13,124,61,0.08)', border: '1px solid rgba(13,124,61,0.2)',
+                  color: '#0D7C3D', fontSize: 12, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 6, boxSizing: 'border-box',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                }} title={sessao.unidades[0]}>
+                  🔒 {sessao.unidades[0]}
+                </div>
+              ) : (
+                <SearchSelect
+                  value={selUnd}
+                  onChange={setSelUnd}
+                  disabled={!selComp}
+                  placeholder="Todas as unidades..."
+                  minWidth="100%"
+                  options={unidades.map(u => ({ value: u, label: u }))}
+                />
+              )}
             </div>
 
             <StepLabel n="4" label="Servidor" done={!!selMat} />

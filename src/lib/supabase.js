@@ -16,6 +16,21 @@ export function sanitize(value) {
     .trim();
 }
 
+export async function fetchAllSupabase(query) {
+  let allData = [];
+  let from = 0;
+  const step = 999;
+  while (true) {
+    const { data, error } = await query.range(from, from + step);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length <= step) break;
+    from += step + 1;
+  }
+  return allData;
+}
+
 export async function fetchChamados() {
   const { data, error } = await supabase
     .from('chamados')
