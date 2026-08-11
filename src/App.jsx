@@ -24,7 +24,10 @@ import SimuladorFolha from '@/modules/folha/pages/SimuladorFolha';
 import ComparativoFolha from '@/modules/folha/pages/ComparativoFolha';
 import ConferenciaFolha from '@/modules/folha/pages/ConferenciaFolha';
 import MapaDescontos    from '@/modules/folha/pages/MapaDescontos';
+
+// Administração
 import GerenciarUsuarios from '@/modules/admin/pages/GerenciarUsuarios';
+import ImportarServidores from '@/modules/admin/pages/ImportarServidores';
 
 // Servidores
 import PainelServidores      from '@/modules/servidores/pages/PainelServidores';
@@ -131,6 +134,7 @@ export default function App() {
         {/* Administração */}
         <Route path="admin">
           <Route path="usuarios" element={<RequireAdmin><GerenciarUsuarios /></RequireAdmin>} />
+          <Route path="servidores/importar" element={<RequireAdmin><ImportarServidores /></RequireAdmin>} />
         </Route>
 
         {/* Redirecionamentos */}

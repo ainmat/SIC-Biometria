@@ -28,7 +28,8 @@ export async function fetchResumoServidores() {
         // 1. Pegar o total de registros (1 requisição rápida)
         const { count, error: countErr } = await supabase
           .from('funcionarios_infos')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .eq('ativo', true);
           
         if (countErr) throw countErr;
         if (!count || count === 0) return [];
@@ -40,6 +41,7 @@ export async function fetchResumoServidores() {
             supabase
               .from('funcionarios_infos')
               .select(COLS_RESUMO)
+              .eq('ativo', true)
               .range(i, i + PAGE_SIZE - 1)
           );
         }
@@ -69,7 +71,8 @@ export async function fetchServidoresPaginado(filtros = {}, page = 0, perPage = 
 
   let q = supabase
     .from('funcionarios_infos')
-    .select(COLS_LISTA, { count: 'exact' });
+    .select(COLS_LISTA, { count: 'exact' })
+    .eq('ativo', true);
 
   if (busca.trim()) {
     const t = busca.trim();
@@ -102,7 +105,8 @@ export async function fetchOpcoesServidores() {
   const sets = { Des_Secretaria: new Set(), Des_RegTrab: new Set(), Des_Padrao_Adm: new Set() };
   const { count } = await supabase
     .from('funcionarios_infos')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('ativo', true);
     
   if (count) {
     const promises = [];
@@ -111,6 +115,7 @@ export async function fetchOpcoesServidores() {
         supabase
           .from('funcionarios_infos')
           .select('Des_Secretaria,Des_RegTrab,Des_Padrao_Adm')
+          .eq('ativo', true)
           .range(i, i + PAGE_SIZE - 1)
       );
     }
