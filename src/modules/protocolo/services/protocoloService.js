@@ -120,16 +120,38 @@ function isMissingTableError(error) {
 }
 
 
-export async function fetchProtocolos() {
-  try {
+async function fetchAllProtocolosFromDB() {
+  let allData = [];
+  let start = 0;
+  const step = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
     const { data, error } = await supabase
       .from('protocolo_digital')
       .select('*')
-      .order('id', { ascending: false });
+      .order('id', { ascending: false })
+      .range(start, start + step - 1);
 
-    if (error) {
-      throw error;
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      allData = allData.concat(data);
+      if (data.length < step) {
+        hasMore = false;
+      } else {
+        start += step;
+      }
+    } else {
+      hasMore = false;
     }
+  }
+  return allData;
+}
+
+export async function fetchProtocolos() {
+  try {
+    const data = await fetchAllProtocolosFromDB();
     return { data: data || [], isMock: false };
   } catch (err) {
     if (isMissingTableError(err)) {
@@ -311,13 +333,7 @@ export async function importarProtocolos(lista) {
 
   try {
     // 1. Obter todos os protocolos atuais do Supabase
-    const { data: dbProtocolos, error: fetchErr } = await supabase
-      .from('protocolo_digital')
-      .select('*');
-
-    if (fetchErr) throw fetchErr;
-
-    const dbProts = dbProtocolos || [];
+    const dbProts = await fetchAllProtocolosFromDB();
     const now = new Date().toISOString();
     const hojeData = now.split('T')[0];
 
