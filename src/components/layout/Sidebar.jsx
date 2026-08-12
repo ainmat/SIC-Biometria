@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw, Download, ChevronRight } from 'lucide-react';
 import logoDarh from '../../../img/logo-darh.png';
 import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
@@ -310,9 +311,9 @@ function NavItem({ to, label, icon, end }) {
       end={end ?? false}
       className={({ isActive }) =>
         [
-          'group flex items-center gap-2.5 px-2.5 rounded-md cursor-pointer transition-all duration-150 select-none no-underline',
+          'group flex items-center gap-2.5 px-2.5 rounded-md cursor-pointer transition-all duration-150 select-none no-underline relative',
           isActive
-            ? 'bg-black/[0.06] dark:bg-white/10 text-foreground font-semibold'
+            ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold'
             : 'text-muted-foreground hover:bg-black/[0.04] dark:hover:bg-white/5 hover:text-foreground/90',
         ].join(' ')
       }
@@ -320,11 +321,21 @@ function NavItem({ to, label, icon, end }) {
     >
       {({ isActive }) => (
         <>
+          {isActive && (
+            <motion.div
+              layoutId="navItemIndicator"
+              className="absolute left-0 w-[3px] h-[16px] bg-emerald-500 rounded-r-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            />
+          )}
           <span
             className="shrink-0 transition-colors"
             style={{
               width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: isActive ? 'var(--text)' : 'var(--muted-c)',
+              color: isActive ? 'inherit' : 'var(--muted-c)',
+              marginLeft: isActive ? '4px' : '0px',
             }}
           >
             {icon}
@@ -385,28 +396,29 @@ function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
       </button>
 
       {/* Animated items container */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: open ? '1fr' : '0fr',
-          opacity: open ? 1 : 0,
-          transition: 'grid-template-rows 250ms ease, opacity 200ms ease',
-        }}
-      >
-        <div style={{ overflow: 'hidden', minHeight: 0 }}>
-          <div className="flex flex-col" style={{ gap: 1, paddingBottom: 4 }}>
-            {visibleItems.map(item => (
-              <NavItem
-                key={item.to}
-                to={item.to}
-                label={item.label}
-                icon={item.icon}
-                end={item.end}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className="flex flex-col" style={{ gap: 1, paddingBottom: 4 }}>
+              {visibleItems.map(item => (
+                <NavItem
+                  key={item.to}
+                  to={item.to}
+                  label={item.label}
+                  icon={item.icon}
+                  end={item.end}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

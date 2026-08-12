@@ -1,5 +1,6 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { supabase, fetchEquipamentos } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -163,8 +164,13 @@ export default function ParqueEquipamentos() {
                   </td>
                 </tr>
               ) : (
-                filtrado.map((eq) => (
-                  <tr key={eq.id}>
+                filtrado.map((eq, i) => (
+                  <motion.tr 
+                    key={eq.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.02, duration: 0.2 }}
+                  >
                     <td style={{
                       textAlign: 'right',
                       fontFamily: "'JetBrains Mono', monospace",
@@ -195,7 +201,7 @@ export default function ParqueEquipamentos() {
                     <td style={{ textAlign: 'center' }}>
                       <Badge style={fabricanteBadge(eq.fabricante)} />
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))
               )}
             </tbody>

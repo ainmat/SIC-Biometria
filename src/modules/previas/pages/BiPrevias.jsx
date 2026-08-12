@@ -13,7 +13,7 @@ import {
   SECRETARIAS, formatarCompetencia, getCorSecretaria, getNomeSecretaria,
 } from '@/modules/previas/constants';
 import { fetchBIPublicadas, fetchTopMatriculas } from '@/modules/previas/services/previasService';
-import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
+import { KpiCard, KpiGrid, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
 import { supabase, fetchAllSupabase } from '@/lib/supabase';
 
 function isExactSecretariaMatch(secCandidate, userSecretaria) {
@@ -239,13 +239,13 @@ function DashboardSecretaria({ publicadas, topMat, loadingTop, secInfo, onVoltar
         <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{publicadas.length} período{publicadas.length !== 1 ? 's' : ''} publicado{publicadas.length !== 1 ? 's' : ''}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 20 }}>
-        <KpiCard label="Prévias publicadas" value={fmt(publicadas.length)} sub="períodos"   cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
-        <KpiCard label="Ocorrências"         value={fmt(totalOcorr)}        sub="acumulado" cor="#15A050" icon={<TrendingUp />} isDark={isDark} />
-        <KpiCard label="Faltas (171)"         value={fmt(totalFaltas)}       sub="acumulado" cor="#ef4444" icon={<XCircle />} isDark={isDark} />
-        <KpiCard label="Atrasos (335)"        value={fmt(totalAtrasos)}      sub="acumulado" cor="#f97316" icon={<Clock />} isDark={isDark} />
-        <KpiCard label="Servidores"           value={fmt(totalServid)}       sub="acumulado" cor="#10b981" icon={<Users />} isDark={isDark} />
-      </div>
+      <KpiGrid style={{ gap: 14, marginBottom: 20, gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))' }}>
+        <KpiCard label="Prévias publicadas" value={publicadas.length} sub="períodos"   cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
+        <KpiCard label="Ocorrências"         value={totalOcorr}        sub="acumulado" cor="#15A050" icon={<TrendingUp />} isDark={isDark} />
+        <KpiCard label="Faltas (171)"         value={totalFaltas}       sub="acumulado" cor="#ef4444" icon={<XCircle />} isDark={isDark} />
+        <KpiCard label="Atrasos (335)"        value={totalAtrasos}      sub="acumulado" cor="#f97316" icon={<Clock />} isDark={isDark} />
+        <KpiCard label="Servidores"           value={totalServid}       sub="acumulado" cor="#10b981" icon={<Users />} isDark={isDark} />
+      </KpiGrid>
 
       <ChartCard title="Evolução Mensal" subtitle="Ocorrências, faltas e atrasos por competência" icon={<TrendingUp />} isDark={isDark} style={{ marginBottom: 20 }}>
         <div style={{ height: 240, position: 'relative' }}>
@@ -359,14 +359,14 @@ function DashboardConsolidado({ publicadas, topMat, loadingTop, onVoltar }) {
         <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{secretariasAtivas} secretarias · {totalPrevias} prévias</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 20 }}>
-        <KpiCard label="Prévias publicadas"   value={fmt(totalPrevias)}     sub="total"     cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
-        <KpiCard label="Ocorrências"           value={fmt(totalOcorrencias)} sub="acumulado" cor="#ef4444" icon={<TrendingUp />} isDark={isDark} />
-        <KpiCard label="Faltas (171)"          value={fmt(totalFaltas)}      sub="acumulado" cor="#dc2626" icon={<XCircle />} isDark={isDark} />
-        <KpiCard label="Atrasos (335)"         value={fmt(totalAtrasos)}     sub="acumulado" cor="#f97316" icon={<Clock />} isDark={isDark} />
-        <KpiCard label="Servidores Impactados" value={fmt(totalServidores)}  sub="acumulado" cor="#f59e0b" icon={<Users />} isDark={isDark} />
+      <KpiGrid style={{ gap: 14, marginBottom: 20, gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))' }}>
+        <KpiCard label="Prévias publicadas"   value={totalPrevias}     sub="total"     cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
+        <KpiCard label="Ocorrências"           value={totalOcorrencias} sub="acumulado" cor="#ef4444" icon={<TrendingUp />} isDark={isDark} />
+        <KpiCard label="Faltas (171)"          value={totalFaltas}      sub="acumulado" cor="#dc2626" icon={<XCircle />} isDark={isDark} />
+        <KpiCard label="Atrasos (335)"         value={totalAtrasos}     sub="acumulado" cor="#f97316" icon={<Clock />} isDark={isDark} />
+        <KpiCard label="Servidores Impactados" value={totalServidores}  sub="acumulado" cor="#f59e0b" icon={<Users />} isDark={isDark} />
         <KpiCard label="Maior Ocorrência"      value={secTop ? getNomeSecretaria(secTop[0]) : '—'} sub={secTop ? `${fmt(secTop[1])} ocorrências` : ''} cor="#0D7C3D" icon={<AlertTriangle />} isDark={isDark} />
-      </div>
+      </KpiGrid>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
         <ChartCard title="Evolução Mensal" subtitle="Ocorrências e servidores nos últimos 12 meses" icon={<TrendingUp />} isDark={isDark}>
@@ -456,12 +456,12 @@ function SelectionGrid({ publicadas, onSelect }) {
   return (
     <>
       {/* ── KPIs Superiores ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 24 }}>
+      <KpiGrid style={{ gap: 14, marginBottom: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <KpiCard label="Prévias" value={publicadas.length} sub={`${secretarias.length} secretarias ativas`} cor="#0D7C3D" icon={<Activity />} isDark={isDark} />
-        <KpiCard label="Ocorrências" value={fmt(totalOcorrConsol)} sub="acumuladas" cor="#f59e0b" icon={<TrendingUp />} isDark={isDark} />
-        <KpiCard label="Faltas" value={fmt(totalFaltasConsol)} sub={alertas > 0 ? `${alertas} alertas detectados` : 'Nenhum alerta'} cor="#ef4444" icon={<XCircle />} isDark={isDark} />
-        <KpiCard label="Atrasos" value={fmt(totalAtrasosConsol)} sub="registrados" cor="#ea580c" icon={<Timer />} isDark={isDark} />
-      </div>
+        <KpiCard label="Ocorrências" value={totalOcorrConsol} sub="acumuladas" cor="#f59e0b" icon={<TrendingUp />} isDark={isDark} />
+        <KpiCard label="Faltas" value={totalFaltasConsol} sub={alertas > 0 ? `${alertas} alertas detectados` : 'Nenhum alerta'} cor="#ef4444" icon={<XCircle />} isDark={isDark} />
+        <KpiCard label="Atrasos" value={totalAtrasosConsol} sub="registrados" cor="#ea580c" icon={<Timer />} isDark={isDark} />
+      </KpiGrid>
 
       {/* ── Banner Consolidado ── */}
       <button

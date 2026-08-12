@@ -21,7 +21,7 @@ import {
 } from '@/modules/folha/services/folhaService';
 import { fmtCompetencia, COR_SEC_FOLHA } from '@/modules/folha/constants';
 import { SearchSelect } from '@/components/ui/search-select';
-import { KpiCard, ChartCard, useDashboardTheme } from '@/components/ui/dashboard-card';
+import { KpiCard, KpiGrid, ChartCard, useDashboardTheme } from '@/components/ui/dashboard-card';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -591,7 +591,7 @@ export default function DashboardFolha() {
             </div>
 
             {vistaKpi === 'detalhado' ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 14, marginBottom: 20 }}>
+              <KpiGrid key="detalhado" style={{ gap: 14, marginBottom: 20, gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))' }}>
                 {[
                   { label: 'Servidores',  value: kpis.servidores,  cor: '#0D7C3D' },
                   { label: 'Faltas',      value: kpis.faltas,      cor: '#ef4444' },
@@ -601,11 +601,11 @@ export default function DashboardFolha() {
                   { label: 'HE 50%',      value: kpis.he50,        cor: '#10b981' },
                   { label: 'HE 100%',     value: kpis.he100,       cor: '#047857' },
                 ].map(({ label, value, cor }) => (
-                  <KpiCard key={label} label={label} value={value.toLocaleString('pt-BR')} cor={cor} isDark={isDark} />
+                  <KpiCard key={label} label={label} value={value} cor={cor} isDark={isDark} />
                 ))}
-              </div>
+              </KpiGrid>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 14, marginBottom: 20 }}>
+              <KpiGrid key="resumido" style={{ gap: 14, marginBottom: 20, gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))' }}>
                 {[
                   { label: 'Servidores',    value: kpis.servidores,                   cor: '#0D7C3D' },
                   { label: 'Faltas',        value: kpis.faltas,                       cor: '#ef4444' },
@@ -613,9 +613,9 @@ export default function DashboardFolha() {
                   { label: 'DSR',           value: kpis.dsr,                          cor: '#a78bfa' },
                   { label: 'Total HE',      value: kpis.he50 + kpis.he100,            cor: '#10b981' },
                 ].map(({ label, value, cor }) => (
-                  <KpiCard key={label} label={label} value={value.toLocaleString('pt-BR')} cor={cor} isDark={isDark} />
+                  <KpiCard key={label} label={label} value={value} cor={cor} isDark={isDark} />
                 ))}
-              </div>
+              </KpiGrid>
             )}
 
             {/* Servidores inline quando unidade selecionada */}

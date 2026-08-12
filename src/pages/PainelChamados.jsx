@@ -23,7 +23,7 @@ import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
 import { supabase, fetchChamados } from '@/lib/supabase';
 import { fmtDate, contarPor } from '@/lib/utils';
 import { COR_MOT, COR_SEC, CATEGORIAS_MOTIVO } from '@/lib/constants';
-import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle } from '@/components/ui/dashboard-card';
+import { KpiCard, KpiGrid, ChartCard, useDashboardTheme, chartTooltipStyle } from '@/components/ui/dashboard-card';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -198,10 +198,10 @@ export default function PainelChamados() {
         </div>
 
         {/* KPIs — estilo Efferd */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16, marginBottom: 24 }}>
+        <KpiGrid style={{ marginBottom: 24 }}>
           <KpiCard
             label="Total de Chamados"
-            value={total.toLocaleString('pt-BR')}
+            value={total}
             sub={periodoTag || 'Todos os períodos'}
             cor="#0D7C3D"
             icon={<ClipboardList />}
@@ -223,7 +223,7 @@ export default function PainelChamados() {
             icon={<HelpCircle />}
             isDark={isDark}
           />
-        </div>
+        </KpiGrid>
 
         {/* Charts Row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>

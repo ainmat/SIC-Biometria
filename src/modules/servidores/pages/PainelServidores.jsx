@@ -1,5 +1,6 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -8,6 +9,7 @@ import {
 import { Users, TrendingUp, Clock, BookOpen, AlertTriangle, Shield, Database } from 'lucide-react';
 import { fetchResumoServidores } from '@/modules/servidores/services/servidoresService';
 import { isComissionado, anosParaAposentadoria, ALERTAS, APOSENTADORIA } from '@/modules/servidores/config/servidoresConfig';
+import { AnimatedNumber } from '@/components/ui/dashboard-card';
 
 const fmt = (n) => Math.round(n).toLocaleString('pt-BR');
 const pct = (v, total) => total > 0 ? ((v / total) * 100).toFixed(1) : '0.0';
@@ -72,16 +74,20 @@ function CustomTooltip({ active, payload, label }) {
 
 function KpiCard({ icon: Icon, label, value, sub, cor = '#0D7C3D' }) {
   return (
-    <div style={{ flex: 1, minWidth: 0, background: 'linear-gradient(160deg, rgba(0, 0, 0, 0.02) 0%, rgba(0,0,0,.015) 100%)', border: '1px solid rgba(0, 0, 0, 0.05)', borderTop: `3px solid ${cor}`, borderRadius: 14, padding: '18px 20px' }}>
+    <motion.div
+      variants={{ hidden: { opacity: 0, y: 24, scale: 0.96 }, show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 340, damping: 22, mass: 0.8 } } }}
+      whileHover={{ y: -2, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', transition: { duration: 0.2 } }}
+      style={{ flex: 1, minWidth: 0, background: 'linear-gradient(160deg, rgba(0, 0, 0, 0.02) 0%, rgba(0,0,0,.015) 100%)', border: '1px solid rgba(0, 0, 0, 0.05)', borderTop: `3px solid ${cor}`, borderRadius: 14, padding: '18px 20px', willChange: 'transform, opacity' }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <div style={{ width: 32, height: 32, borderRadius: 9, background: `${cor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={16} color={cor} />
         </div>
         <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em' }}>{label}</span>
       </div>
-      <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{fmt(value)}</div>
+      <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}><AnimatedNumber value={value} /></div>
       {sub && <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 6 }}>{sub}</div>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -268,12 +274,17 @@ export default function PainelServidores() {
             )}
 
             {/* KPIs */}
-            <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } }}
+              style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}
+            >
               <KpiCard icon={Users}      label="Total de Servidores" value={total}            sub={`${totalSecs} secretaria${totalSecs !== 1 ? 's' : ''}`} cor="#0D7C3D" />
               <KpiCard icon={TrendingUp} label="Últ. 12 meses"       value={recentes}         sub="novas admissões"                                         cor="#10b981" />
               <KpiCard icon={Clock}      label="Idade média"          value={idadeMedia ?? '—'} sub="anos (média do quadro)"                                 cor="#f97316" />
               <KpiCard icon={BookOpen}   label="Escolaridades"        value={byEscol.length}   sub="níveis distintos registrados"                            cor="#a855f7" />
-            </div>
+            </motion.div>
 
             {/* Secretarias + mini-pies */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: 14, marginBottom: 20, alignItems: 'start' }}>

@@ -1,10 +1,59 @@
 /**
  * dashboard-card.jsx
- * Componentes reutilizáveis com o estilo do Efferd Dashboard 2.
  * Suportam modo claro e escuro via `isDark` prop ou hook interno.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+
+/* ─── Variants de animação ────────────────────────────────────────────────── */
+const kpiContainerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.07,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const kpiItemVariants = {
+  hidden: { opacity: 0, y: 24, scale: 0.96 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 340,
+      damping: 22,
+      mass: 0.8,
+    },
+  },
+};
+
+/* ─── AnimatedNumber ──────────────────────────────────────────────────────── */
+export function AnimatedNumber({ value }) {
+  const isNumber = typeof value === 'number';
+  const motionValue = useMotionValue(0);
+  const springValue = useSpring(motionValue, { stiffness: 100, damping: 30, mass: 1 });
+
+  useEffect(() => {
+    if (isNumber) {
+      motionValue.set(value);
+    }
+  }, [value, isNumber, motionValue]);
+
+  const display = useTransform(springValue, (current) => {
+    return Math.round(current).toLocaleString('pt-BR');
+  });
+
+  if (!isNumber) {
+    return <span>{value}</span>;
+  }
+
+  return <motion.span>{display}</motion.span>;
+}
 
 /* ─── Tokens de tema ──────────────────────────────────────────────────────── */
 export function useDashboardTheme(isDark) {
@@ -54,21 +103,28 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
   const accentBrd = accentRgb ? `rgba(${accentRgb},0.25)` : 'rgba(13,124,61,0.25)';
 
   return (
-    <div className="kpi-card" style={{
-      background:    t.card,
-      border:        `1px solid ${t.border}`,
-      borderRadius:  18,
-      padding:       '18px 20px',
-      backdropFilter:'blur(12px)',
-      boxShadow:     isDark
-        ? '0 4px 24px rgba(0,0,0,0.3)'
-        : '0 2px 16px rgba(0,0,0,0.06)',
-      transition:    'border-color .2s, box-shadow .2s',
-      position:      'relative',
-      overflow:      'hidden',
-    }}
-    onMouseEnter={e => { e.currentTarget.style.borderColor = t.borderHover; e.currentTarget.style.boxShadow = isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.1)'; }}
-    onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = isDark ? '0 4px 24px rgba(0,0,0,0.3)' : '0 2px 16px rgba(0,0,0,0.06)'; }}
+    <motion.div
+      className="kpi-card"
+      variants={kpiItemVariants}
+      whileHover={{
+        borderColor: t.borderHover,
+        boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.1)',
+        y: -2,
+        transition: { duration: 0.2 },
+      }}
+      style={{
+        background:    t.card,
+        border:        `1px solid ${t.border}`,
+        borderRadius:  18,
+        padding:       '18px 20px',
+        backdropFilter:'blur(12px)',
+        boxShadow:     isDark
+          ? '0 4px 24px rgba(0,0,0,0.3)'
+          : '0 2px 16px rgba(0,0,0,0.06)',
+        position:      'relative',
+        overflow:      'hidden',
+        willChange:    'transform, opacity',
+      }}
     >
       {/* Glow de fundo */}
       <div style={{
@@ -93,7 +149,7 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
         <span className="text-primary" style={{ fontSize: 28, fontWeight: 800, color: t.text, letterSpacing: '-0.02em', lineHeight: 1 }}>
-          {value}
+          <AnimatedNumber value={value} />
         </span>
         {trend && trendLabel && (
           <span style={{
@@ -115,7 +171,7 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
           {sub}
         </span>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -176,6 +232,36 @@ export function ChartCard({ title, subtitle, badge, icon, actions, children, isD
         {children}
       </div>
     </div>
+  );
+}
+
+/* ─── KpiGrid — wrapper animado com stagger ──────────────────────────────── */
+/**
+ * Wrapper para animar um grupo de KpiCards com entrada escalonada.
+ * Aceita os mesmos props de style de um div grid.
+ *
+ * @param {object}  props
+ * @param {object}  [props.style]    - Estilos extras do grid container
+ * @param {string}  [props.className]
+ * @param {React.ReactNode} props.children - KpiCards filhos
+ */
+export function KpiGrid({ children, style = {}, className = '' }) {
+  return (
+    <motion.div
+      className={className}
+      variants={kpiContainerVariants}
+      initial="hidden"
+      animate="show"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 16,
+        marginBottom: 24,
+        ...style,
+      }}
+    >
+      {children}
+    </motion.div>
   );
 }
 

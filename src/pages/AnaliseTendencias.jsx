@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { COR_MOT, COR_SEC } from '@/lib/constants';
 import { contarPor } from '@/lib/utils';
 import { TrendingUp, BarChart2, Building2, AlertTriangle, Layers, Activity } from 'lucide-react';
-import { KpiCard, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
+import { KpiCard, KpiGrid, ChartCard, useDashboardTheme, chartTooltipStyle, chartScaleOpts } from '@/components/ui/dashboard-card';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -162,7 +162,7 @@ export default function AnaliseTendencias() {
 
       <div className="content">
         {/* KPIs — novo estilo Efferd */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16, marginBottom: 24 }}>
+        <KpiGrid style={{ marginBottom: 24 }}>
           <KpiCard
             label="Total de Chamados"
             value={dados.length.toLocaleString('pt-BR')}
@@ -189,7 +189,7 @@ export default function AnaliseTendencias() {
             icon={<Layers />}
             isDark={isDark}
           />
-        </div>
+        </KpiGrid>
 
         {/* Charts */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>

@@ -6,6 +6,7 @@ import { fmtDate, contarPor } from '@/lib/utils';
 import { COR_SEC } from '@/lib/constants';
 import { Upload } from 'lucide-react';
 import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
+import { motion } from 'motion/react';
 
 const FILTROS_SEC = ['Todos', 'Saúde', 'Educação', 'Outros'];
 const FILTROS_MOT = ['Todos', 'EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE PONTO', 'CADASTRO'];
@@ -200,11 +201,18 @@ export default function TodosChamados() {
                   </td>
                 </tr>
               ) : (
-                arr.map((r) => {
+                arr.map((r, i) => {
                   const st = r.status || 'Aguardando Atendimento';
                   const cor = COR_SEC[r.secretaria] || '#64748b';
                   return (
-                    <tr key={r.ticket} className="clickable-row" onClick={() => setModal(r)}>
+                    <motion.tr
+                      key={r.ticket}
+                      className="clickable-row"
+                      onClick={() => setModal(r)}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03, duration: 0.2 }}
+                    >
                       <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, color: '#15A050', fontSize: 11 }}>
                         #{r.ticket}
                       </td>
@@ -224,7 +232,7 @@ export default function TodosChamados() {
                       <td style={{ fontSize: 11, color: 'var(--sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {r.problema || '—'}
                       </td>
-                    </tr>
+                    </motion.tr>
                   );
                 })
               )}
