@@ -24,15 +24,28 @@ export function parseExcelDate(val) {
   return isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-// Limpa nome da secretaria, removendo prefixo "Secretaria de "
+import { SECRETARIAS } from '@/lib/secretarias';
+
 export function limparSecretaria(sec) {
   if (!sec) return 'Outros';
   let s = String(sec).trim();
   
-  // Regex case-insensitive para remover "Secretaria de/do/da" e variações
-  s = s.replace(/^(secretaria\s+de\s+|secretaria\s+do\s+|secretaria\s+da\s+|sec\.\s+de\s+|sec\s+de\s+)/i, '');
-  
-  // Capitaliza a primeira letra
+  const upper = s.toUpperCase();
+  const matched = SECRETARIAS.find(x => 
+     x.nome.toUpperCase() === upper || 
+     x.sigla.toUpperCase() === upper ||
+     x.nomesXLS.some(nx => nx === upper)
+  );
+  if (matched) return matched.nome;
+
+  let semPrefixo = s.replace(/^(secretaria\s+de\s+|secretaria\s+do\s+|secretaria\s+da\s+|sec\.\s+de\s+|sec\s+de\s+)/i, '').trim();
+  const upperSemPrefixo = semPrefixo.toUpperCase();
+  const matched2 = SECRETARIAS.find(x => 
+     x.nome.toUpperCase().includes(upperSemPrefixo) ||
+     x.nomesXLS.some(nx => nx.includes(upperSemPrefixo))
+  );
+  if (matched2) return matched2.nome;
+
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 

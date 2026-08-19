@@ -6,8 +6,8 @@ import { lerArquivoXLS, processarLinhasPlanilha } from '../utils/processarProtoc
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
+import { SECRETARIAS } from '@/lib/secretarias';
 const STATUS_OPCOES = ['Aberto', 'Em Análise', 'Concluído'];
-const SECRETARIAS = ['Administração', 'Saúde', 'Educação', 'Finanças', 'Obras', 'Outros'];
 const TIPOS = [
   'Abono de Faltas - Atestado Médico',
   'Retificação de Batida de Ponto',
@@ -481,7 +481,7 @@ export default function ConsultaProtocolo() {
         if (!error && data) {
           const ops = data.filter(u => 
             u.ativo && 
-            u.role !== 'viewer' && 
+            (u.role === 'admin' || u.role === 'master') && 
             !u.nome.toLowerCase().includes('teste')
           );
           setOperadores(ops.map(u => u.nome));
@@ -499,6 +499,9 @@ export default function ConsultaProtocolo() {
   const [filtroStatus, setFiltroStatus] = useState('');
   const [filtroSecretaria, setFiltroSecretaria] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
+  const [filtroResponsavel, setFiltroResponsavel] = useState('');
+  const [filtroPrioridade, setFiltroPrioridade] = useState('');
+  const [mostrarFiltrosAvan, setMostrarFiltrosAvan] = useState(false);
 
   const tiposDisponiveis = useMemo(() => {
     const ts = new Set(TIPOS);
@@ -546,8 +549,14 @@ export default function ConsultaProtocolo() {
       const matchStatus = !filtroStatus || p.status === filtroStatus;
       const matchSec = !filtroSecretaria || p.secretaria === filtroSecretaria;
       const matchTipo = !filtroTipo || p.tipo_solicitacao === filtroTipo;
+      
+      const pResp = p.responsavel || 'Não atribuído';
+      const matchResp = !filtroResponsavel || pResp === filtroResponsavel;
+      
+      const pPrio = p.prioridade || 'Normal';
+      const matchPrio = !filtroPrioridade || pPrio === filtroPrioridade;
 
-      return matchBusca && matchStatus && matchSec && matchTipo;
+      return matchBusca && matchStatus && matchSec && matchTipo && matchResp && matchPrio;
     });
 
     // Filtro por "Meus Protocolos"
@@ -575,7 +584,7 @@ export default function ConsultaProtocolo() {
     }
 
     return res;
-  }, [dados, busca, filtroStatus, filtroSecretaria, filtroTipo, sortField, sortDirection, abaAtiva, sessao]);
+  }, [dados, busca, filtroStatus, filtroSecretaria, filtroTipo, filtroResponsavel, filtroPrioridade, sortField, sortDirection, abaAtiva, sessao]);
 
   const SEL = {
     padding: '7px 10px',
@@ -645,78 +654,158 @@ export default function ConsultaProtocolo() {
         </div>
 
         {/* Barra de Filtros */}
-        <div className="chart-card" style={{ padding: '14px 18px', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+        <div className="chart-card" style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 200 }}>
-            <Search size={15} color="#64748b" />
-            <input
-              type="text"
-              value={busca}
-              onChange={e => setBusca(e.target.value)}
-              placeholder="Buscar por Requerente ou Protocolo..."
-              style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, width: '100%' }}
-            />
-          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 8, padding: '6px 12px', flex: 1, minWidth: 200 }}>
+              <Search size={15} color="#64748b" />
+              <input
+                type="text"
+                value={busca}
+                onChange={e => setBusca(e.target.value)}
+                placeholder="Buscar por Requerente ou Protocolo..."
+                style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: 13, width: '100%' }}
+              />
+            </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Filter size={13} color="#64748b" />
-            <select
-              value={filtroStatus}
-              onChange={e => setFiltroStatus(e.target.value)}
-              style={SEL}
-            >
-              <option value="">Todos os status</option>
-              {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <select
-              value={filtroSecretaria}
-              onChange={e => setFiltroSecretaria(e.target.value)}
-              style={SEL}
-            >
-              <option value="">Todas secretarias</option>
-              {SECRETARIAS.map(sec => <option key={sec} value={sec}>{sec}</option>)}
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <select
-              value={filtroTipo}
-              onChange={e => setFiltroTipo(e.target.value)}
-              style={{ ...SEL, maxWidth: 220 }}
-            >
-              <option value="">Todos os tipos</option>
-              {tiposDisponiveis.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
-            </select>
-          </div>
-
-          {/* Ordenação - Visual Asana */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-            <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ordenar:</span>
-            <select
-              value={sortField}
-              onChange={e => setSortField(e.target.value)}
-              style={SEL}
-            >
-              <option value="data_abertura">Data de Abertura</option>
-              <option value="numero_protocolo">Número do Protocolo</option>
-              <option value="requerente_nome">Requerente</option>
-              <option value="data_conclusao">Data de Conclusão</option>
-              <option value="prioridade">Prioridade</option>
-            </select>
             <button
-              onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+              onClick={() => setMostrarFiltrosAvan(!mostrarFiltrosAvan)}
               style={{
+                display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 12px', borderRadius: 8,
-                background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
-                color: 'var(--text)', cursor: 'pointer', fontSize: 12, fontWeight: 600
+                background: mostrarFiltrosAvan ? 'rgba(13, 124, 61, 0.1)' : 'var(--surface)',
+                border: mostrarFiltrosAvan ? '1px solid rgba(13, 124, 61, 0.2)' : '1px solid var(--border-c)',
+                color: mostrarFiltrosAvan ? '#0D7C3D' : 'var(--text)', fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.2s'
               }}
             >
-              {sortDirection === 'asc' ? 'Crescente' : 'Decrescente'}
+              <Filter size={14} />
+              Filtros Avançados
+              {(filtroStatus || filtroSecretaria || filtroTipo || filtroResponsavel || filtroPrioridade) && (
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', marginLeft: 2 }} />
+              )}
             </button>
+
+            {/* Ordenação - Visual Asana */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+              <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ordenar:</span>
+              <select
+                value={sortField}
+                onChange={e => setSortField(e.target.value)}
+                style={SEL}
+              >
+                <option value="data_abertura">Data de Abertura</option>
+                <option value="numero_protocolo">Número do Protocolo</option>
+                <option value="requerente_nome">Requerente</option>
+                <option value="data_conclusao">Data de Conclusão</option>
+                <option value="prioridade">Prioridade</option>
+              </select>
+              <button
+                onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                style={{
+                  padding: '7px 12px', borderRadius: 8,
+                  background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  color: 'var(--text)', cursor: 'pointer', fontSize: 12, fontWeight: 600
+                }}
+              >
+                {sortDirection === 'asc' ? 'Crescente' : 'Decrescente'}
+              </button>
+            </div>
           </div>
+
+          {/* Área expansível de filtros */}
+          {mostrarFiltrosAvan && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 4, padding: '12px 14px', background: 'rgba(0,0,0,0.02)', borderRadius: 8, border: '1px solid rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 45 }}>Status:</span>
+                <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} style={{ ...SEL, minWidth: 160 }}>
+                  <option value="">Todos</option>
+                  {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 65 }}>Secretaria:</span>
+                <select value={filtroSecretaria} onChange={e => setFiltroSecretaria(e.target.value)} style={{ ...SEL, minWidth: 160 }}>
+                  <option value="">Todas</option>
+                  {SECRETARIAS.map(sec => <option key={sec.nome} value={sec.nome}>{sec.nome}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 35 }}>Tipo:</span>
+                <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} style={{ ...SEL, maxWidth: 220 }}>
+                  <option value="">Todos</option>
+                  {tiposDisponiveis.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 75 }}>Responsável:</span>
+                <select value={filtroResponsavel} onChange={e => setFiltroResponsavel(e.target.value)} style={{ ...SEL, maxWidth: 180 }}>
+                  <option value="">Todos</option>
+                  <option value="Não atribuído">Não atribuído</option>
+                  {operadores.map(op => <option key={op} value={op}>{op}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 62 }}>Prioridade:</span>
+                <select value={filtroPrioridade} onChange={e => setFiltroPrioridade(e.target.value)} style={{ ...SEL, maxWidth: 160 }}>
+                  <option value="">Todas</option>
+                  <option value="Baixa">Baixa</option>
+                  <option value="Normal">Normal</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Tags de Filtros Ativos */}
+          {(filtroStatus || filtroSecretaria || filtroTipo || filtroResponsavel || filtroPrioridade) && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+              {filtroStatus && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Status:</span> {filtroStatus}
+                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroStatus('')}>×</span>
+                </div>
+              )}
+              {filtroSecretaria && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Secretaria:</span> {filtroSecretaria}
+                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroSecretaria('')}>×</span>
+                </div>
+              )}
+              {filtroTipo && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Tipo:</span> {filtroTipo}
+                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroTipo('')}>×</span>
+                </div>
+              )}
+              {filtroResponsavel && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Resp:</span> {filtroResponsavel}
+                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroResponsavel('')}>×</span>
+                </div>
+              )}
+              {filtroPrioridade && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Prio:</span> {filtroPrioridade}
+                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroPrioridade('')}>×</span>
+                </div>
+              )}
+              
+              <div 
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, color: 'var(--muted-c)', cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={() => {
+                  setFiltroStatus(''); setFiltroSecretaria(''); setFiltroTipo(''); setFiltroResponsavel(''); setFiltroPrioridade('');
+                }}
+              >
+                Limpar todos
+              </div>
+            </div>
+          )}
 
         </div>
 
