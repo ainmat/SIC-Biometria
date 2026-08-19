@@ -1,7 +1,7 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, ArrowRight, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Calendar, Plus, ChevronUp, ChevronDown } from 'lucide-react';
-import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo } from '../services/protocoloService';
+import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo, fetchProtocoloDetalhe } from '../services/protocoloService';
 import { lerArquivoXLS, processarLinhasPlanilha } from '../utils/processarProtocoloXLS';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -48,15 +48,50 @@ function formatarDataSimples(isoStr) {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+export function obterIniciais(nome) {
+  if (!nome) return '';
+  return nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+}
+
 // Modal de detalhes e tramitação
-function DetalhesModal({ protocolo, onClose, onRefresh }) {
+function DetalhesModal({ protocolo, onClose, onRefresh, operadores, isAdmin, meuNome }) {
   const { sessao } = useAuth();
+  const [localProt, setLocalProt] = useState(protocolo);
+  
   const [novoStatus, setNovoStatus] = useState(protocolo.status);
   const [observacao, setObservacao] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [erro, setErro] = useState('');
+  const [editingField, setEditingField] = useState(null);
 
-  const stStyle = CORES_STATUS[protocolo.status] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#1e293b' };
+  useEffect(() => {
+    setLocalProt(protocolo);
+    setNovoStatus(protocolo.status);
+  }, [protocolo]);
+
+  const stStyle = CORES_STATUS[localProt.status] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#1e293b', border: 'rgba(0, 0, 0, 0.06)' };
+  const prioStyle = CORES_PRIORIDADE[localProt.prioridade || 'Normal'] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#cbd5e1', border: 'rgba(0, 0, 0, 0.06)' };
+
+  async function handleUpdateField(campo, valor) {
+    try {
+      setEditingField(null);
+      if (campo === 'status') {
+        const operador = sessao?.nome || sessao?.username || 'Operador';
+        await atualizarStatusProtocolo(localProt.id, valor, `Status alterado no detalhamento`, operador);
+      } else {
+        await atualizarProtocolo(localProt.id, { [campo]: valor });
+      }
+      
+      const res = await fetchProtocoloDetalhe(localProt.id);
+      if (res.data) {
+        setLocalProt(res.data);
+        setNovoStatus(res.data.status);
+      }
+      onRefresh();
+    } catch (err) {
+      alert('Erro ao atualizar: ' + err.message);
+    }
+  }
 
   async function handleTramitar(e) {
     e.preventDefault();
@@ -68,10 +103,15 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
     setSubmitting(true);
     try {
       const operador = sessao?.nome || sessao?.username || 'Administrador';
-      await atualizarStatusProtocolo(protocolo.id, novoStatus, observacao, operador);
+      await atualizarStatusProtocolo(localProt.id, novoStatus, observacao, operador);
       setObservacao('');
+      
+      const res = await fetchProtocoloDetalhe(localProt.id);
+      if (res.data) {
+        setLocalProt(res.data);
+        setNovoStatus(res.data.status);
+      }
       onRefresh();
-      onClose();
     } catch (err) {
       setErro(err.message || 'Erro ao atualizar protocolo');
     } finally {
@@ -79,77 +119,247 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
     }
   }
 
+  function extrairAutor(texto) {
+    const regex = /^(.*)\s\((.*?)\)$/;
+    const match = texto.match(regex);
+    if (match) {
+      return { mensagem: match[1], autor: match[2] };
+    }
+    return { mensagem: texto, autor: 'Sistema' };
+  }
+
+  const isAtrasado = () => {
+    if (!localProt.data_conclusao || localProt.status === 'Concluído') return false;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const parts = localProt.data_conclusao.split('-');
+    const conclusao = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    conclusao.setHours(0, 0, 0, 0);
+    return conclusao < hoje;
+  };
+  const atrasado = isAtrasado();
+
   return (
     <div className="modal-overlay show" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="chamado-modal" style={{ maxWidth: 640 }}>
+      <div className="chamado-modal" style={{ maxWidth: 680 }}>
         <div className="chamado-modal-header">
           <div className="chamado-modal-title">Detalhes do Protocolo</div>
           <button className="chamado-modal-close" onClick={onClose}>×</button>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{protocolo.numero_protocolo}</div>
-          <span style={{
-            padding: '3px 9px', borderRadius: 6,
-            background: stStyle.bg, color: stStyle.text,
-            border: `1px solid ${stStyle.border}`,
-            fontSize: 11, fontWeight: 600
-          }}>
-            {protocolo.status}
-          </span>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{localProt.numero_protocolo}</div>
         </div>
 
         <div className="chamado-modal-grid" style={{ marginBottom: 16 }}>
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Requerente</div>
-            <div className="chamado-modal-value">{protocolo.requerente_nome}</div>
+            <div className="chamado-modal-value">{localProt.requerente_nome}</div>
           </div>
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Matrícula</div>
-            <div className="chamado-modal-value">{protocolo.requerente_matricula || 'Não informada'}</div>
+            <div className="chamado-modal-value">{localProt.requerente_matricula || 'Não informada'}</div>
           </div>
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Secretaria</div>
-            <div className="chamado-modal-value">{protocolo.secretaria}</div>
+            <div className="chamado-modal-value">{localProt.secretaria}</div>
           </div>
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Tipo de Solicitação</div>
-            <div className="chamado-modal-value">{protocolo.tipo_solicitacao}</div>
+            <div className="chamado-modal-value">{localProt.tipo_solicitacao}</div>
           </div>
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Data de Abertura</div>
-            <div className="chamado-modal-value">{formatarData(protocolo.data_abertura)}</div>
+            <div className="chamado-modal-value">{formatarData(localProt.data_abertura)}</div>
           </div>
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Prazo Estimado</div>
-            <div className="chamado-modal-value">{formatarDataSimples(protocolo.prazo_estimado)}</div>
+            <div className="chamado-modal-value">{formatarDataSimples(localProt.prazo_estimado)}</div>
           </div>
+          
+          {/* Status editável */}
+          <div className="chamado-modal-item">
+            <div className="chamado-modal-label">Status</div>
+            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
+              {editingField === 'status' ? (
+                <select
+                  defaultValue={localProt.status}
+                  onChange={(e) => handleUpdateField('status', e.target.value)}
+                  onBlur={() => setEditingField(null)}
+                  autoFocus
+                  style={{
+                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                    border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
+                  }}
+                >
+                  {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
+                </select>
+              ) : (
+                <span 
+                  onClick={() => setEditingField('status')}
+                  style={{
+                    padding: '3px 8px', borderRadius: 6,
+                    background: stStyle.bg, color: stStyle.text,
+                    border: `1px solid ${stStyle.border}`,
+                    fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer'
+                  }}
+                  title="Clique para alterar"
+                >
+                  {localProt.status}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Responsável editável */}
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Responsável</div>
-            <div className="chamado-modal-value">{protocolo.responsavel || 'Não atribuído'}</div>
+            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
+              {editingField === 'responsavel' ? (
+                <div style={{ position: 'relative' }}>
+                  <select
+                    defaultValue={localProt.responsavel || ''}
+                    onChange={(e) => handleUpdateField('responsavel', e.target.value || null)}
+                    onBlur={() => setEditingField(null)}
+                    autoFocus
+                    style={{
+                      padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                      border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none', width: '100%'
+                    }}
+                  >
+                    <option value="">Ninguém</option>
+                    {operadores.map(op => <option key={op} value={op}>{op}</option>)}
+                  </select>
+                </div>
+              ) : localProt.responsavel ? (
+                (localProt.responsavel === meuNome || isAdmin) ? (
+                  <div 
+                    onClick={() => setEditingField('responsavel')}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0, 0, 0, 0.04)' }}
+                    title="Clique para alterar"
+                  >
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {obterIniciais(localProt.responsavel)}
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--text)' }}>{localProt.responsavel}</span>
+                  </div>
+                ) : (
+                  <div 
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'not-allowed', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', opacity: 0.5 }}
+                    title="Apenas o próprio ou Admin pode alterar"
+                  >
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#475569', color: 'var(--muted-c)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {obterIniciais(localProt.responsavel)}
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>{localProt.responsavel}</span>
+                  </div>
+                )
+              ) : (
+                <div 
+                  onClick={() => setEditingField('responsavel')}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, border: '1px dashed rgba(0,0,0,0.18)', color: 'var(--muted-c)' }}
+                  title="Atribuir"
+                >
+                  <Plus size={12} />
+                  <span style={{ fontSize: 11 }}>Atribuir</span>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Data de Conclusão editável */}
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Data de Conclusão</div>
-            <div className="chamado-modal-value">{formatarDataSimples(protocolo.data_conclusao)}</div>
+            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
+              {editingField === 'data_conclusao' ? (
+                <input
+                  type="date"
+                  defaultValue={localProt.data_conclusao || ''}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleUpdateField('data_conclusao', e.target.value || null);
+                    }
+                    if (e.key === 'Escape') setEditingField(null);
+                  }}
+                  onBlur={(e) => handleUpdateField('data_conclusao', e.target.value || null)}
+                  autoFocus
+                  style={{
+                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                    border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
+                  }}
+                />
+              ) : localProt.data_conclusao ? (
+                <div 
+                  onClick={() => setEditingField('data_conclusao')}
+                  style={{ fontSize: 12, color: atrasado ? '#ef4444' : 'var(--text)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  title="Clique para alterar"
+                >
+                  <Calendar size={12} color={atrasado ? '#ef4444' : '#64748b'} />
+                  <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>{formatarDataSimples(localProt.data_conclusao)}</span>
+                </div>
+              ) : (
+                <div 
+                  onClick={() => setEditingField('data_conclusao')}
+                  style={{ fontSize: 12, color: 'var(--muted-c)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  title="Definir data"
+                >
+                  <Calendar size={12} />
+                  <span style={{ borderBottom: '1px dashed rgba(0,0,0,0.18)' }}>Definir data</span>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Prioridade editável */}
           <div className="chamado-modal-item">
             <div className="chamado-modal-label">Prioridade</div>
-            <div className="chamado-modal-value">{protocolo.prioridade || 'Normal'}</div>
+            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
+              {editingField === 'prioridade' ? (
+                <select
+                  defaultValue={localProt.prioridade || 'Normal'}
+                  onChange={(e) => handleUpdateField('prioridade', e.target.value)}
+                  onBlur={() => setEditingField(null)}
+                  autoFocus
+                  style={{
+                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                    border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
+                  }}
+                >
+                  <option value="Baixa">Baixa</option>
+                  <option value="Normal">Normal</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              ) : (
+                <span 
+                  onClick={() => setEditingField('prioridade')}
+                  style={{
+                    padding: '3px 8px', borderRadius: 6,
+                    background: prioStyle.bg, color: prioStyle.text,
+                    border: `1px solid ${prioStyle.border}`,
+                    fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer'
+                  }}
+                  title="Clique para alterar"
+                >
+                  {localProt.prioridade || 'Normal'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="chamado-modal-item" style={{ marginBottom: 16 }}>
           <div className="chamado-modal-label">Descrição / Motivação</div>
-          <div className="chamado-modal-desc" style={{ whiteSpace: 'pre-wrap' }}>{protocolo.descricao || 'Nenhuma descrição fornecida.'}</div>
+          <div className="chamado-modal-desc" style={{ whiteSpace: 'pre-wrap' }}>{localProt.descricao || 'Nenhuma descrição fornecida.'}</div>
         </div>
 
-        {protocolo.documento_anexo && (
+        {localProt.documento_anexo && (
           <div className="chamado-modal-item" style={{ marginBottom: 16 }}>
             <div className="chamado-modal-label">Documento Anexo</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#15A050', marginTop: 4 }}>
               <FileText size={14} />
               <a href="#" onClick={e => e.preventDefault()} style={{ color: '#15A050', textDecoration: 'underline' }}>
-                {protocolo.documento_anexo}
+                {localProt.documento_anexo}
               </a>
             </div>
           </div>
@@ -157,26 +367,46 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
 
         <hr style={{ border: 'none', borderTop: '1px solid rgba(0, 0, 0, 0.05)', margin: '20px 0' }} />
 
-        {/* Linha do tempo de tramitação */}
+        {/* Linha do tempo de tramitação (Estilo Chat) */}
         <div style={{ marginBottom: 20 }}>
           <div className="chamado-modal-label" style={{ marginBottom: 12 }}>Histórico de Tramitação</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 180, overflowY: 'auto', paddingRight: 6 }}>
-            {protocolo.historico_tramitacao?.map((t, idx) => {
-              const cs = CORES_STATUS[t.status] || { text: '#64748b' };
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxHeight: 240, overflowY: 'auto', paddingRight: 6 }}>
+            {localProt.historico_tramitacao?.map((t, idx) => {
+              const { mensagem, autor } = extrairAutor(t.observacao);
+              const cs = CORES_STATUS[t.status] || { text: '#64748b', bg: 'rgba(0,0,0,0.05)', border: 'transparent' };
+              const iniciais = obterIniciais(autor);
+              
               return (
-                <div key={idx} style={{ display: 'flex', gap: 10, fontSize: 12, borderLeft: '2px solid rgba(0, 0, 0, 0.03)', paddingLeft: 10, marginLeft: 4 }}>
-                  <div style={{ flexShrink: 0, color: 'var(--muted-c)', fontWeight: 600 }}>{formatarData(t.data)}</div>
-                  <div style={{ flexShrink: 0, color: cs.text, fontWeight: 700 }}>[{t.status}]</div>
-                  <div style={{ color: 'var(--muted-c)' }}>{t.observacao}</div>
+                <div key={idx} style={{ display: 'flex', gap: 12 }}>
+                  <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: '50%', background: 'rgba(13, 124, 61, 0.1)', color: '#0D7C3D', border: '1px solid rgba(13, 124, 61, 0.2)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {iniciais}
+                  </div>
+                  <div style={{ flex: 1, background: 'rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, borderTopLeftRadius: 0, padding: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{autor}</span>
+                      <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{formatarData(t.data)}</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text)', marginBottom: 8, whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                      {mensagem}
+                    </div>
+                    <span style={{ padding: '3px 8px', borderRadius: 6, background: cs.bg, color: cs.text, border: `1px solid ${cs.border}`, fontSize: 10, fontWeight: 700, display: 'inline-block' }}>
+                      Status: {t.status}
+                    </span>
+                  </div>
                 </div>
               );
             })}
+            {(!localProt.historico_tramitacao || localProt.historico_tramitacao.length === 0) && (
+              <div style={{ fontSize: 13, color: 'var(--muted-c)', textAlign: 'center', padding: '20px 0' }}>
+                Nenhuma tramitação registrada.
+              </div>
+            )}
           </div>
         </div>
 
         {/* Formulário de Nova Tramitação */}
-        <div style={{ background: 'rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0, 0, 0, 0.03)', borderRadius: 10, padding: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Tramitar Protocolo</div>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Nova Tramitação / Observação</div>
           <form onSubmit={handleTramitar} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', gap: 10 }}>
               <div style={{ flex: 1 }}>
@@ -185,7 +415,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                   onChange={e => setNovoStatus(e.target.value)}
                   style={{
                     width: '100%', padding: '8px 10px', borderRadius: 6,
-                    background: 'rgba(0,0,0,.2)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                    background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0, 0, 0, 0.06)',
                     color: 'var(--text)', fontSize: 12, outline: 'none'
                   }}
                 >
@@ -200,7 +430,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                 placeholder="Insira um parecer ou observação detalhada..."
                 style={{
                   width: '100%', height: 60, padding: '8px 10px', borderRadius: 6,
-                  background: 'rgba(0,0,0,.2)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                  background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0, 0, 0, 0.06)',
                   color: 'var(--text)', fontSize: 12, outline: 'none', resize: 'none',
                   boxSizing: 'border-box'
                 }}
@@ -215,17 +445,6 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button
-                type="button"
-                onClick={onClose}
-                style={{
-                  padding: '6px 12px', borderRadius: 6,
-                  background: 'rgba(0, 0, 0, 0.03)', border: '1px solid rgba(0, 0, 0, 0.06)',
-                  color: 'var(--muted-c)', fontSize: 11, cursor: 'pointer'
-                }}
-              >
-                Voltar
-              </button>
-              <button
                 type="submit"
                 disabled={submitting}
                 style={{
@@ -235,7 +454,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
                   cursor: submitting ? 'wait' : 'pointer'
                 }}
               >
-                {submitting ? 'Salvando...' : 'Confirmar Tramitação'}
+                {submitting ? 'Salvando...' : 'Adicionar Observação'}
               </button>
             </div>
           </form>
@@ -246,7 +465,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh }) {
 }
 
 export default function ConsultaProtocolo() {
-  const { sessao, isMaster } = useAuth();
+  const { sessao, isMaster, isAdmin } = useAuth();
   const meuNome = sessao?.nome || sessao?.username;
   const [dados, setDados] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -719,7 +938,7 @@ export default function ConsultaProtocolo() {
                             />
                           </div>
                         ) : p.responsavel ? (
-                          (p.responsavel === meuNome || isMaster) ? (
+                          (p.responsavel === meuNome || isAdmin) ? (
                             <div 
                               onClick={() => setEditingRespId(p.id)}
                               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0, 0, 0, 0.04)' }}
@@ -733,7 +952,7 @@ export default function ConsultaProtocolo() {
                           ) : (
                             <div 
                               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'not-allowed', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', opacity: 0.5 }}
-                              title={`Atribuído a ${p.responsavel} (Apenas o próprio ou Master pode alterar para evitar conflitos)`}
+                              title={`Atribuído a ${p.responsavel} (Apenas o próprio ou Admin pode alterar para evitar conflitos)`}
                             >
                               <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#475569', color: 'var(--muted-c)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {obterIniciais(p.responsavel)}
@@ -828,7 +1047,7 @@ export default function ConsultaProtocolo() {
                             onBlur={() => setEditingPrioId(null)}
                             autoFocus
                             style={{
-                              padding: '4px 6px', borderRadius: 6, background: '#1e293b',
+                              padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
                               border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
                             }}
                           >
@@ -872,7 +1091,7 @@ export default function ConsultaProtocolo() {
                             onBlur={() => setEditingStatusId(null)}
                             autoFocus
                             style={{
-                              padding: '4px 6px', borderRadius: 6, background: '#1e293b',
+                              padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
                               border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
                             }}
                           >
@@ -907,6 +1126,9 @@ export default function ConsultaProtocolo() {
             protocolo={modal}
             onClose={() => setModal(null)}
             onRefresh={carregar}
+            operadores={operadores}
+            isAdmin={isAdmin}
+            meuNome={meuNome}
           />
         )}
 
