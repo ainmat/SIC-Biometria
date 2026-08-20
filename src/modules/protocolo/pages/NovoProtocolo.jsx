@@ -1,9 +1,10 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FilePlus, ArrowLeft, CheckCircle, FileText, Upload, FileSpreadsheet, AlertTriangle } from 'lucide-react';
-import { criarProtocolo, importarProtocolos } from '../services/protocoloService';
+import { FilePlus, ArrowLeft, CheckCircle, FileText, Upload, FileSpreadsheet, AlertTriangle, X } from 'lucide-react';
+import { criarProtocolo, importarProtocolos, uploadAnexoProtocolo } from '../services/protocoloService';
 import { lerArquivoXLS, processarLinhasPlanilha } from '../utils/processarProtocoloXLS';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SECRETARIAS = ['Administração', 'Saúde', 'Educação', 'Finanças', 'Obras', 'Outros'];
 const TIPOS = [
@@ -29,6 +30,7 @@ const labelSt = {
 
 export default function NovoProtocolo() {
   const navigate = useNavigate();
+  const { sessao } = useAuth();
   const [aba, setAba] = useState('individual'); // 'individual' ou 'lote'
 
   // --- Estado para Abertura Individual ---
@@ -37,7 +39,7 @@ export default function NovoProtocolo() {
   const [secretaria, setSecretaria] = useState('');
   const [tipo, setTipo] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [anexo, setAnexo] = useState('');
+  const [anexosSelecionados, setAnexosSelecionados] = useState([]);
   const [prazo, setPrazo] = useState(
     new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
@@ -68,9 +70,18 @@ export default function NovoProtocolo() {
         secretaria,
         tipo_solicitacao: tipo,
         descricao,
-        documento_anexo: anexo ? `anexo_${Date.now()}_${anexo.split('\\').pop()}` : null,
+        documento_anexo: null, // Legacy field
         prazo_estimado: prazo
       });
+      
+      // Envia os anexos se houver
+      if (anexosSelecionados.length > 0 && data && data.id) {
+        const operador = sessao?.nome || sessao?.username || 'Sistema';
+        for (let i = 0; i < anexosSelecionados.length; i++) {
+          await uploadAnexoProtocolo(data.id, anexosSelecionados[i], operador);
+        }
+      }
+      
       setSucessoIndividual(data);
     } catch (err) {
       setErro(err.message || 'Erro ao abrir protocolo digital');
@@ -131,7 +142,7 @@ export default function NovoProtocolo() {
     setSecretaria('');
     setTipo('');
     setDescricao('');
-    setAnexo('');
+    setAnexosSelecionados([]);
     setSucessoIndividual(null);
     setErro('');
   }
@@ -385,26 +396,48 @@ export default function NovoProtocolo() {
                   </div>
 
                   <div>
-                    <label style={labelSt}>Documento Comprobatório (Anexo)</label>
+                    <label style={labelSt}>Anexos (Opcional)</label>
                     <div style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
+                      display: 'flex', flexDirection: 'column', gap: 10,
                       background: 'var(--bg)', border: '1px dashed #cbd5e1',
-                      borderRadius: 8, padding: '12px 16px', color: 'var(--muted-c)', fontSize: 13
+                      borderRadius: 8, padding: '16px', color: 'var(--muted-c)', fontSize: 13
                     }}>
-                      <FileText size={18} color="#0D7C3D" />
-                      <input
-                        type="file"
-                        onChange={e => setAnexo(e.target.value)}
-                        style={{ display: 'none' }}
-                        id="file-upload"
-                      />
-                      <label htmlFor="file-upload" style={{ cursor: 'pointer', color: '#15A050', fontWeight: 600 }}>
-                        {anexo ? anexo.split('\\').pop() : 'Selecione um arquivo PDF ou imagem'}
-                      </label>
-                      {anexo && (
-                        <button type="button" onClick={() => setAnexo('')} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 11, cursor: 'pointer', marginLeft: 'auto' }}>
-                          Remover
-                        </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Upload size={18} color="#0D7C3D" />
+                        <input
+                          type="file"
+                          multiple
+                          onChange={e => {
+                            if (e.target.files) {
+                              setAnexosSelecionados(prev => [...prev, ...Array.from(e.target.files)]);
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                          id="file-upload"
+                        />
+                        <label htmlFor="file-upload" style={{ cursor: 'pointer', color: '#15A050', fontWeight: 600 }}>
+                          Clique para selecionar arquivos
+                        </label>
+                      </div>
+
+                      {anexosSelecionados.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                          {anexosSelecionados.map((f, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-c)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <FileText size={14} color="#64748b" />
+                                <span style={{ fontSize: 12, color: 'var(--text)' }}>{f.name}</span>
+                              </div>
+                              <button 
+                                type="button" 
+                                onClick={() => setAnexosSelecionados(prev => prev.filter((_, idx) => idx !== i))}
+                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 2 }}
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>

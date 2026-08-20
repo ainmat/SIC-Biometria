@@ -479,3 +479,93 @@ export async function importarProtocolos(lista) {
     throw err;
   }
 }
+
+// ============================================================================
+// ANEXOS MÚLTIPLOS (STORAGE)
+// ============================================================================
+
+export async function uploadAnexoProtocolo(protocolo_id, file, operador) {
+  try {
+    const ext = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+    const filePath = `${protocolo_id}/${fileName}`;
+
+    // 1. Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('protocolos')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Erro no upload storage:', uploadError);
+      throw uploadError;
+    }
+
+    // 2. Insert record into protocolo_anexos
+    const { data: rowData, error: dbError } = await supabase
+      .from('protocolo_anexos')
+      .insert({
+        protocolo_id,
+        nome_arquivo: file.name,
+        caminho_storage: uploadData.path,
+        tamanho_bytes: file.size,
+        tipo_mime: file.type || 'application/octet-stream',
+        enviado_por: operador || 'Sistema'
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Erro ao registrar anexo no DB:', dbError);
+      throw dbError;
+    }
+
+    return rowData;
+  } catch (error) {
+    console.error('Erro completo uploadAnexoProtocolo:', error);
+    throw error;
+  }
+}
+
+export async function listarAnexosProtocolo(protocolo_id) {
+  const { data, error } = await supabase
+    .from('protocolo_anexos')
+    .select('*')
+    .eq('protocolo_id', protocolo_id)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Erro ao listar anexos:', error);
+    return [];
+  }
+  return data;
+}
+
+export async function excluirAnexoProtocolo(anexo_id, caminho_storage) {
+  // 1. Excluir do storage
+  const { error: storageError } = await supabase.storage
+    .from('protocolos')
+    .remove([caminho_storage]);
+
+  if (storageError) {
+    console.error('Erro ao remover anexo do storage:', storageError);
+    throw storageError;
+  }
+
+  // 2. Excluir registro do DB
+  const { error: dbError } = await supabase
+    .from('protocolo_anexos')
+    .delete()
+    .eq('id', anexo_id);
+
+  if (dbError) {
+    console.error('Erro ao remover anexo do banco:', dbError);
+    throw dbError;
+  }
+}
+
+export function obterUrlAnexo(caminho_storage) {
+  const { data } = supabase.storage
+    .from('protocolos')
+    .getPublicUrl(caminho_storage);
+  return data.publicUrl;
+}

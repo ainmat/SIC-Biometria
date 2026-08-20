@@ -1,7 +1,7 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, ArrowRight, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Calendar, Plus, ChevronUp, ChevronDown } from 'lucide-react';
-import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo, fetchProtocoloDetalhe } from '../services/protocoloService';
+import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, ArrowRight, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Calendar, Plus, ChevronUp, ChevronDown, Trash2, Download, X } from 'lucide-react';
+import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo, fetchProtocoloDetalhe, uploadAnexoProtocolo, listarAnexosProtocolo, excluirAnexoProtocolo, obterUrlAnexo } from '../services/protocoloService';
 import { lerArquivoXLS, processarLinhasPlanilha } from '../utils/processarProtocoloXLS';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -63,11 +63,69 @@ function DetalhesModal({ protocolo, onClose, onRefresh, operadores, isAdmin, meu
   const [submitting, setSubmitting] = useState(false);
   const [erro, setErro] = useState('');
   const [editingField, setEditingField] = useState(null);
+  const [copiado, setCopiado] = useState(false);
+  
+  // Estado para os Anexos
+  const [anexos, setAnexos] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     setLocalProt(protocolo);
     setNovoStatus(protocolo.status);
+    carregarAnexos(protocolo.id);
   }, [protocolo]);
+
+  async function carregarAnexos(protId) {
+    const data = await listarAnexosProtocolo(protId);
+    setAnexos(data);
+  }
+
+  async function handleFiles(files) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    const operador = sessao?.nome || sessao?.username || 'Sistema';
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        await uploadAnexoProtocolo(localProt.id, files[i], operador);
+      }
+      await carregarAnexos(localProt.id);
+    } catch (e) {
+      alert('Erro ao enviar um ou mais anexos: ' + e.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleRemoverAnexo(anexo) {
+    if (!confirm('Deseja realmente remover este anexo?')) return;
+    try {
+      await excluirAnexoProtocolo(anexo.id, anexo.caminho_storage);
+      await carregarAnexos(localProt.id);
+    } catch (e) {
+      alert('Erro ao remover anexo: ' + e.message);
+    }
+  }
+
+  const handleDrag = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
 
   const stStyle = CORES_STATUS[localProt.status] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#1e293b', border: 'rgba(0, 0, 0, 0.06)' };
   const prioStyle = CORES_PRIORIDADE[localProt.prioridade || 'Normal'] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#cbd5e1', border: 'rgba(0, 0, 0, 0.06)' };
@@ -141,82 +199,68 @@ function DetalhesModal({ protocolo, onClose, onRefresh, operadores, isAdmin, meu
 
   return (
     <div className="modal-overlay show" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="chamado-modal" style={{ maxWidth: 680 }}>
-        <div className="chamado-modal-header">
-          <div className="chamado-modal-title">Detalhes do Protocolo</div>
-          <button className="chamado-modal-close" onClick={onClose}>×</button>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#15A050', fontFamily: 'monospace' }}>{localProt.numero_protocolo}</div>
-        </div>
-
-        <div className="chamado-modal-grid" style={{ marginBottom: 16 }}>
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Requerente</div>
-            <div className="chamado-modal-value">{localProt.requerente_nome}</div>
-          </div>
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Matrícula</div>
-            <div className="chamado-modal-value">{localProt.requerente_matricula || 'Não informada'}</div>
-          </div>
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Secretaria</div>
-            <div className="chamado-modal-value">{localProt.secretaria}</div>
-          </div>
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Tipo de Solicitação</div>
-            <div className="chamado-modal-value">{localProt.tipo_solicitacao}</div>
-          </div>
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Data de Abertura</div>
-            <div className="chamado-modal-value">{formatarData(localProt.data_abertura)}</div>
-          </div>
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Prazo Estimado</div>
-            <div className="chamado-modal-value">{formatarDataSimples(localProt.prazo_estimado)}</div>
-          </div>
-          
-          {/* Status editável */}
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Status</div>
-            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
-              {editingField === 'status' ? (
-                <select
-                  defaultValue={localProt.status}
-                  onChange={(e) => handleUpdateField('status', e.target.value)}
-                  onBlur={() => setEditingField(null)}
-                  autoFocus
-                  style={{
-                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
-                    border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
-                  }}
-                >
-                  {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
-                </select>
-              ) : (
-                <span 
-                  onClick={() => setEditingField('status')}
-                  style={{
-                    padding: '3px 8px', borderRadius: 6,
-                    background: stStyle.bg, color: stStyle.text,
-                    border: `1px solid ${stStyle.border}`,
-                    fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer'
-                  }}
-                  title="Clique para alterar"
-                >
-                  {localProt.status}
-                </span>
-              )}
+      <div className="chamado-modal" style={{ maxWidth: 840 }}>
+        {/* CABEÇALHO ASANA STYLE */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 16, borderBottom: '1px solid rgba(0,0,0,0.05)', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#15A050', fontWeight: 600, fontSize: 14 }}>
+              <CheckCircle size={16} />
+              <span>{localProt.numero_protocolo}</span>
             </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(localProt.numero_protocolo);
+                setCopiado(true);
+                setTimeout(() => setCopiado(false), 2000);
+              }}
+              title="Copiar número do protocolo"
+              style={{
+                background: 'transparent', border: 'none', cursor: 'pointer', color: copiado ? '#15A050' : '#94a3b8',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4, borderRadius: 4,
+                transition: 'all 0.2s'
+              }}
+            >
+              {copiado ? <CheckCircle size={14} /> : <Clipboard size={14} />}
+            </button>
+            <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600 }}>{localProt.tipo_solicitacao}</span>
           </div>
 
-          {/* Responsável editável */}
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Responsável</div>
-            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
-              {editingField === 'responsavel' ? (
-                <div style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* PROPERTIES EM LINHA: STATUS, RESPONSÁVEL */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Status */}
+              <div style={{ position: 'relative' }}>
+                {editingField === 'status' ? (
+                  <select
+                    defaultValue={localProt.status}
+                    onChange={(e) => handleUpdateField('status', e.target.value)}
+                    onBlur={() => setEditingField(null)}
+                    autoFocus
+                    style={{
+                      padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                      border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
+                    }}
+                  >
+                    {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
+                  </select>
+                ) : (
+                  <div 
+                    onClick={() => setEditingField('status')}
+                    style={{
+                      padding: '4px 10px', borderRadius: 20,
+                      background: stStyle.bg, color: stStyle.text,
+                      border: `1px solid ${stStyle.border}`,
+                      fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer'
+                    }}
+                  >
+                    {localProt.status} <ChevronDown size={10} />
+                  </div>
+                )}
+              </div>
+
+              {/* Responsável */}
+              <div style={{ position: 'relative' }}>
+                {editingField === 'responsavel' ? (
                   <select
                     defaultValue={localProt.responsavel || ''}
                     onChange={(e) => handleUpdateField('responsavel', e.target.value || null)}
@@ -224,96 +268,62 @@ function DetalhesModal({ protocolo, onClose, onRefresh, operadores, isAdmin, meu
                     autoFocus
                     style={{
                       padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
-                      border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none', width: '100%'
+                      border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none', width: '120px'
                     }}
                   >
                     <option value="">Ninguém</option>
                     {operadores.map(op => <option key={op} value={op}>{op}</option>)}
                   </select>
-                </div>
-              ) : localProt.responsavel ? (
-                (localProt.responsavel === meuNome || isAdmin) ? (
+                ) : localProt.responsavel ? (
                   <div 
                     onClick={() => setEditingField('responsavel')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0, 0, 0, 0.04)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '2px 8px 2px 2px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0, 0, 0, 0.04)' }}
                     title="Clique para alterar"
                   >
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {obterIniciais(localProt.responsavel)}
                     </div>
-                    <span style={{ fontSize: 12, color: 'var(--text)' }}>{localProt.responsavel}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 500 }}>{localProt.responsavel.split(' ')[0]}</span>
                   </div>
                 ) : (
                   <div 
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'not-allowed', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', opacity: 0.5 }}
-                    title="Apenas o próprio ou Admin pode alterar"
+                    onClick={() => setEditingField('responsavel')}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '4px 10px', borderRadius: 20, border: '1px dashed rgba(0,0,0,0.2)', color: 'var(--muted-c)' }}
                   >
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#475569', color: 'var(--muted-c)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {obterIniciais(localProt.responsavel)}
-                    </div>
-                    <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>{localProt.responsavel}</span>
+                    <Plus size={12} /> <span style={{ fontSize: 11 }}>Atribuir</span>
                   </div>
-                )
-              ) : (
-                <div 
-                  onClick={() => setEditingField('responsavel')}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, border: '1px dashed rgba(0,0,0,0.18)', color: 'var(--muted-c)' }}
-                  title="Atribuir"
-                >
-                  <Plus size={12} />
-                  <span style={{ fontSize: 11 }}>Atribuir</span>
-                </div>
-              )}
-            </div>
-          </div>
+                )}
+              </div>
 
-          {/* Data de Conclusão editável */}
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Data de Conclusão</div>
-            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
-              {editingField === 'data_conclusao' ? (
-                <input
-                  type="date"
-                  defaultValue={localProt.data_conclusao || ''}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleUpdateField('data_conclusao', e.target.value || null);
-                    }
-                    if (e.key === 'Escape') setEditingField(null);
-                  }}
-                  onBlur={(e) => handleUpdateField('data_conclusao', e.target.value || null)}
-                  autoFocus
-                  style={{
-                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
-                    border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
-                  }}
-                />
-              ) : localProt.data_conclusao ? (
-                <div 
-                  onClick={() => setEditingField('data_conclusao')}
-                  style={{ fontSize: 12, color: atrasado ? '#ef4444' : 'var(--text)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                  title="Clique para alterar"
-                >
-                  <Calendar size={12} color={atrasado ? '#ef4444' : '#64748b'} />
-                  <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>{formatarDataSimples(localProt.data_conclusao)}</span>
-                </div>
-              ) : (
-                <div 
-                  onClick={() => setEditingField('data_conclusao')}
-                  style={{ fontSize: 12, color: 'var(--muted-c)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                  title="Definir data"
-                >
-                  <Calendar size={12} />
-                  <span style={{ borderBottom: '1px dashed rgba(0,0,0,0.18)' }}>Definir data</span>
-                </div>
-              )}
             </div>
-          </div>
 
-          {/* Prioridade editável */}
-          <div className="chamado-modal-item">
-            <div className="chamado-modal-label">Prioridade</div>
-            <div className="chamado-modal-value" style={{ marginTop: 2 }}>
+            <div style={{ width: 1, height: 20, background: 'var(--border-c)' }}></div>
+            
+            <button className="chamado-modal-close" style={{ position: 'static', margin: 0, padding: 4 }} onClick={onClose}>×</button>
+          </div>
+        </div>
+
+        {/* CORPO ASANA STYLE */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          
+          {/* BARRA DE PROPRIEDADES HORIZONTAL */}
+          <div style={{ 
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, 
+            background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, padding: 16, marginBottom: 24 
+          }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-c)', textTransform: 'uppercase', marginBottom: 4 }}>Requerente</div>
+              <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>{localProt.requerente_nome}</div>
+              <div style={{ fontSize: 12, color: 'var(--muted-c)' }}>Mat: {localProt.requerente_matricula || 'N/I'}</div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-c)', textTransform: 'uppercase', marginBottom: 4 }}>Secretaria</div>
+              <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>{localProt.secretaria}</div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-c)', textTransform: 'uppercase', marginBottom: 4 }}>Prioridade</div>
               {editingField === 'prioridade' ? (
                 <select
                   defaultValue={localProt.prioridade || 'Normal'}
@@ -321,7 +331,7 @@ function DetalhesModal({ protocolo, onClose, onRefresh, operadores, isAdmin, meu
                   onBlur={() => setEditingField(null)}
                   autoFocus
                   style={{
-                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
+                    padding: '4px 6px', borderRadius: 6, background: 'var(--surface)', width: '100%',
                     border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 12, outline: 'none'
                   }}
                 >
@@ -331,133 +341,240 @@ function DetalhesModal({ protocolo, onClose, onRefresh, operadores, isAdmin, meu
                   <option value="Urgente">Urgente</option>
                 </select>
               ) : (
-                <span 
+                <div 
                   onClick={() => setEditingField('prioridade')}
                   style={{
-                    padding: '3px 8px', borderRadius: 6,
+                    padding: '2px 8px', borderRadius: 4,
                     background: prioStyle.bg, color: prioStyle.text,
                     border: `1px solid ${prioStyle.border}`,
-                    fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer'
+                    fontSize: 11, fontWeight: 600, display: 'inline-flex', cursor: 'pointer'
                   }}
-                  title="Clique para alterar"
                 >
                   {localProt.prioridade || 'Normal'}
-                </span>
+                </div>
               )}
             </div>
-          </div>
-        </div>
 
-        <div className="chamado-modal-item" style={{ marginBottom: 16 }}>
-          <div className="chamado-modal-label">Descrição / Motivação</div>
-          <div className="chamado-modal-desc" style={{ whiteSpace: 'pre-wrap' }}>{localProt.descricao || 'Nenhuma descrição fornecida.'}</div>
-        </div>
-
-        {localProt.documento_anexo && (
-          <div className="chamado-modal-item" style={{ marginBottom: 16 }}>
-            <div className="chamado-modal-label">Documento Anexo</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#15A050', marginTop: 4 }}>
-              <FileText size={14} />
-              <a href="#" onClick={e => e.preventDefault()} style={{ color: '#15A050', textDecoration: 'underline' }}>
-                {localProt.documento_anexo}
-              </a>
-            </div>
-          </div>
-        )}
-
-        <hr style={{ border: 'none', borderTop: '1px solid rgba(0, 0, 0, 0.05)', margin: '20px 0' }} />
-
-        {/* Linha do tempo de tramitação (Estilo Chat) */}
-        <div style={{ marginBottom: 20 }}>
-          <div className="chamado-modal-label" style={{ marginBottom: 12 }}>Histórico de Tramitação</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxHeight: 240, overflowY: 'auto', paddingRight: 6 }}>
-            {localProt.historico_tramitacao?.map((t, idx) => {
-              const { mensagem, autor } = extrairAutor(t.observacao);
-              const cs = CORES_STATUS[t.status] || { text: '#64748b', bg: 'rgba(0,0,0,0.05)', border: 'transparent' };
-              const iniciais = obterIniciais(autor);
-              
-              return (
-                <div key={idx} style={{ display: 'flex', gap: 12 }}>
-                  <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: '50%', background: 'rgba(13, 124, 61, 0.1)', color: '#0D7C3D', border: '1px solid rgba(13, 124, 61, 0.2)', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {iniciais}
-                  </div>
-                  <div style={{ flex: 1, background: 'rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, borderTopLeftRadius: 0, padding: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{autor}</span>
-                      <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{formatarData(t.data)}</span>
-                    </div>
-                    <div style={{ fontSize: 13, color: 'var(--text)', marginBottom: 8, whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
-                      {mensagem}
-                    </div>
-                    <span style={{ padding: '3px 8px', borderRadius: 6, background: cs.bg, color: cs.text, border: `1px solid ${cs.border}`, fontSize: 10, fontWeight: 700, display: 'inline-block' }}>
-                      Status: {t.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-            {(!localProt.historico_tramitacao || localProt.historico_tramitacao.length === 0) && (
-              <div style={{ fontSize: 13, color: 'var(--muted-c)', textAlign: 'center', padding: '20px 0' }}>
-                Nenhuma tramitação registrada.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Formulário de Nova Tramitação */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-c)', borderRadius: 10, padding: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Nova Tramitação / Observação</div>
-          <form onSubmit={handleTramitar} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <select
-                  value={novoStatus}
-                  onChange={e => setNovoStatus(e.target.value)}
-                  style={{
-                    width: '100%', padding: '8px 10px', borderRadius: 6,
-                    background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0, 0, 0, 0.06)',
-                    color: 'var(--text)', fontSize: 12, outline: 'none'
-                  }}
-                >
-                  {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
-                </select>
-              </div>
-            </div>
             <div>
-              <textarea
-                value={observacao}
-                onChange={e => setObservacao(e.target.value)}
-                placeholder="Insira um parecer ou observação detalhada..."
-                style={{
-                  width: '100%', height: 60, padding: '8px 10px', borderRadius: 6,
-                  background: 'rgba(0,0,0,.02)', border: '1px solid rgba(0, 0, 0, 0.06)',
-                  color: 'var(--text)', fontSize: 12, outline: 'none', resize: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-c)', textTransform: 'uppercase', marginBottom: 4 }}>Datas</div>
+              <div style={{ fontSize: 12, color: 'var(--text)', marginBottom: 2 }}>
+                <span style={{ color: 'var(--muted-c)' }}>Aber:</span> <span style={{ fontWeight: 500 }}>{formatarDataSimples(localProt.data_abertura)}</span>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text)', marginBottom: 2 }}>
+                <span style={{ color: 'var(--muted-c)' }}>Prazo:</span> <span style={{ fontWeight: 500 }}>{formatarDataSimples(localProt.prazo_estimado)}</span>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ color: 'var(--muted-c)' }}>Concl:</span> 
+                {editingField === 'data_conclusao' ? (
+                  <input
+                    type="date"
+                    defaultValue={localProt.data_conclusao || ''}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleUpdateField('data_conclusao', e.target.value || null);
+                      if (e.key === 'Escape') setEditingField(null);
+                    }}
+                    onBlur={(e) => handleUpdateField('data_conclusao', e.target.value || null)}
+                    autoFocus
+                    style={{
+                      padding: '0px 2px', borderRadius: 4, background: 'var(--surface)', border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 11, outline: 'none'
+                    }}
+                  />
+                ) : localProt.data_conclusao ? (
+                  <span onClick={() => setEditingField('data_conclusao')} style={{ color: atrasado ? '#ef4444' : 'var(--text)', textDecoration: 'underline', textDecorationStyle: 'dotted', cursor: 'pointer', fontWeight: 500 }}>
+                    {formatarDataSimples(localProt.data_conclusao)}
+                  </span>
+                ) : (
+                  <span onClick={() => setEditingField('data_conclusao')} style={{ color: 'var(--muted-c)', borderBottom: '1px dashed rgba(0,0,0,0.2)', cursor: 'pointer', fontWeight: 500 }}>
+                    Definir
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* MAIN COLUMN (Full width) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            
+            {/* Descrição */}
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 10 }}>Descrição</div>
+              <div style={{ 
+                fontSize: 14, color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6', 
+                background: 'rgba(0,0,0,0.01)', padding: 16, borderRadius: 8, border: '1px solid rgba(0,0,0,0.03)'
+              }}>
+                {localProt.descricao || 'Nenhuma descrição fornecida.'}
+              </div>
             </div>
 
-            {erro && (
-              <div style={{ fontSize: 11, color: '#dc2626', background: 'rgba(239, 68, 68, 0.1)', padding: '6px 10px', borderRadius: 4 }}>
-                {erro}
+            {/* Anexos */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Anexos ({anexos.length + (localProt.documento_anexo ? 1 : 0)})</div>
               </div>
-            )}
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+                {/* Anexo antigo (mock) */}
+                {localProt.documento_anexo && (
+                  <div style={{ 
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', 
+                    borderRadius: 8, border: '1px solid var(--border-c)', background: 'var(--surface)'
+                  }}>
+                    <FileText size={20} color="#0D7C3D" />
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{localProt.documento_anexo}</div>
+                      <div style={{ fontSize: 10, color: 'var(--muted-c)' }}>Documento antigo</div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Lista de anexos novos */}
+                {anexos.map((anexo) => (
+                  <div key={anexo.id} style={{ 
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', 
+                    borderRadius: 8, border: '1px solid var(--border-c)', background: 'var(--surface)',
+                    position: 'relative'
+                  }}>
+                    <div style={{ padding: 6, background: 'rgba(13, 124, 61, 0.1)', borderRadius: 6 }}>
+                      <FileText size={18} color="#0D7C3D" />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 120, maxWidth: 200 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={anexo.nome_arquivo}>
+                        {anexo.nome_arquivo}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--muted-c)' }}>
+                        {(anexo.tamanho_bytes / 1024).toFixed(1)} KB • {anexo.enviado_por?.split(' ')[0]}
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button
+                        onClick={() => window.open(obterUrlAnexo(anexo.caminho_storage), '_blank')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}
+                        title="Baixar anexo"
+                      >
+                        <Download size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleRemoverAnexo(anexo)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4 }}
+                        title="Excluir anexo"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button
-                type="submit"
-                disabled={submitting}
-                style={{
-                  padding: '6px 14px', borderRadius: 6,
-                  background: 'linear-gradient(135deg, #0D7C3D 0%, #0A6B33 100%)',
-                  border: 'none', color: '#fff', fontSize: 11, fontWeight: 600,
-                  cursor: submitting ? 'wait' : 'pointer'
+              {/* Zona de Drop para novos anexos */}
+              <div 
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                style={{ 
+                  width: '100%', padding: '20px', borderRadius: 8, 
+                  border: `1px dashed ${dragActive ? '#0D7C3D' : 'var(--border-c)'}`,
+                  background: dragActive ? 'rgba(13, 124, 61, 0.05)' : 'transparent',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'var(--muted-c)',
+                  position: 'relative', transition: 'all 0.2s'
                 }}
               >
-                {submitting ? 'Salvando...' : 'Adicionar Observação'}
-              </button>
+                <input 
+                  type="file" 
+                  multiple 
+                  onChange={(e) => handleFiles(e.target.files)}
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} 
+                  disabled={uploading}
+                />
+                <Upload size={20} color={dragActive ? '#0D7C3D' : '#94a3b8'} />
+                <span style={{ fontSize: 12 }}>
+                  {uploading ? 'Enviando arquivos...' : 'Clique ou arraste arquivos para anexar'}
+                </span>
+              </div>
             </div>
-          </form>
+
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-c)' }} />
+
+            {/* Feed de Comentários / Atividades */}
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>Todas as atividades</div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {localProt.historico_tramitacao?.map((t, idx) => {
+                  const { mensagem, autor } = extrairAutor(t.observacao);
+                  const iniciais = obterIniciais(autor);
+                  
+                  return (
+                    <div key={idx} style={{ display: 'flex', gap: 12 }}>
+                      <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: 'rgba(13, 124, 61, 0.1)', color: '#0D7C3D', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {iniciais}
+                      </div>
+                      <div style={{ flex: 1, paddingTop: 6 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{autor}</span>
+                          <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>{formatarData(t.data)}</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                          {mensagem}
+                        </div>
+                        {t.status && t.status !== 'Aberto' && (
+                          <div style={{ marginTop: 6, fontSize: 11, color: 'var(--muted-c)' }}>
+                            → Alterou o status para <strong>{t.status}</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Input de Comentário Fixo (Asana Style) */}
+                <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
+                  <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {obterIniciais(meuNome || 'U')}
+                  </div>
+                  <div style={{ flex: 1, border: '1px solid var(--border-c)', borderRadius: 8, overflow: 'hidden' }}>
+                    <textarea
+                      value={observacao}
+                      onChange={e => setObservacao(e.target.value)}
+                      placeholder="Adicionar um comentário..."
+                      style={{
+                        width: '100%', height: 60, padding: '10px 12px', border: 'none',
+                        background: 'var(--surface)', color: 'var(--text)', fontSize: 13, outline: 'none', resize: 'none'
+                      }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.02)', padding: '8px 12px', borderTop: '1px solid var(--border-c)' }}>
+                      <select
+                        value={novoStatus}
+                        onChange={e => setNovoStatus(e.target.value)}
+                        style={{
+                          padding: '4px 8px', borderRadius: 4, background: 'var(--surface)', border: '1px solid var(--border-c)', color: 'var(--text)', fontSize: 11, outline: 'none'
+                        }}
+                      >
+                        {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
+                      </select>
+
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleTramitar(e); }}
+                        disabled={submitting || !observacao.trim()}
+                        style={{
+                          padding: '6px 14px', borderRadius: 6,
+                          background: (submitting || !observacao.trim()) ? '#94a3b8' : '#0D7C3D',
+                          border: 'none', color: '#fff', fontSize: 12, fontWeight: 600,
+                          cursor: (submitting || !observacao.trim()) ? 'not-allowed' : 'pointer',
+                          transition: 'background 0.2s'
+                        }}
+                      >
+                        {submitting ? 'Salvando...' : 'Comentar'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {erro && <div style={{ fontSize: 11, color: '#dc2626', marginTop: -10, paddingLeft: 44 }}>{erro}</div>}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
@@ -478,6 +595,9 @@ export default function ConsultaProtocolo() {
     async function fetchOperadores() {
       try {
         const { data, error } = await supabase.rpc('listar_usuarios_rpc', { p_token: sessao?.token });
+        if (error) {
+          console.error('Erro ao buscar operadores:', error);
+        }
         if (!error && data) {
           const ops = data.filter(u => 
             u.ativo && 
@@ -486,7 +606,9 @@ export default function ConsultaProtocolo() {
           );
           setOperadores(ops.map(u => u.nome));
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('Exceção ao buscar operadores:', e);
+      }
     }
     if (sessao) fetchOperadores();
   }, [sessao]);
@@ -822,100 +944,49 @@ export default function ConsultaProtocolo() {
             <div style={{ fontSize: 12, marginTop: 4 }}>Ajuste os filtros ou crie um novo protocolo.</div>
           </div>
         ) : (
-          <div className="chart-card" style={{ padding: 0, overflowX: 'auto' }}>
-            <table className="unidades-tabela" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div style={{ borderRadius: 12, border: '1px solid var(--border-c)', background: 'var(--card-bg)' }}>
+            <div style={{ overflow: 'visible' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }}>
-                  <th 
-                    onClick={() => {
-                      setSortField('numero_protocolo');
-                      setSortDirection(prev => sortField === 'numero_protocolo' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Protocolo
-                      {sortField === 'numero_protocolo' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => {
-                      setSortField('requerente_nome');
-                      setSortDirection(prev => sortField === 'requerente_nome' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Requerente
-                      {sortField === 'requerente_nome' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
-                  <th style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Tipo de Demanda</th>
-                  <th style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase' }}>Secretaria</th>
-                  <th 
-                    onClick={() => {
-                      setSortField('data_abertura');
-                      setSortDirection(prev => sortField === 'data_abertura' ? (prev === 'asc' ? 'desc' : 'asc') : 'desc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Abertura
-                      {sortField === 'data_abertura' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => {
-                      setSortField('responsavel');
-                      setSortDirection(prev => sortField === 'responsavel' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Responsável
-                      {sortField === 'responsavel' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => {
-                      setSortField('data_conclusao');
-                      setSortDirection(prev => sortField === 'data_conclusao' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Conclusão
-                      {sortField === 'data_conclusao' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => {
-                      setSortField('prioridade');
-                      setSortDirection(prev => sortField === 'prioridade' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Prioridade
-                      {sortField === 'prioridade' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => {
-                      setSortField('status');
-                      setSortDirection(prev => sortField === 'status' ? (prev === 'asc' ? 'desc' : 'asc') : 'asc');
-                    }}
-                    style={{ padding: '14px 18px', fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Status
-                      {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
-                    </div>
-                  </th>
+                <tr style={{ background: 'var(--surface)' }}>
+                  {[
+                    { key: 'numero_protocolo', label: 'Protocolo', w: 140 },
+                    { key: 'requerente_nome', label: 'Requerente', w: null },
+                    { key: null, label: 'Demanda', w: null },
+                    { key: null, label: 'Secretaria', w: null },
+                    { key: 'data_abertura', label: 'Abertura', w: 100, defaultDir: 'desc' },
+                    { key: 'responsavel', label: 'Responsável', w: 150 },
+                    { key: 'data_conclusao', label: 'Conclusão', w: 110 },
+                    { key: 'prioridade', label: 'Prioridade', w: 100 },
+                    { key: 'status', label: 'Status', w: 120 },
+                  ].map((col, ci) => (
+                    <th 
+                      key={ci}
+                      onClick={col.key ? () => {
+                        setSortField(col.key);
+                        setSortDirection(prev => sortField === col.key ? (prev === 'asc' ? 'desc' : 'asc') : (col.defaultDir || 'asc'));
+                      } : undefined}
+                      style={{ 
+                        padding: '10px 16px', fontSize: 11, color: sortField === col.key ? '#0D7C3D' : 'var(--muted-c)', 
+                        fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em',
+                        cursor: col.key ? 'pointer' : 'default', userSelect: 'none',
+                        borderBottom: '2px solid var(--border-c)',
+                        whiteSpace: 'nowrap', width: col.w || undefined,
+                        transition: 'color 0.15s'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        {col.label}
+                        {sortField === col.key && (
+                          <span style={{ opacity: 0.7 }}>{sortDirection === 'asc' ? <ChevronUp size={11} /> : <ChevronDown size={11} />}</span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {filtrados.map(p => {
+                {filtrados.map((p, rowIdx) => {
                   const st = CORES_STATUS[p.status] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#1e293b', border: 'rgba(0, 0, 0, 0.06)' };
                   const prioStyle = CORES_PRIORIDADE[p.prioridade || 'Normal'] || { bg: 'rgba(0, 0, 0, 0.03)', text: '#cbd5e1', border: 'rgba(0, 0, 0, 0.06)' };
                   
@@ -923,7 +994,6 @@ export default function ConsultaProtocolo() {
                     if (!p.data_conclusao || p.status === 'Concluído') return false;
                     const hoje = new Date();
                     hoje.setHours(0, 0, 0, 0);
-                    // Parsear data sem timezone shift
                     const parts = p.data_conclusao.split('-');
                     const conclusao = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
                     conclusao.setHours(0, 0, 0, 0);
@@ -939,31 +1009,57 @@ export default function ConsultaProtocolo() {
                   return (
                     <tr 
                       key={p.id} 
-                      style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.02)', cursor: 'pointer' }} 
-                      className="table-row"
                       onClick={() => setModal(p)}
-                      title="Clique na linha para abrir os detalhes e histórico"
+                      title="Abrir detalhes do protocolo"
+                      style={{ 
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.04)', 
+                        cursor: 'pointer',
+                        background: rowIdx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.008)',
+                        transition: 'background 0.15s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(13, 124, 61, 0.03)'}
+                      onMouseLeave={e => e.currentTarget.style.background = rowIdx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.008)'}
                     >
                       {/* Protocolo */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace' }}>{p.numero_protocolo}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{ 
+                          fontSize: 12, fontWeight: 700, color: '#0D7C3D', 
+                          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                          letterSpacing: '-.02em'
+                        }}>
+                          {p.numero_protocolo}
+                        </span>
+                      </td>
                       
                       {/* Requerente */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>
-                        <div>{p.requerente_nome}</div>
-                        {p.requerente_matricula && <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>Mat: {p.requerente_matricula}</div>}
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', lineHeight: 1.3 }}>{p.requerente_nome}</div>
+                        {p.requerente_matricula && (
+                          <div style={{ fontSize: 11, color: 'var(--muted-c)', marginTop: 1 }}>Mat: {p.requerente_matricula}</div>
+                        )}
                       </td>
                       
                       {/* Tipo de Demanda */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>{p.tipo_solicitacao}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text)', maxWidth: 200 }}>
+                        <span style={{ lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {p.tipo_solicitacao}
+                        </span>
+                      </td>
                       
                       {/* Secretaria */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>{p.secretaria}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text)', maxWidth: 180 }}>
+                        <span style={{ lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {p.secretaria}
+                        </span>
+                      </td>
                       
                       {/* Abertura */}
-                      <td style={{ padding: '14px 18px', fontSize: 13, color: 'var(--text)' }}>{formatarDataSimples(p.data_abertura)}</td>
+                      <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>
+                        {formatarDataSimples(p.data_abertura)}
+                      </td>
                       
-                      {/* Responsável (Estilo Asana com Bloqueio de Teammates) */}
-                      <td style={{ padding: '14px 18px' }} onClick={e => e.stopPropagation()}>
+                      {/* Responsável */}
+                      <td style={{ padding: '12px 16px' }} onClick={e => e.stopPropagation()}>
                         {editingRespId === p.id ? (
                           <div style={{ position: 'relative', display: 'inline-block' }}>
                             <div
@@ -979,9 +1075,9 @@ export default function ConsultaProtocolo() {
                             <div
                               style={{
                                 position: 'absolute', top: '100%', left: 0, zIndex: 9999,
-                                background: 'var(--surface)', border: '1px solid var(--border-c)',
-                                borderRadius: 8, padding: 4, minWidth: 200,
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                                background: 'var(--card-bg)', border: '1px solid var(--border-c)',
+                                borderRadius: 10, padding: 6, minWidth: 220,
+                                boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
                                 display: 'flex', flexDirection: 'column', gap: 2,
                                 marginTop: 4, maxHeight: 200, overflowY: 'auto'
                               }}
@@ -994,7 +1090,7 @@ export default function ConsultaProtocolo() {
                                     carregar();
                                   } catch (err) { alert('Erro ao atualizar responsável: ' + err.message); }
                                 }}
-                                style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 6, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}
+                                style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 6, color: 'var(--muted-c)', display: 'flex', alignItems: 'center', gap: 8 }}
                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                               >
@@ -1014,7 +1110,7 @@ export default function ConsultaProtocolo() {
                                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                 >
-                                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #0D7C3D, #10B981)', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     {obterIniciais(op)}
                                   </div>
                                   {op}
@@ -1030,39 +1126,52 @@ export default function ConsultaProtocolo() {
                           (p.responsavel === meuNome || isAdmin) ? (
                             <div 
                               onClick={() => setEditingRespId(p.id)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0, 0, 0, 0.04)' }}
+                              style={{ 
+                                display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', 
+                                padding: '3px 10px 3px 3px', borderRadius: 20, 
+                                background: 'rgba(13, 124, 61, 0.06)', border: '1px solid rgba(13, 124, 61, 0.1)',
+                                transition: 'all 0.15s'
+                              }}
                               title="Clique para alterar o responsável"
                             >
-                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#0D7C3D', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #0D7C3D, #10B981)', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {obterIniciais(p.responsavel)}
                               </div>
-                              <span style={{ fontSize: 12, color: 'var(--text)' }}>{p.responsavel}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 500 }}>{p.responsavel.split(' ')[0]}</span>
                             </div>
                           ) : (
                             <div 
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'not-allowed', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', opacity: 0.5 }}
-                              title={`Atribuído a ${p.responsavel} (Apenas o próprio ou Admin pode alterar para evitar conflitos)`}
+                              style={{ 
+                                display: 'inline-flex', alignItems: 'center', gap: 6, 
+                                padding: '3px 10px 3px 3px', borderRadius: 20, 
+                                background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.04)', opacity: 0.6
+                              }}
+                              title={`Atribuído a ${p.responsavel}`}
                             >
-                              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#475569', color: 'var(--muted-c)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#64748b', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {obterIniciais(p.responsavel)}
                               </div>
-                              <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>{p.responsavel}</span>
+                              <span style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 500 }}>{p.responsavel.split(' ')[0]}</span>
                             </div>
                           )
                         ) : (
                           <div 
                             onClick={() => setEditingRespId(p.id)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, border: '1px dashed rgba(0,0,0,0.18)', color: 'var(--muted-c)' }}
+                            style={{ 
+                              display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer', 
+                              padding: '4px 10px', borderRadius: 20, border: '1px dashed rgba(0,0,0,0.15)', 
+                              color: 'var(--muted-c)', transition: 'all 0.15s', fontSize: 11
+                            }}
                             title="Atribuir responsável"
                           >
-                            <Plus size={12} />
-                            <span style={{ fontSize: 11 }}>Atribuir</span>
+                            <Plus size={11} />
+                            Atribuir
                           </div>
                         )}
                       </td>
 
-                      {/* Conclusão (Estilo Asana) */}
-                      <td style={{ padding: '14px 18px' }} onClick={e => e.stopPropagation()}>
+                      {/* Conclusão */}
+                      <td style={{ padding: '12px 16px' }} onClick={e => e.stopPropagation()}>
                         {editingDateId === p.id ? (
                           <input
                             type="date"
@@ -1100,26 +1209,36 @@ export default function ConsultaProtocolo() {
                         ) : p.data_conclusao ? (
                           <div 
                             onClick={() => setEditingDateId(p.id)}
-                            style={{ fontSize: 12, color: atrasado ? '#ef4444' : '#334155', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                            title={atrasado ? 'Prazo expirado!' : 'Clique para alterar a data'}
+                            style={{ 
+                              fontSize: 12, color: atrasado ? '#ef4444' : 'var(--muted-c)', cursor: 'pointer', 
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              padding: '2px 8px', borderRadius: 6,
+                              background: atrasado ? 'rgba(239,68,68,0.08)' : 'transparent',
+                              border: atrasado ? '1px solid rgba(239,68,68,0.15)' : '1px solid transparent'
+                            }}
+                            title={atrasado ? 'Prazo expirado!' : 'Clique para alterar'}
                           >
-                            <Calendar size={12} color={atrasado ? '#ef4444' : '#64748b'} />
-                            <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>{formatarDataSimples(p.data_conclusao)}</span>
+                            <Calendar size={11} color={atrasado ? '#ef4444' : '#94a3b8'} />
+                            <span style={{ fontWeight: atrasado ? 600 : 400 }}>{formatarDataSimples(p.data_conclusao)}</span>
                           </div>
                         ) : (
                           <div 
                             onClick={() => setEditingDateId(p.id)}
-                            style={{ fontSize: 12, color: 'var(--muted-c)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                            style={{ 
+                              fontSize: 11, color: 'var(--muted-c)', cursor: 'pointer', 
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              padding: '2px 8px', borderRadius: 6, border: '1px dashed rgba(0,0,0,0.1)'
+                            }}
                             title="Definir data de conclusão"
                           >
-                            <Calendar size={12} />
-                            <span style={{ borderBottom: '1px dashed rgba(0,0,0,0.18)' }}>Definir data</span>
+                            <Calendar size={11} />
+                            Definir
                           </div>
                         )}
                       </td>
 
-                      {/* Prioridade (Estilo Asana) */}
-                      <td style={{ padding: '14px 18px' }} onClick={e => e.stopPropagation()}>
+                      {/* Prioridade */}
+                      <td style={{ padding: '12px 16px' }} onClick={e => e.stopPropagation()}>
                         {editingPrioId === p.id ? (
                           <select
                             value={p.prioridade || 'Normal'}
@@ -1149,10 +1268,11 @@ export default function ConsultaProtocolo() {
                           <span 
                             onClick={() => setEditingPrioId(p.id)}
                             style={{
-                              padding: '3px 8px', borderRadius: 6,
+                              padding: '3px 10px', borderRadius: 20,
                               background: prioStyle.bg, color: prioStyle.text,
                               border: `1px solid ${prioStyle.border}`,
-                              fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer'
+                              fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer',
+                              transition: 'all 0.15s'
                             }}
                             title="Clique para alterar prioridade"
                           >
@@ -1161,8 +1281,8 @@ export default function ConsultaProtocolo() {
                         )}
                       </td>
 
-                      {/* Status (Estilo Asana) */}
-                      <td style={{ padding: '14px 18px' }} onClick={e => e.stopPropagation()}>
+                      {/* Status */}
+                      <td style={{ padding: '12px 16px' }} onClick={e => e.stopPropagation()}>
                         {editingStatusId === p.id ? (
                           <select
                             value={p.status}
@@ -1190,10 +1310,11 @@ export default function ConsultaProtocolo() {
                           <span 
                             onClick={() => setEditingStatusId(p.id)}
                             style={{
-                              padding: '3px 8px', borderRadius: 6,
+                              padding: '3px 10px', borderRadius: 20,
                               background: st.bg, color: st.text,
                               border: `1px solid ${st.border}`,
-                              fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer'
+                              fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer',
+                              transition: 'all 0.15s'
                             }}
                             title="Clique para alterar status"
                           >
@@ -1206,6 +1327,7 @@ export default function ConsultaProtocolo() {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         )}
 
