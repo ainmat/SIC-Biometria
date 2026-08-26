@@ -28,12 +28,20 @@ async function getAiClient() {
   }
 
   if (!apiKey) {
-    throw new Error('A chave de IA não foi encontrada no banco. Crie a tabela "configuracoes" no Supabase e insira a chave "gemini_api_key".');
+    throw new Error('A chave de IA não foi encontrada no banco ou no .env.');
   }
 
   cachedAiClient = new GoogleGenAI({ apiKey });
   return cachedAiClient;
 }
+
+const CANDIDATE_MODELS = [
+  'gemini-2.5-flash-lite',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-flash-latest'
+];
 
 // Esquema JSON esperado pela LLM (Structured Outputs)
 const schema = {
@@ -48,30 +56,90 @@ const schema = {
       },
       unidade: {
         type: "STRING",
-        description: "Nome do equipamento, escola ou unidade ou 'NÃO IDENTIFICADO'"
+        description: "Nome do local físico/unidade ou 'NÃO IDENTIFICADO'"
       },
       motivo: {
         type: "STRING",
-        description: "Categoria em CAIXA ALTA (ex: EQUIPAMENTO, CADASTRO, SISTEMA, SUPORTE, MANUTENÇÃO)"
+        description: "Categoria em CAIXA ALTA (EQUIPAMENTO, RECONHECIMENTO, ESPELHO DE PONTO, CADASTRO)"
       }
     },
     required: ["secretaria", "unidade", "motivo"]
   }
 };
 
-const SYSTEM_INSTRUCTION = `Você é um assistente encarregado de classificar chamados técnicos em lote.
+const SYSTEM_INSTRUCTION = `Você é um assistente especialista em triagem técnica de chamados da Prefeitura de Osasco.
 Analise a lista de chamados fornecida (onde cada um possui um ID interno da requisição, TÍTULO e DESCRIÇÃO).
 Para cada chamado, extraia os campos secretaria, unidade e motivo.
 
-ATENÇÃO: Se a secretaria ou unidade não puderem ser identificadas (ficariam como 'NÃO IDENTIFICADO'), E o problema relatado for referente a falhas no sistema/software (ex: erros no sistema, falhas no espelho de ponto, problemas de cadastro no sistema central), você DEVE preencher a secretaria e/ou unidade como 'ADVANCIS' em vez de 'NÃO IDENTIFICADO'.
+ATENÇÃO: Se a secretaria ou unidade não puderem ser identificadas (ficariam como 'NÃO IDENTIFICADO'), E o problema relatado for referente a falhas no sistema/software central (ex: erros de acesso geral, falhas no espelho de ponto central), você DEVE preencher a secretaria e/ou unidade como 'ADVANCIS' em vez de 'NÃO IDENTIFICADO'.
 
-Retorne uma lista em JSON estrito contendo um objeto para cada chamado analisado, exatamente na mesma ordem em que foram enviados.
-A matriz JSON deve conter objetos com o formato:
+Retorne uma lista em JSON estrito contendo um objeto para cada chamado analisado, exatamente na mesma ordem em que foram enviados:
 {
-  "secretaria": "Nome da Secretaria, 'ADVANCIS' (se falha de sistema sem secretaria), ou 'NÃO IDENTIFICADO'",
-  "unidade": "Nome do equipamento/unidade, 'ADVANCIS' (se falha de sistema sem unidade), ou 'NÃO IDENTIFICADO'",
-  "motivo": "Categoria estrita. Escolha EXATAMENTE UMA destas quatro: EQUIPAMENTO, RECONHECIMENTO, ESPELHO DE PONTO, CADASTRO. Nenhuma outra é permitida."
+  "secretaria": "Nome/Sigla da Secretaria, 'ADVANCIS' ou 'NÃO IDENTIFICADO'",
+  "unidade": "Nome da unidade sem numerações e prefixos, 'ADVANCIS' ou 'NÃO IDENTIFICADO'",
+  "motivo": "Categoria estrita. Escolha EXATAMENTE UMA destas quatro: EQUIPAMENTO, RECONHECIMENTO, ESPELHO DE PONTO, CADASTRO."
 }`;
+
+/**
+ * Fallback heurístico caso a API do Gemini esteja temporariamente indisponível
+ */
+function extrairFallbackHeuristico(chamado, equipamentosLista = []) {
+  const textoCompleto = `${chamado.titulo || ''} ${chamado.descricao || ''}`.toUpperCase();
+  
+  let secretaria = 'NÃO IDENTIFICADO';
+  let unidade = 'NÃO IDENTIFICADO';
+  let motivo = 'EQUIPAMENTO';
+
+  // 1. Siglas de Secretarias
+  const secretariasConhecidas = [
+    'SED', 'SAUDE', 'SS', 'SEMAP', 'SEINFRA', 'SECOL', 'SJDH', 'SECONT', 'SEHAB', 'SEF',
+    'SERH', 'SETIC', 'SEGOV', 'SECOM', 'SECULT', 'FITO', 'CMO', 'IPMO', 'ADVANCIS'
+  ];
+  for (const sec of secretariasConhecidas) {
+    const regex = new RegExp(`\\b${sec}\\b`, 'i');
+    if (regex.test(textoCompleto)) {
+      secretaria = sec === 'SAUDE' ? 'SS' : sec;
+      break;
+    }
+  }
+
+  // 2. Unidades pelo dicionário
+  for (const eq of equipamentosLista) {
+    if (eq.nome && eq.nome.length > 4) {
+      const nomeLimpo = eq.nome
+        .replace(/^\d+\s+/, '')
+        .replace(/^FACE\s+/i, '')
+        .replace(/\s+\d+$/, '')
+        .trim();
+      
+      if (nomeLimpo.length > 4 && textoCompleto.includes(nomeLimpo.toUpperCase())) {
+        unidade = nomeLimpo.toUpperCase();
+        if (eq.secretaria && secretaria === 'NÃO IDENTIFICADO') {
+          secretaria = eq.secretaria.toUpperCase();
+        }
+        break;
+      }
+    }
+  }
+
+  if (textoCompleto.includes('ADVANCIS')) {
+    if (secretaria === 'NÃO IDENTIFICADO') secretaria = 'ADVANCIS';
+    if (unidade === 'NÃO IDENTIFICADO') unidade = 'ADVANCIS';
+  }
+
+  // 3. Determinar motivo
+  if (textoCompleto.includes('ESPELHO') || textoCompleto.includes('MARCAÇÃO') || textoCompleto.includes('MARCACAO') || textoCompleto.includes('NÃO SUBIU') || textoCompleto.includes('NAO SUBIU') || textoCompleto.includes('BATIDA')) {
+    motivo = 'ESPELHO DE PONTO';
+  } else if (textoCompleto.includes('RECONHECE') || textoCompleto.includes('ROSTO') || textoCompleto.includes('FACIAL') || textoCompleto.includes('BIOMETRIA') || textoCompleto.includes('DIGITAL')) {
+    motivo = 'RECONHECIMENTO';
+  } else if (textoCompleto.includes('CADASTRO') || textoCompleto.includes('CADASTRAR') || textoCompleto.includes('INCLUSÃO') || textoCompleto.includes('INCLUSAO') || textoCompleto.includes('TRANSFERENCIA') || textoCompleto.includes('TRANSFERÊNCIA')) {
+    motivo = 'CADASTRO';
+  } else {
+    motivo = 'EQUIPAMENTO';
+  }
+
+  return { secretaria, unidade, motivo };
+}
 
 /**
  * Lê o arquivo e retorna as linhas como objetos JSON
@@ -97,11 +165,17 @@ export async function lerArquivoPlanilha(file) {
 }
 
 /**
- * Faz a chamada para a LLM (Gemini) para classificar um lote de chamados
+ * Faz a chamada para a LLM com tentativas em múltiplos modelos e fallback inteligente
  * @param {Array<{titulo: string, descricao: string}>} chamadosLote 
  */
-async function classificarLoteLLM(chamadosLote, contextoEquipamentos = "") {
-  const ai = await getAiClient();
+async function classificarLoteLLM(chamadosLote, contextoEquipamentos = "", equipamentosLista = []) {
+  let ai;
+  try {
+    ai = await getAiClient();
+  } catch (err) {
+    console.warn('Cliente de IA indisponível, usando fallback heurístico:', err);
+    return chamadosLote.map(c => extrairFallbackHeuristico(c, equipamentosLista));
+  }
 
   const prompt = chamadosLote.map((c, idx) => 
     `Chamado ${idx + 1}\nTítulo: ${c.titulo}\nDescrição: ${c.descricao}`
@@ -112,38 +186,57 @@ async function classificarLoteLLM(chamadosLote, contextoEquipamentos = "") {
     instrucao += `\n\nATENÇÃO: Utilize a lista de equipamentos/unidades abaixo como um dicionário de referência. Se a descrição do chamado citar algum nome (ex: "Jóse Ibrahim", "EMEF...", etc) que seja parecido ou corresponda a um equipamento desta lista, você DEVE extrair a UNIDADE e a SECRETARIA exatas que constam na lista.\n\nA Secretaria definida na lista tem prioridade absoluta sobre o que foi digitado no chamado (exemplo: se o usuário digitou "SE" na descrição, mas na lista oficial consta "SED", você deve retornar "SED").\n\nREGRA DE NORMALIZAÇÃO DE UNIDADE: O nome da unidade DEVE refletir apenas o local físico, agrupado em CAIXA ALTA, sem os prefixos/sufixos de equipamento. Remova palavras como "FACE", numerações iniciais ou finais (ex: "1", "2", "3"), ou locais específicos ("Térreo", "Corredor"). Exemplo 1: De "1471 FACE PRONTO SOCORRO JOSE IBRAHIM 1" você DEVE retornar apenas "PRONTO SOCORRO JOSE IBRAHIM". Exemplo 2: De "FACE UBS PORTAL 2" retorne apenas "UBS PORTAL". Isso é vital para não duplicar unidades no Dashboard.\n\nLista de Referência (Equipamento - Secretaria):\n${contextoEquipamentos}`;
   }
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
-      contents: prompt,
-      config: {
-        systemInstruction: instrucao,
-        responseMimeType: 'application/json',
-        responseSchema: schema,
+  // Tenta modelos com retries
+  for (const model of CANDIDATE_MODELS) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            systemInstruction: instrucao,
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+          }
+        });
+
+        let resultText = typeof response.text === 'function' ? response.text() : response.text;
+        resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const json = JSON.parse(resultText);
+
+        if (Array.isArray(json) && json.length === chamadosLote.length) {
+          return json.map((item) => {
+            let sec = (item.secretaria || 'NÃO IDENTIFICADO').toUpperCase().trim();
+            let uni = (item.unidade || 'NÃO IDENTIFICADO').toUpperCase().trim();
+            let mot = (item.motivo || 'EQUIPAMENTO').toUpperCase().trim();
+
+            const MOTIVOS_VALIDOS = ['EQUIPAMENTO', 'ESPELHO DE PONTO', 'RECONHECIMENTO', 'CADASTRO'];
+            if (!MOTIVOS_VALIDOS.includes(mot)) {
+              if (mot.includes('PONTO') || mot.includes('ESPELHO')) mot = 'ESPELHO DE PONTO';
+              else if (mot.includes('RECONHECIMENTO') || mot.includes('FACIAL')) mot = 'RECONHECIMENTO';
+              else if (mot.includes('CADASTRO') || mot.includes('DIGITAL')) mot = 'CADASTRO';
+              else mot = 'EQUIPAMENTO';
+            }
+
+            return {
+              secretaria: sec,
+              unidade: uni,
+              motivo: mot
+            };
+          });
+        }
+      } catch (err) {
+        console.warn(`[Classificação IA] Falha no modelo ${model} (tentativa ${attempt}):`, err?.message || err);
+        if (attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
+        }
       }
-    });
-
-    let resultText = typeof response.text === 'function' ? response.text() : response.text;
-    
-    // Limpa possível marcação markdown do json
-    resultText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    const json = JSON.parse(resultText);
-    
-    // Garante que retorne um array do mesmo tamanho
-    return Array.isArray(json) && json.length === chamadosLote.length 
-      ? json 
-      : chamadosLote.map(() => ({ secretaria: 'FALHA DE TAMANHO/TIPO', unidade: 'NÃO IDENTIFICADO', motivo: 'NÃO IDENTIFICADO' }));
-  } catch (error) {
-    console.error('Erro ao classificar lote com LLM:', error);
-    const errorMsg = error.message ? error.message.substring(0, 60) : 'Erro desconhecido';
-    // Retorna a mensagem de erro na secretaria para depuração visual
-    return chamadosLote.map(() => ({
-      secretaria: 'ERRO: ' + errorMsg,
-      unidade: 'ERRO',
-      motivo: 'ERRO'
-    }));
+    }
   }
+
+  // Se todos os modelos falharem temporariamente, usa o fallback heurístico
+  console.warn('[Classificação IA] Modelos de IA ocupados ou offline. Utilizando fallback heurístico.');
+  return chamadosLote.map(c => extrairFallbackHeuristico(c, equipamentosLista));
 }
 
 /**
@@ -164,18 +257,20 @@ export async function processarEImportarChamados(linhas, onProgress) {
     validRows.push({ row, ticket, indexOriginal: i });
   }
 
-  // Buscar lista de equipamentos para contextualizar a IA
+  // Buscar lista de equipamentos para contextualizar a IA e o fallback
   let contextoEquipamentos = "";
+  let equipamentosLista = [];
   try {
     const { data: eqData } = await supabase.from('equipamentos').select('nome, secretaria');
     if (eqData && eqData.length > 0) {
+      equipamentosLista = eqData;
       contextoEquipamentos = eqData.map(eq => `${eq.nome} - Secretaria: ${eq.secretaria}`).join('\n');
     }
   } catch (err) {
     console.error('Falha ao buscar equipamentos para contexto:', err);
   }
 
-  const LOTE_SIZE = 20;
+  const LOTE_SIZE = 15;
   
   for (let i = 0; i < validRows.length; i += LOTE_SIZE) {
     const lote = validRows.slice(i, i + LOTE_SIZE);
@@ -186,13 +281,13 @@ export async function processarEImportarChamados(linhas, onProgress) {
       descricao: item.row['DESCRIÇÃO'] || item.row['DESCRICAO'] || ''
     }));
 
-    // Classificação em lote
-    const classificacoes = await classificarLoteLLM(loteLLM, contextoEquipamentos);
+    // Classificação em lote com retry e fallback
+    const classificacoes = await classificarLoteLLM(loteLLM, contextoEquipamentos, equipamentosLista);
 
     for (let j = 0; j < lote.length; j++) {
       const item = lote[j];
       const { row, ticket } = item;
-      const classif = classificacoes[j] || { secretaria: 'NÃO IDENTIFICADO', unidade: 'NÃO IDENTIFICADO', motivo: 'NÃO IDENTIFICADO' };
+      const classif = classificacoes[j] || { secretaria: 'NÃO IDENTIFICADO', unidade: 'NÃO IDENTIFICADO', motivo: 'EQUIPAMENTO' };
 
       // Extrair data
       let dataAberturaRaw = row['DATA ABERTURA'] || row['DATA DE CADASTRO'] || null;
@@ -230,11 +325,11 @@ export async function processarEImportarChamados(linhas, onProgress) {
     }
 
     if (i + LOTE_SIZE < validRows.length) {
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
 
-  // Realiza o Upsert no Supabase em lotes para não sobrecarregar
+  // Realiza o Upsert no Supabase em lotes
   const BATCH_SIZE = 50;
   let successCount = 0;
 
