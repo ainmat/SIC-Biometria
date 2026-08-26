@@ -643,17 +643,83 @@ export default function ConsultaProtocolo() {
   const [editingDateId, setEditingDateId] = useState(null);
   const [editingStatusId, setEditingStatusId] = useState(null);
 
-  const carregar = useCallback(async () => {
-    setLoading(true);
+  const carregar = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     try {
       const res = await fetchProtocolos();
       setDados(res.data);
     } catch (err) {
       setErro(err.message || 'Erro ao carregar protocolos');
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }, []);
+
+  const handleUpdateResponsavel = async (protocoloId, novoResp) => {
+    setEditingRespId(null);
+    const itemAnterior = dados.find(item => item.id === protocoloId);
+    setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, responsavel: novoResp } : item));
+    try {
+      await atualizarProtocolo(protocoloId, { responsavel: novoResp });
+      carregar(true);
+    } catch (err) {
+      // Reverte imediatamente para o valor original caso a sincronização com o banco falhe
+      if (itemAnterior) {
+        setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, responsavel: itemAnterior.responsavel } : item));
+      }
+      alert('Falha ao sincronizar com o banco: ' + (err.message || 'Erro desconhecido') + '. A alteração foi desfeita.');
+      carregar(true);
+    }
+  };
+
+  const handleUpdateDataConclusao = async (protocoloId, novaData) => {
+    setEditingDateId(null);
+    const itemAnterior = dados.find(item => item.id === protocoloId);
+    setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, data_conclusao: novaData } : item));
+    try {
+      await atualizarProtocolo(protocoloId, { data_conclusao: novaData });
+      carregar(true);
+    } catch (err) {
+      if (itemAnterior) {
+        setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, data_conclusao: itemAnterior.data_conclusao } : item));
+      }
+      alert('Falha ao sincronizar com o banco: ' + (err.message || 'Erro desconhecido') + '. A alteração foi desfeita.');
+      carregar(true);
+    }
+  };
+
+  const handleUpdatePrioridade = async (protocoloId, novaPrio) => {
+    setEditingPrioId(null);
+    const itemAnterior = dados.find(item => item.id === protocoloId);
+    setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, prioridade: novaPrio } : item));
+    try {
+      await atualizarProtocolo(protocoloId, { prioridade: novaPrio });
+      carregar(true);
+    } catch (err) {
+      if (itemAnterior) {
+        setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, prioridade: itemAnterior.prioridade } : item));
+      }
+      alert('Falha ao sincronizar com o banco: ' + (err.message || 'Erro desconhecido') + '. A alteração foi desfeita.');
+      carregar(true);
+    }
+  };
+
+  const handleUpdateStatusInline = async (protocoloId, novoStatus) => {
+    setEditingStatusId(null);
+    const itemAnterior = dados.find(item => item.id === protocoloId);
+    setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, status: novoStatus } : item));
+    try {
+      const operador = sessao?.nome || sessao?.username || 'Operador';
+      await atualizarStatusProtocolo(protocoloId, novoStatus, `Status alterado inline na listagem`, operador);
+      carregar(true);
+    } catch (err) {
+      if (itemAnterior) {
+        setDados(prev => prev.map(item => item.id === protocoloId ? { ...item, status: itemAnterior.status } : item));
+      }
+      alert('Falha ao sincronizar com o banco: ' + (err.message || 'Erro desconhecido') + '. A alteração foi desfeita.');
+      carregar(true);
+    }
+  };
 
   useEffect(() => {
     carregar();
@@ -1083,13 +1149,7 @@ export default function ConsultaProtocolo() {
                               }}
                             >
                               <div
-                                onClick={async () => {
-                                  setEditingRespId(null);
-                                  try {
-                                    await atualizarProtocolo(p.id, { responsavel: null });
-                                    carregar();
-                                  } catch (err) { alert('Erro ao atualizar responsável: ' + err.message); }
-                                }}
+                                onClick={() => handleUpdateResponsavel(p.id, null)}
                                 style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 6, color: 'var(--muted-c)', display: 'flex', alignItems: 'center', gap: 8 }}
                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -1099,13 +1159,7 @@ export default function ConsultaProtocolo() {
                               {operadores.map(op => (
                                 <div
                                   key={op}
-                                  onClick={async () => {
-                                    setEditingRespId(null);
-                                    try {
-                                      await atualizarProtocolo(p.id, { responsavel: op });
-                                      carregar();
-                                    } catch (err) { alert('Erro ao atualizar responsável: ' + err.message); }
-                                  }}
+                                  onClick={() => handleUpdateResponsavel(p.id, op)}
                                   style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 6, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}
                                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -1176,30 +1230,14 @@ export default function ConsultaProtocolo() {
                           <input
                             type="date"
                             defaultValue={p.data_conclusao || ''}
-                            onKeyDown={async (e) => {
+                            onKeyDown={(e) => {
                               if (e.key === 'Enter') {
-                                const nv = e.target.value || null;
-                                setEditingDateId(null);
-                                try {
-                                  await atualizarProtocolo(p.id, { data_conclusao: nv });
-                                  carregar();
-                                } catch (err) {
-                                  alert('Erro ao atualizar data de conclusão: ' + err.message);
-                                }
+                                handleUpdateDataConclusao(p.id, e.target.value || null);
                               } else if (e.key === 'Escape') {
                                 setEditingDateId(null);
                               }
                             }}
-                            onBlur={async (e) => {
-                              const nv = e.target.value || null;
-                              setEditingDateId(null);
-                              try {
-                                await atualizarProtocolo(p.id, { data_conclusao: nv });
-                                carregar();
-                              } catch (err) {
-                                alert('Erro ao atualizar data de conclusão: ' + err.message);
-                              }
-                            }}
+                            onBlur={(e) => handleUpdateDataConclusao(p.id, e.target.value || null)}
                             autoFocus
                             style={{
                               padding: '4px 6px', borderRadius: 6, background: 'var(--surface)',
@@ -1242,16 +1280,7 @@ export default function ConsultaProtocolo() {
                         {editingPrioId === p.id ? (
                           <select
                             value={p.prioridade || 'Normal'}
-                            onChange={async (e) => {
-                              const nv = e.target.value;
-                              setEditingPrioId(null);
-                              try {
-                                await atualizarProtocolo(p.id, { prioridade: nv });
-                                carregar();
-                              } catch (err) {
-                                alert('Erro ao atualizar prioridade: ' + err.message);
-                              }
-                            }}
+                            onChange={(e) => handleUpdatePrioridade(p.id, e.target.value)}
                             onBlur={() => setEditingPrioId(null)}
                             autoFocus
                             style={{
@@ -1267,10 +1296,10 @@ export default function ConsultaProtocolo() {
                         ) : (
                           <span 
                             onClick={() => setEditingPrioId(p.id)}
-                            style={{
-                              padding: '3px 10px', borderRadius: 20,
-                              background: prioStyle.bg, color: prioStyle.text,
-                              border: `1px solid ${prioStyle.border}`,
+                            style={{ 
+                              padding: '3px 10px', borderRadius: 20, 
+                              background: prioStyle.bg, color: prioStyle.text, 
+                              border: `1px solid ${prioStyle.border}`, 
                               fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer',
                               transition: 'all 0.15s'
                             }}
@@ -1286,17 +1315,7 @@ export default function ConsultaProtocolo() {
                         {editingStatusId === p.id ? (
                           <select
                             value={p.status}
-                            onChange={async (e) => {
-                              const nv = e.target.value;
-                              setEditingStatusId(null);
-                              try {
-                                const operador = sessao?.nome || sessao?.username || 'Operador';
-                                await atualizarStatusProtocolo(p.id, nv, `Status alterado inline na listagem`, operador);
-                                carregar();
-                              } catch (err) {
-                                alert('Erro ao atualizar status: ' + err.message);
-                              }
-                            }}
+                            onChange={(e) => handleUpdateStatusInline(p.id, e.target.value)}
                             onBlur={() => setEditingStatusId(null)}
                             autoFocus
                             style={{
@@ -1309,10 +1328,10 @@ export default function ConsultaProtocolo() {
                         ) : (
                           <span 
                             onClick={() => setEditingStatusId(p.id)}
-                            style={{
-                              padding: '3px 10px', borderRadius: 20,
-                              background: st.bg, color: st.text,
-                              border: `1px solid ${st.border}`,
+                            style={{ 
+                              padding: '3px 10px', borderRadius: 20, 
+                              background: st.bg, color: st.text, 
+                              border: `1px solid ${st.border}`, 
                               fontSize: 11, fontWeight: 600, display: 'inline-block', cursor: 'pointer',
                               transition: 'all 0.15s'
                             }}
@@ -1336,7 +1355,7 @@ export default function ConsultaProtocolo() {
           <DetalhesModal
             protocolo={modal}
             onClose={() => setModal(null)}
-            onRefresh={carregar}
+            onRefresh={() => carregar(true)}
             operadores={operadores}
             isAdmin={isAdmin}
             meuNome={meuNome}
@@ -1347,7 +1366,7 @@ export default function ConsultaProtocolo() {
         {modalImportar && (
           <ImportarModal
             onClose={() => setModalImportar(false)}
-            onRefresh={carregar}
+            onRefresh={() => carregar(true)}
           />
         )}
       </div>
