@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   Cell, PieChart, Pie, AreaChart, Area
 } from 'recharts';
-import { FileText, Clock, CheckCircle, AlertCircle, Plus, Database } from 'lucide-react';
+import { FileText, Clock, CheckCircle, AlertCircle, Plus, Database, RotateCcw } from 'lucide-react';
 import { fetchProtocolos } from '../services/protocoloService';
 import { AnimatedNumber } from '@/components/ui/dashboard-card';
 
@@ -94,6 +94,7 @@ export default function PainelProtocolo() {
     // Filtros por status unificados
     const aberto = dados.filter(d => d.status === 'Aberto').length;
     const emAnalise = dados.filter(d => d.status === 'Em Análise').length;
+    const aguardandoRetorno = dados.filter(d => d.status === 'Aguardando Retorno').length;
     const concluido = dados.filter(d => d.status === 'Concluído').length;
 
     // 1. Agrupar por Secretaria
@@ -137,10 +138,11 @@ export default function PainelProtocolo() {
     const byStatus = [
       { name: 'Aberto', value: aberto, color: '#0D7C3D' },
       { name: 'Em Análise', value: emAnalise, color: '#f59e0b' },
+      { name: 'Aguardando Retorno', value: aguardandoRetorno, color: '#7c3aed' },
       { name: 'Concluído', value: concluido, color: '#10b981' }
     ];
 
-    return { total, aberto, emAnalise, concluido, bySecretaria, byTipo, byEvolucao, byStatus };
+    return { total, aberto, emAnalise, aguardandoRetorno, concluido, bySecretaria, byTipo, byEvolucao, byStatus };
   }, [dados]);
 
   return (
@@ -195,11 +197,12 @@ export default function PainelProtocolo() {
               initial="hidden"
               animate="show"
               variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } }}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16, marginBottom: 20 }}
             >
-              <KpiCard icon={FileText} label="Total Protocolos" value={stats.total} cor="#a855f7" sub="Recebidos no sistema" />
-              <KpiCard icon={AlertCircle} label="Protocolos Abertos" value={stats.aberto} cor="#0D7C3D" sub={`${pct(stats.aberto, stats.total)}% pendentes`} />
+              <KpiCard icon={FileText} label="Total Protocolos" value={stats.total} cor="#0D7C3D" sub="Recebidos no sistema" />
+              <KpiCard icon={AlertCircle} label="Protocolos Abertos" value={stats.aberto} cor="#15A050" sub={`${pct(stats.aberto, stats.total)}% pendentes`} />
               <KpiCard icon={Clock} label="Em Análise" value={stats.emAnalise} cor="#f59e0b" sub="Sendo respondidos agora" />
+              <KpiCard icon={RotateCcw} label="Aguardando Retorno" value={stats.aguardandoRetorno} cor="#7c3aed" sub={`${pct(stats.aguardandoRetorno, stats.total)}% devolvidos`} />
               <KpiCard icon={CheckCircle} label="Concluídos" value={stats.concluido} cor="#10b981" sub={`${pct(stats.concluido, stats.total)}% encerrados`} />
             </motion.div>
 

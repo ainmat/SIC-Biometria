@@ -1,13 +1,13 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, ArrowRight, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Calendar, Plus, ChevronUp, ChevronDown, Trash2, Download, X } from 'lucide-react';
+import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, ArrowRight, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Calendar, Plus, ChevronUp, ChevronDown, Trash2, Download, X, Users, Clock, RotateCcw } from 'lucide-react';
 import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo, fetchProtocoloDetalhe, uploadAnexoProtocolo, listarAnexosProtocolo, excluirAnexoProtocolo, obterUrlAnexo } from '../services/protocoloService';
 import { lerArquivoXLS, processarLinhasPlanilha } from '../utils/processarProtocoloXLS';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 import { SECRETARIAS } from '@/lib/secretarias';
-const STATUS_OPCOES = ['Aberto', 'Em Análise', 'Concluído'];
+const STATUS_OPCOES = ['Aberto', 'Em Análise', 'Aguardando Retorno', 'Concluído'];
 const TIPOS = [
   'Abono de Faltas - Atestado Médico',
   'Retificação de Batida de Ponto',
@@ -20,6 +20,7 @@ const TIPOS = [
 const CORES_STATUS = {
   'Aberto': { bg: 'rgba(13, 124, 61, 0.12)', text: '#15A050', border: 'rgba(13, 124, 61, 0.25)' },
   'Em Análise': { bg: 'rgba(245, 158, 11, 0.12)', text: '#b45309', border: 'rgba(245, 158, 11, 0.25)' },
+  'Aguardando Retorno': { bg: 'rgba(124, 58, 237, 0.12)', text: '#7c3aed', border: 'rgba(124, 58, 237, 0.25)' },
   'Concluído': { bg: 'rgba(16, 185, 129, 0.12)', text: '#047857', border: 'rgba(16, 185, 129, 0.25)' }
 };
 
@@ -633,6 +634,60 @@ export default function ConsultaProtocolo() {
     return Array.from(ts).sort();
   }, [dados]);
 
+  // Contagem geral por responsável (para aba "Todos os Protocolos")
+  const metricasPorResponsavel = useMemo(() => {
+    const mapa = {};
+    let naoAtribuido = 0;
+
+    // Inicializa operadores conhecidos com contagem 0
+    operadores.forEach(op => {
+      mapa[op] = { nome: op, total: 0, aberto: 0, emAnalise: 0, concluido: 0 };
+    });
+
+    dados.forEach(p => {
+      const resp = p.responsavel?.trim();
+      const status = p.status;
+      if (!resp || resp === 'Não atribuído') {
+        naoAtribuido++;
+      } else {
+        if (!mapa[resp]) {
+          mapa[resp] = { nome: resp, total: 0, aberto: 0, emAnalise: 0, aguardandoRetorno: 0, concluido: 0 };
+        }
+        mapa[resp].total++;
+        if (status === 'Aberto') mapa[resp].aberto++;
+        else if (status === 'Em Análise') mapa[resp].emAnalise++;
+        else if (status === 'Aguardando Retorno') mapa[resp].aguardandoRetorno = (mapa[resp].aguardandoRetorno || 0) + 1;
+        else if (status === 'Concluído') mapa[resp].concluido++;
+      }
+    });
+
+    // Ordena: quem tem mais protocolos primeiro, depois alfabético
+    const lista = Object.values(mapa).sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
+
+    return {
+      lista,
+      naoAtribuido,
+      totalGeral: dados.length
+    };
+  }, [dados, operadores]);
+
+  // Métricas específicas do usuário logado para a aba "Meus Protocolos"
+  const metricasMeusProtocolos = useMemo(() => {
+    if (!meuNome) {
+      return { total: 0, aberto: 0, emAnalise: 0, aguardandoRetorno: 0, concluido: 0 };
+    }
+    const nomeLimpo = meuNome.trim().toLowerCase();
+    const meus = dados.filter(p => p.responsavel && p.responsavel.trim().toLowerCase() === nomeLimpo);
+    
+    return {
+      total: meus.length,
+      aberto: meus.filter(p => p.status === 'Aberto').length,
+      emAnalise: meus.filter(p => p.status === 'Em Análise').length,
+      aguardandoRetorno: meus.filter(p => p.status === 'Aguardando Retorno').length,
+      concluido: meus.filter(p => p.status === 'Concluído').length
+    };
+  }, [dados, meuNome]);
+
   // Ordenação (Estilo Excel/Asana)
   const [sortField, setSortField] = useState('data_abertura');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -749,7 +804,8 @@ export default function ConsultaProtocolo() {
 
     // Filtro por "Meus Protocolos"
     if (abaAtiva === 'meus') {
-      res = res.filter(p => p.responsavel === meuNome);
+      const nomeLimpo = meuNome ? meuNome.trim().toLowerCase() : '';
+      res = res.filter(p => p.responsavel && p.responsavel.trim().toLowerCase() === nomeLimpo);
     }
 
     if (sortField) {
@@ -816,7 +872,7 @@ export default function ConsultaProtocolo() {
         {/* Abas estilo Asana */}
         <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(0, 0, 0, 0.04)', marginBottom: 16 }}>
           <button
-            onClick={() => setAbaAtiva('todos')}
+            onClick={() => { setAbaAtiva('todos'); setFiltroStatus(''); }}
             style={{
               padding: '10px 16px', background: 'none', border: 'none',
               color: abaAtiva === 'todos' ? '#0D7C3D' : '#64748b',
@@ -828,7 +884,7 @@ export default function ConsultaProtocolo() {
             Todos os Protocolos
           </button>
           <button
-            onClick={() => setAbaAtiva('meus')}
+            onClick={() => { setAbaAtiva('meus'); setFiltroResponsavel(''); setFiltroStatus(''); }}
             style={{
               padding: '10px 16px', background: 'none', border: 'none',
               color: abaAtiva === 'meus' ? '#0D7C3D' : '#64748b',
@@ -840,6 +896,449 @@ export default function ConsultaProtocolo() {
             Meus Protocolos
           </button>
         </div>
+
+        {/* Contador Geral por Responsável (Aba "Todos os Protocolos") */}
+        {abaAtiva === 'todos' && (
+          <div
+            className="chart-card"
+            style={{
+              padding: '16px 20px',
+              marginBottom: 16,
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-c)',
+              borderRadius: 12,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(13, 124, 61, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Users size={16} color="#0D7C3D" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    Distribuição de Protocolos por Responsável
+                  </h3>
+                  <p style={{ fontSize: 11, color: 'var(--muted-c)', margin: 0 }}>
+                    Clique no colaborador para filtrar a listagem ou veja a carga de cada um
+                  </p>
+                </div>
+              </div>
+
+              {/* Botão de Todos / Limpar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  onClick={() => setFiltroResponsavel('')}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 20,
+                    border: !filtroResponsavel ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
+                    background: !filtroResponsavel ? 'rgba(13, 124, 61, 0.1)' : 'var(--surface)',
+                    color: !filtroResponsavel ? '#0D7C3D' : 'var(--text)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                >
+                  <span>Todos</span>
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: !filtroResponsavel ? '#0D7C3D' : 'rgba(0,0,0,0.08)',
+                    color: !filtroResponsavel ? '#fff' : 'var(--text)',
+                    padding: '1px 6px',
+                    borderRadius: 10
+                  }}>
+                    {metricasPorResponsavel.totalGeral}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Chips / Cards dos Colaboradores */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+              {metricasPorResponsavel.lista.map(item => {
+                const isSelected = filtroResponsavel === item.nome;
+                return (
+                  <button
+                    key={item.nome}
+                    onClick={() => setFiltroResponsavel(isSelected ? '' : item.nome)}
+                    title={`Ver protocolos atribuídos a ${item.nome} (${item.aberto} abertos, ${item.emAnalise} em análise, ${item.aguardandoRetorno || 0} aguardando retorno, ${item.concluido} concluídos)`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '6px 12px 6px 8px',
+                      borderRadius: 10,
+                      border: isSelected ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
+                      background: isSelected ? 'rgba(13, 124, 61, 0.08)' : 'var(--surface)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected ? '0 2px 8px rgba(13, 124, 61, 0.15)' : 'none'
+                    }}
+                  >
+                    {/* Avatar com Iniciais */}
+                    <div style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: '50%',
+                      background: isSelected ? '#0D7C3D' : 'linear-gradient(135deg, #0D7C3D, #10b981)',
+                      color: '#fff',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      {obterIniciais(item.nome)}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+                      <span style={{
+                        fontSize: 12,
+                        fontWeight: isSelected ? 700 : 600,
+                        color: isSelected ? '#0D7C3D' : 'var(--text)',
+                        lineHeight: 1.2
+                      }}>
+                        {item.nome}
+                      </span>
+                      <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>
+                        {item.total === 1 ? '1 protocolo' : `${item.total} protocolos`}
+                      </span>
+                    </div>
+
+                    {/* Badge numérica destacada */}
+                    <span style={{
+                      marginLeft: 4,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '2px 7px',
+                      borderRadius: 12,
+                      background: isSelected ? '#0D7C3D' : item.total > 0 ? 'rgba(13, 124, 61, 0.12)' : 'rgba(0,0,0,0.05)',
+                      color: isSelected ? '#ffffff' : item.total > 0 ? '#0D7C3D' : 'var(--muted-c)'
+                    }}>
+                      {item.total}
+                    </span>
+                  </button>
+                );
+              })}
+
+              {/* Card de Não Atribuídos (se houver) */}
+              {metricasPorResponsavel.naoAtribuido > 0 && (
+                <button
+                  onClick={() => setFiltroResponsavel(filtroResponsavel === 'Não atribuído' ? '' : 'Não atribuído')}
+                  title="Ver protocolos ainda não vinculados a nenhum operador"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 12px 6px 8px',
+                    borderRadius: 10,
+                    border: filtroResponsavel === 'Não atribuído' ? '1.5px solid #f59e0b' : '1px dashed rgba(245, 158, 11, 0.4)',
+                    background: filtroResponsavel === 'Não atribuído' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.04)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: '50%',
+                    background: 'rgba(245, 158, 11, 0.2)',
+                    color: '#b45309',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    !
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#b45309', lineHeight: 1.2 }}>
+                      Não atribuído
+                    </span>
+                    <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>
+                      pendente de atribuição
+                    </span>
+                  </div>
+                  <span style={{
+                    marginLeft: 4,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: 12,
+                    background: '#f59e0b',
+                    color: '#fff'
+                  }}>
+                    {metricasPorResponsavel.naoAtribuido}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Contador Pessoal (Aba "Meus Protocolos") */}
+        {abaAtiva === 'meus' && (
+          <div style={{ marginBottom: 16 }}>
+            {/* Cabeçalho de identificação pessoal */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #0D7C3D, #10b981)',
+                  color: '#fff',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(13, 124, 61, 0.25)'
+                }}>
+                  {obterIniciais(meuNome || 'EU')}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {meuNome || 'Minha Conta'}
+                    <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--muted-c)' }}>— Resumo dos seus PDs</span>
+                  </h3>
+                  <p style={{ fontSize: 12, color: 'var(--muted-c)', margin: 0 }}>
+                    {metricasMeusProtocolos.total === 1 
+                      ? '1 protocolo atribuído a você no momento' 
+                      : `${metricasMeusProtocolos.total} protocolos atribuídos a você no momento`}
+                  </p>
+                </div>
+              </div>
+
+              {filtroStatus && (
+                <button
+                  onClick={() => setFiltroStatus('')}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 20,
+                    border: '1px solid var(--border-c)',
+                    background: 'var(--surface)',
+                    color: 'var(--muted-c)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                >
+                  <X size={12} />
+                  Remover filtro de status ({filtroStatus})
+                </button>
+              )}
+            </div>
+
+            {/* Grid com os 4 cards de KPIs */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: 12
+            }}>
+              {/* Card 1: Total */}
+              <div
+                onClick={() => setFiltroStatus('')}
+                style={{
+                  padding: '14px 18px',
+                  borderRadius: 12,
+                  background: !filtroStatus ? 'var(--card-bg)' : 'var(--surface)',
+                  border: !filtroStatus ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: !filtroStatus ? '0 4px 12px rgba(13, 124, 61, 0.08)' : 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Total Atribuído
+                  </span>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Clipboard size={14} color="var(--muted-c)" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>
+                    {metricasMeusProtocolos.total}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 500 }}>
+                    protocolos totais
+                  </span>
+                </div>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+                  {!filtroStatus ? '● Exibindo todos' : 'Clique para ver todos'}
+                </span>
+              </div>
+
+              {/* Card 2: Concluídos */}
+              <div
+                onClick={() => setFiltroStatus(filtroStatus === 'Concluído' ? '' : 'Concluído')}
+                style={{
+                  padding: '14px 18px',
+                  borderRadius: 12,
+                  background: filtroStatus === 'Concluído' ? 'rgba(16, 185, 129, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus === 'Concluído' ? '1.5px solid #047857' : '1px solid rgba(16, 185, 129, 0.25)',
+                  borderLeft: '4px solid #047857',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: filtroStatus === 'Concluído' ? '0 4px 12px rgba(16, 185, 129, 0.15)' : 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Concluídos
+                  </span>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckCircle size={14} color="#047857" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: '#047857', lineHeight: 1 }}>
+                    {metricasMeusProtocolos.concluido}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#047857', fontWeight: 500 }}>
+                    concluídos
+                  </span>
+                </div>
+                <span style={{ fontSize: 11, color: filtroStatus === 'Concluído' ? '#047857' : 'var(--muted-c)' }}>
+                  {filtroStatus === 'Concluído' ? '● Filtro ativo' : 'Clique para filtrar concluídos'}
+                </span>
+              </div>
+
+              {/* Card 3: Em Análise */}
+              <div
+                onClick={() => setFiltroStatus(filtroStatus === 'Em Análise' ? '' : 'Em Análise')}
+                style={{
+                  padding: '14px 18px',
+                  borderRadius: 12,
+                  background: filtroStatus === 'Em Análise' ? 'rgba(245, 158, 11, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus === 'Em Análise' ? '1.5px solid #b45309' : '1px solid rgba(245, 158, 11, 0.25)',
+                  borderLeft: '4px solid #b45309',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: filtroStatus === 'Em Análise' ? '0 4px 12px rgba(245, 158, 11, 0.15)' : 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#b45309', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Em Análise
+                  </span>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Clock size={14} color="#b45309" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: '#b45309', lineHeight: 1 }}>
+                    {metricasMeusProtocolos.emAnalise}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#b45309', fontWeight: 500 }}>
+                    em análise
+                  </span>
+                </div>
+                <span style={{ fontSize: 11, color: filtroStatus === 'Em Análise' ? '#b45309' : 'var(--muted-c)' }}>
+                  {filtroStatus === 'Em Análise' ? '● Filtro ativo' : 'Clique para filtrar em análise'}
+                </span>
+              </div>
+
+              {/* Card 4: Aguardando Retorno */}
+              <div
+                onClick={() => setFiltroStatus(filtroStatus === 'Aguardando Retorno' ? '' : 'Aguardando Retorno')}
+                style={{
+                  padding: '14px 18px',
+                  borderRadius: 12,
+                  background: filtroStatus === 'Aguardando Retorno' ? 'rgba(124, 58, 237, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus === 'Aguardando Retorno' ? '1.5px solid #7c3aed' : '1px solid rgba(124, 58, 237, 0.25)',
+                  borderLeft: '4px solid #7c3aed',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: filtroStatus === 'Aguardando Retorno' ? '0 4px 12px rgba(124, 58, 237, 0.15)' : 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Aguardando Retorno
+                  </span>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(124, 58, 237, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <RotateCcw size={14} color="#7c3aed" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: '#7c3aed', lineHeight: 1 }}>
+                    {metricasMeusProtocolos.aguardandoRetorno}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#7c3aed', fontWeight: 500 }}>
+                    devolvidos / pendentes
+                  </span>
+                </div>
+                <span style={{ fontSize: 11, color: filtroStatus === 'Aguardando Retorno' ? '#7c3aed' : 'var(--muted-c)' }}>
+                  {filtroStatus === 'Aguardando Retorno' ? '● Filtro ativo' : 'Clique para filtrar aguardando retorno'}
+                </span>
+              </div>
+
+              {/* Card 5: Abertos */}
+              <div
+                onClick={() => setFiltroStatus(filtroStatus === 'Aberto' ? '' : 'Aberto')}
+                style={{
+                  padding: '14px 18px',
+                  borderRadius: 12,
+                  background: filtroStatus === 'Aberto' ? 'rgba(13, 124, 61, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus === 'Aberto' ? '1.5px solid #0D7C3D' : '1px solid rgba(13, 124, 61, 0.25)',
+                  borderLeft: '4px solid #0D7C3D',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: filtroStatus === 'Aberto' ? '0 4px 12px rgba(13, 124, 61, 0.15)' : 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0D7C3D', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Abertos
+                  </span>
+                  <div style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(13, 124, 61, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FileText size={14} color="#0D7C3D" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontSize: 26, fontWeight: 800, color: '#0D7C3D', lineHeight: 1 }}>
+                    {metricasMeusProtocolos.aberto}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#0D7C3D', fontWeight: 500 }}>
+                    abertos
+                  </span>
+                </div>
+                <span style={{ fontSize: 11, color: filtroStatus === 'Aberto' ? '#0D7C3D' : 'var(--muted-c)' }}>
+                  {filtroStatus === 'Aberto' ? '● Filtro ativo' : 'Clique para filtrar abertos'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Barra de Filtros */}
         <div className="chart-card" style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>

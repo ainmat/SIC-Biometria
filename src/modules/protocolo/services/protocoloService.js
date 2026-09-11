@@ -337,10 +337,10 @@ export async function importarProtocolos(lista) {
     const now = new Date().toISOString();
     const hojeData = now.split('T')[0];
 
-    // 2. Identificar protocolos ausentes (estão no banco, não estão na planilha, e não estão Concluídos)
+    // 2. Identificar protocolos ausentes (estão no banco, não estão na planilha, e não estão Concluídos nem Aguardando Retorno)
     const ausentes = dbProts.filter(dbP => {
       const naPlanilha = lista.some(p => p.numero_protocolo === dbP.numero_protocolo);
-      return !naPlanilha && dbP.status !== 'Concluído';
+      return !naPlanilha && dbP.status !== 'Concluído' && dbP.status !== 'Aguardando Retorno';
     });
 
     // 3. Atualizar ausentes para "Concluído" no Supabase
@@ -421,10 +421,10 @@ export async function importarProtocolos(lista) {
       const now = new Date().toISOString();
       const hojeData = now.split('T')[0];
 
-      // 1. Identificar e marcar ausentes no LocalStorage como Concluídos
+      // 1. Identificar e marcar ausentes no LocalStorage como Concluídos (exceto se Aguardando Retorno)
       localData.forEach(item => {
         const naPlanilha = lista.some(p => p.numero_protocolo === item.numero_protocolo);
-        if (!naPlanilha && item.status !== 'Concluído') {
+        if (!naPlanilha && item.status !== 'Concluído' && item.status !== 'Aguardando Retorno') {
           item.status = 'Concluído';
           if (!item.historico_tramitacao) item.historico_tramitacao = [];
           item.historico_tramitacao.push({
