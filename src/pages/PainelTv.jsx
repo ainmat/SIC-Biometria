@@ -299,21 +299,25 @@ export default function PainelTv({ standalone = false }) {
 
   const maxUnidadeCount = topUnidadesCriticas[0]?.count || 1;
 
-  // 5 Chamados mais antigos ainda em aberto
+  // 5 Chamados mais antigos ainda em aberto (desconsiderando ADVANCIS)
   const chamadosAbertos = chamados.filter(
     (c) =>
       c.status !== 'Atendimento Encerrado' &&
       c.status !== 'Atendimento Cancelado' &&
-      c.status !== 'Concluído'
+      c.status !== 'Concluído' &&
+      c.unidade?.toUpperCase() !== 'ADVANCIS' &&
+      c.secretaria?.toUpperCase() !== 'ADVANCIS'
   );
   const chamadosMaisAntigos = [...chamadosAbertos]
     .filter((c) => c.data_abertura)
     .sort((a, b) => new Date(a.data_abertura) - new Date(b.data_abertura))
     .slice(0, 5);
 
-  // Gráfico Mensal (Chart.js)
+  // Gráfico Mensal (Chart.js - Barras Modernas)
+  const ultimosMeses = mensal.slice(-9);
+
   const chartMensalData = {
-    labels: mensal.slice(-9).map(([m]) => {
+    labels: ultimosMeses.map(([m]) => {
       const [y, mo] = m.split('-');
       return new Date(+y, +mo - 1).toLocaleDateString('pt-BR', {
         month: 'short',
@@ -323,15 +327,18 @@ export default function PainelTv({ standalone = false }) {
     datasets: [
       {
         label: 'Chamados',
-        data: mensal.slice(-9).map(([, c]) => c),
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.18)',
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#10B981',
-        pointBorderColor: '#0B0F19',
-        pointBorderWidth: 2,
-        pointRadius: 6,
+        data: ultimosMeses.map(([, c]) => c),
+        backgroundColor: ultimosMeses.map((_, index) => {
+          if (index === ultimosMeses.length - 1) {
+            return 'rgba(52, 211, 153, 0.95)'; // Destaque no mês atual/mais recente
+          }
+          return 'rgba(16, 185, 129, 0.8)';
+        }),
+        hoverBackgroundColor: '#34D399',
+        borderRadius: 8,
+        borderSkipped: false,
+        barPercentage: 0.65,
+        categoryPercentage: 0.8,
       },
     ],
   };
@@ -347,16 +354,21 @@ export default function PainelTv({ standalone = false }) {
         bodyFont: { size: 14 },
         padding: 12,
         cornerRadius: 8,
+        displayColors: false,
+        callbacks: {
+          label: (context) => ` ${context.parsed.y} chamados`,
+        },
       },
     },
     scales: {
       x: {
-        grid: { color: 'rgba(255,255,255,0.05)' },
-        ticks: { color: '#94A3B8', font: { size: 13, weight: '500' } },
+        grid: { display: false },
+        ticks: { color: '#94A3B8', font: { size: 12, weight: '600' } },
       },
       y: {
-        grid: { color: 'rgba(255,255,255,0.05)' },
-        ticks: { color: '#94A3B8', font: { size: 13, weight: '500' } },
+        beginAtZero: true,
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        ticks: { color: '#94A3B8', font: { size: 12, weight: '500' } },
       },
     },
   };
@@ -1136,7 +1148,7 @@ export default function PainelTv({ standalone = false }) {
                     </span>
                   </div>
                   <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-                    <Line data={chartMensalData} options={chartMensalOptions} />
+                    <Bar data={chartMensalData} options={chartMensalOptions} />
                   </div>
                 </div>
 
