@@ -1,4 +1,5 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Filter, RefreshCw, FileText, ChevronRight, Eye, Clipboard, ArrowRight, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Calendar, Plus, ChevronUp, ChevronDown, Trash2, Download, X, Users, Clock, RotateCcw } from 'lucide-react';
 import { fetchProtocolos, atualizarStatusProtocolo, importarProtocolos, atualizarProtocolo, fetchProtocoloDetalhe, uploadAnexoProtocolo, listarAnexosProtocolo, excluirAnexoProtocolo, obterUrlAnexo } from '../services/protocoloService';
@@ -617,13 +618,13 @@ export default function ConsultaProtocolo() {
   // Abas estilo Asana (Todos vs Meus)
   const [abaAtiva, setAbaAtiva] = useState('todos'); // 'todos' ou 'meus'
 
-  // Filtros
+  // Filtros (Suporte à Seleção Múltipla)
   const [busca, setBusca] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('');
-  const [filtroSecretaria, setFiltroSecretaria] = useState('');
-  const [filtroTipo, setFiltroTipo] = useState('');
-  const [filtroResponsavel, setFiltroResponsavel] = useState('');
-  const [filtroPrioridade, setFiltroPrioridade] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState([]);
+  const [filtroSecretaria, setFiltroSecretaria] = useState([]);
+  const [filtroTipo, setFiltroTipo] = useState([]);
+  const [filtroResponsavel, setFiltroResponsavel] = useState([]);
+  const [filtroPrioridade, setFiltroPrioridade] = useState([]);
   const [mostrarFiltrosAvan, setMostrarFiltrosAvan] = useState(false);
 
   const tiposDisponiveis = useMemo(() => {
@@ -633,6 +634,53 @@ export default function ConsultaProtocolo() {
     });
     return Array.from(ts).sort();
   }, [dados]);
+
+  const opcoesTipo = tiposDisponiveis;
+
+  // Contagens para os filtros múltiplos
+  const contagensFiltros = useMemo(() => {
+    const status = {};
+    const sec = {};
+    const tipo = {};
+    const resp = {};
+    const prio = {};
+
+    dados.forEach(p => {
+      if (p.status) status[p.status] = (status[p.status] || 0) + 1;
+      if (p.secretaria) sec[p.secretaria] = (sec[p.secretaria] || 0) + 1;
+      if (p.tipo_solicitacao) tipo[p.tipo_solicitacao] = (tipo[p.tipo_solicitacao] || 0) + 1;
+      const r = p.responsavel?.trim() || 'Não atribuído';
+      resp[r] = (resp[r] || 0) + 1;
+      const pr = p.prioridade || 'Normal';
+      prio[pr] = (prio[pr] || 0) + 1;
+    });
+
+    return { status, sec, tipo, resp, prio };
+  }, [dados]);
+
+  const opcoesStatus = useMemo(() => {
+    return STATUS_OPCOES.map(st => ({
+      value: st,
+      label: st,
+      color: CORES_STATUS[st]?.text
+    }));
+  }, []);
+
+  const opcoesSecretarias = useMemo(() => {
+    return SECRETARIAS.map(sec => sec.nome);
+  }, []);
+
+  const opcoesResponsaveis = useMemo(() => {
+    return ['Não atribuído', ...operadores];
+  }, [operadores]);
+
+  const opcoesPrioridades = useMemo(() => {
+    return ['Baixa', 'Normal', 'Alta', 'Urgente'].map(prio => ({
+      value: prio,
+      label: prio,
+      color: CORES_PRIORIDADE[prio]?.text
+    }));
+  }, []);
 
   // Contagem geral por responsável (para aba "Todos os Protocolos")
   const metricasPorResponsavel = useMemo(() => {
@@ -789,15 +837,15 @@ export default function ConsultaProtocolo() {
         p.requerente_nome.toLowerCase().includes(termo) ||
         (p.requerente_matricula && p.requerente_matricula.includes(termo));
       
-      const matchStatus = !filtroStatus || p.status === filtroStatus;
-      const matchSec = !filtroSecretaria || p.secretaria === filtroSecretaria;
-      const matchTipo = !filtroTipo || p.tipo_solicitacao === filtroTipo;
+      const matchStatus = filtroStatus.length === 0 || filtroStatus.includes(p.status);
+      const matchSec = filtroSecretaria.length === 0 || filtroSecretaria.includes(p.secretaria);
+      const matchTipo = filtroTipo.length === 0 || filtroTipo.includes(p.tipo_solicitacao);
       
-      const pResp = p.responsavel || 'Não atribuído';
-      const matchResp = !filtroResponsavel || pResp === filtroResponsavel;
+      const pResp = p.responsavel?.trim() || 'Não atribuído';
+      const matchResp = filtroResponsavel.length === 0 || filtroResponsavel.includes(pResp);
       
       const pPrio = p.prioridade || 'Normal';
-      const matchPrio = !filtroPrioridade || pPrio === filtroPrioridade;
+      const matchPrio = filtroPrioridade.length === 0 || filtroPrioridade.includes(pPrio);
 
       return matchBusca && matchStatus && matchSec && matchTipo && matchResp && matchPrio;
     });
@@ -841,6 +889,8 @@ export default function ConsultaProtocolo() {
     minWidth: 120
   };
 
+  const totalFiltrosAtivos = filtroStatus.length + filtroSecretaria.length + filtroTipo.length + filtroResponsavel.length + filtroPrioridade.length;
+
   return (
     <div>
       <div className="topbar">
@@ -872,7 +922,7 @@ export default function ConsultaProtocolo() {
         {/* Abas estilo Asana */}
         <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(0, 0, 0, 0.04)', marginBottom: 16 }}>
           <button
-            onClick={() => { setAbaAtiva('todos'); setFiltroStatus(''); }}
+            onClick={() => { setAbaAtiva('todos'); setFiltroStatus([]); }}
             style={{
               padding: '10px 16px', background: 'none', border: 'none',
               color: abaAtiva === 'todos' ? '#0D7C3D' : '#64748b',
@@ -884,7 +934,7 @@ export default function ConsultaProtocolo() {
             Todos os Protocolos
           </button>
           <button
-            onClick={() => { setAbaAtiva('meus'); setFiltroResponsavel(''); setFiltroStatus(''); }}
+            onClick={() => { setAbaAtiva('meus'); setFiltroResponsavel([]); setFiltroStatus([]); }}
             style={{
               padding: '10px 16px', background: 'none', border: 'none',
               color: abaAtiva === 'meus' ? '#0D7C3D' : '#64748b',
@@ -928,13 +978,13 @@ export default function ConsultaProtocolo() {
               {/* Botão de Todos / Limpar */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <button
-                  onClick={() => setFiltroResponsavel('')}
+                  onClick={() => setFiltroResponsavel([])}
                   style={{
                     padding: '5px 12px',
                     borderRadius: 20,
-                    border: !filtroResponsavel ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
-                    background: !filtroResponsavel ? 'rgba(13, 124, 61, 0.1)' : 'var(--surface)',
-                    color: !filtroResponsavel ? '#0D7C3D' : 'var(--text)',
+                    border: filtroResponsavel.length === 0 ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
+                    background: filtroResponsavel.length === 0 ? 'rgba(13, 124, 61, 0.1)' : 'var(--surface)',
+                    color: filtroResponsavel.length === 0 ? '#0D7C3D' : 'var(--text)',
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -948,8 +998,8 @@ export default function ConsultaProtocolo() {
                   <span style={{
                     fontSize: 11,
                     fontWeight: 700,
-                    background: !filtroResponsavel ? '#0D7C3D' : 'rgba(0,0,0,0.08)',
-                    color: !filtroResponsavel ? '#fff' : 'var(--text)',
+                    background: filtroResponsavel.length === 0 ? '#0D7C3D' : 'rgba(0,0,0,0.08)',
+                    color: filtroResponsavel.length === 0 ? '#fff' : 'var(--text)',
                     padding: '1px 6px',
                     borderRadius: 10
                   }}>
@@ -962,11 +1012,17 @@ export default function ConsultaProtocolo() {
             {/* Chips / Cards dos Colaboradores */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
               {metricasPorResponsavel.lista.map(item => {
-                const isSelected = filtroResponsavel === item.nome;
+                const isSelected = filtroResponsavel.includes(item.nome);
                 return (
                   <button
                     key={item.nome}
-                    onClick={() => setFiltroResponsavel(isSelected ? '' : item.nome)}
+                    onClick={() => {
+                      setFiltroResponsavel(prev =>
+                        prev.includes(item.nome)
+                          ? prev.filter(r => r !== item.nome)
+                          : [...prev, item.nome]
+                      );
+                    }}
                     title={`Ver protocolos atribuídos a ${item.nome} (${item.aberto} abertos, ${item.emAnalise} em análise, ${item.aguardandoRetorno || 0} aguardando retorno, ${item.concluido} concluídos)`}
                     style={{
                       display: 'flex',
@@ -1031,7 +1087,13 @@ export default function ConsultaProtocolo() {
               {/* Card de Não Atribuídos (se houver) */}
               {metricasPorResponsavel.naoAtribuido > 0 && (
                 <button
-                  onClick={() => setFiltroResponsavel(filtroResponsavel === 'Não atribuído' ? '' : 'Não atribuído')}
+                  onClick={() => {
+                    setFiltroResponsavel(prev =>
+                      prev.includes('Não atribuído')
+                        ? prev.filter(r => r !== 'Não atribuído')
+                        : [...prev, 'Não atribuído']
+                    );
+                  }}
                   title="Ver protocolos ainda não vinculados a nenhum operador"
                   style={{
                     display: 'flex',
@@ -1039,8 +1101,8 @@ export default function ConsultaProtocolo() {
                     gap: 8,
                     padding: '6px 12px 6px 8px',
                     borderRadius: 10,
-                    border: filtroResponsavel === 'Não atribuído' ? '1.5px solid #f59e0b' : '1px dashed rgba(245, 158, 11, 0.4)',
-                    background: filtroResponsavel === 'Não atribuído' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.04)',
+                    border: filtroResponsavel.includes('Não atribuído') ? '1.5px solid #f59e0b' : '1px dashed rgba(245, 158, 11, 0.4)',
+                    background: filtroResponsavel.includes('Não atribuído') ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.04)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease'
                   }}
@@ -1119,9 +1181,9 @@ export default function ConsultaProtocolo() {
                 </div>
               </div>
 
-              {filtroStatus && (
+              {filtroStatus.length > 0 && (
                 <button
-                  onClick={() => setFiltroStatus('')}
+                  onClick={() => setFiltroStatus([])}
                   style={{
                     padding: '5px 12px',
                     borderRadius: 20,
@@ -1137,7 +1199,7 @@ export default function ConsultaProtocolo() {
                   }}
                 >
                   <X size={12} />
-                  Remover filtro de status ({filtroStatus})
+                  Remover filtros de status ({filtroStatus.join(', ')})
                 </button>
               )}
             </div>
@@ -1150,15 +1212,15 @@ export default function ConsultaProtocolo() {
             }}>
               {/* Card 1: Total */}
               <div
-                onClick={() => setFiltroStatus('')}
+                onClick={() => setFiltroStatus([])}
                 style={{
                   padding: '14px 18px',
                   borderRadius: 12,
-                  background: !filtroStatus ? 'var(--card-bg)' : 'var(--surface)',
-                  border: !filtroStatus ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
+                  background: filtroStatus.length === 0 ? 'var(--card-bg)' : 'var(--surface)',
+                  border: filtroStatus.length === 0 ? '1.5px solid #0D7C3D' : '1px solid var(--border-c)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: !filtroStatus ? '0 4px 12px rgba(13, 124, 61, 0.08)' : 'none',
+                  boxShadow: filtroStatus.length === 0 ? '0 4px 12px rgba(13, 124, 61, 0.08)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 6
@@ -1181,22 +1243,28 @@ export default function ConsultaProtocolo() {
                   </span>
                 </div>
                 <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
-                  {!filtroStatus ? '● Exibindo todos' : 'Clique para ver todos'}
+                  {filtroStatus.length === 0 ? '● Exibindo todos' : 'Clique para ver todos'}
                 </span>
               </div>
 
               {/* Card 2: Concluídos */}
               <div
-                onClick={() => setFiltroStatus(filtroStatus === 'Concluído' ? '' : 'Concluído')}
+                onClick={() => {
+                  setFiltroStatus(prev =>
+                    prev.includes('Concluído')
+                      ? prev.filter(s => s !== 'Concluído')
+                      : [...prev, 'Concluído']
+                  );
+                }}
                 style={{
                   padding: '14px 18px',
                   borderRadius: 12,
-                  background: filtroStatus === 'Concluído' ? 'rgba(16, 185, 129, 0.12)' : 'var(--card-bg)',
-                  border: filtroStatus === 'Concluído' ? '1.5px solid #047857' : '1px solid rgba(16, 185, 129, 0.25)',
+                  background: filtroStatus.includes('Concluído') ? 'rgba(16, 185, 129, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus.includes('Concluído') ? '1.5px solid #047857' : '1px solid rgba(16, 185, 129, 0.25)',
                   borderLeft: '4px solid #047857',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: filtroStatus === 'Concluído' ? '0 4px 12px rgba(16, 185, 129, 0.15)' : 'none',
+                  boxShadow: filtroStatus.includes('Concluído') ? '0 4px 12px rgba(16, 185, 129, 0.15)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 6
@@ -1218,23 +1286,29 @@ export default function ConsultaProtocolo() {
                     concluídos
                   </span>
                 </div>
-                <span style={{ fontSize: 11, color: filtroStatus === 'Concluído' ? '#047857' : 'var(--muted-c)' }}>
-                  {filtroStatus === 'Concluído' ? '● Filtro ativo' : 'Clique para filtrar concluídos'}
+                <span style={{ fontSize: 11, color: filtroStatus.includes('Concluído') ? '#047857' : 'var(--muted-c)' }}>
+                  {filtroStatus.includes('Concluído') ? '● Filtro ativo' : 'Clique para filtrar concluídos'}
                 </span>
               </div>
 
               {/* Card 3: Em Análise */}
               <div
-                onClick={() => setFiltroStatus(filtroStatus === 'Em Análise' ? '' : 'Em Análise')}
+                onClick={() => {
+                  setFiltroStatus(prev =>
+                    prev.includes('Em Análise')
+                      ? prev.filter(s => s !== 'Em Análise')
+                      : [...prev, 'Em Análise']
+                  );
+                }}
                 style={{
                   padding: '14px 18px',
                   borderRadius: 12,
-                  background: filtroStatus === 'Em Análise' ? 'rgba(245, 158, 11, 0.12)' : 'var(--card-bg)',
-                  border: filtroStatus === 'Em Análise' ? '1.5px solid #b45309' : '1px solid rgba(245, 158, 11, 0.25)',
+                  background: filtroStatus.includes('Em Análise') ? 'rgba(245, 158, 11, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus.includes('Em Análise') ? '1.5px solid #b45309' : '1px solid rgba(245, 158, 11, 0.25)',
                   borderLeft: '4px solid #b45309',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: filtroStatus === 'Em Análise' ? '0 4px 12px rgba(245, 158, 11, 0.15)' : 'none',
+                  boxShadow: filtroStatus.includes('Em Análise') ? '0 4px 12px rgba(245, 158, 11, 0.15)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 6
@@ -1256,23 +1330,29 @@ export default function ConsultaProtocolo() {
                     em análise
                   </span>
                 </div>
-                <span style={{ fontSize: 11, color: filtroStatus === 'Em Análise' ? '#b45309' : 'var(--muted-c)' }}>
-                  {filtroStatus === 'Em Análise' ? '● Filtro ativo' : 'Clique para filtrar em análise'}
+                <span style={{ fontSize: 11, color: filtroStatus.includes('Em Análise') ? '#b45309' : 'var(--muted-c)' }}>
+                  {filtroStatus.includes('Em Análise') ? '● Filtro ativo' : 'Clique para filtrar em análise'}
                 </span>
               </div>
 
               {/* Card 4: Aguardando Retorno */}
               <div
-                onClick={() => setFiltroStatus(filtroStatus === 'Aguardando Retorno' ? '' : 'Aguardando Retorno')}
+                onClick={() => {
+                  setFiltroStatus(prev =>
+                    prev.includes('Aguardando Retorno')
+                      ? prev.filter(s => s !== 'Aguardando Retorno')
+                      : [...prev, 'Aguardando Retorno']
+                  );
+                }}
                 style={{
                   padding: '14px 18px',
                   borderRadius: 12,
-                  background: filtroStatus === 'Aguardando Retorno' ? 'rgba(124, 58, 237, 0.12)' : 'var(--card-bg)',
-                  border: filtroStatus === 'Aguardando Retorno' ? '1.5px solid #7c3aed' : '1px solid rgba(124, 58, 237, 0.25)',
+                  background: filtroStatus.includes('Aguardando Retorno') ? 'rgba(124, 58, 237, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus.includes('Aguardando Retorno') ? '1.5px solid #7c3aed' : '1px solid rgba(124, 58, 237, 0.25)',
                   borderLeft: '4px solid #7c3aed',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: filtroStatus === 'Aguardando Retorno' ? '0 4px 12px rgba(124, 58, 237, 0.15)' : 'none',
+                  boxShadow: filtroStatus.includes('Aguardando Retorno') ? '0 4px 12px rgba(124, 58, 237, 0.15)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 6
@@ -1294,23 +1374,29 @@ export default function ConsultaProtocolo() {
                     devolvidos / pendentes
                   </span>
                 </div>
-                <span style={{ fontSize: 11, color: filtroStatus === 'Aguardando Retorno' ? '#7c3aed' : 'var(--muted-c)' }}>
-                  {filtroStatus === 'Aguardando Retorno' ? '● Filtro ativo' : 'Clique para filtrar aguardando retorno'}
+                <span style={{ fontSize: 11, color: filtroStatus.includes('Aguardando Retorno') ? '#7c3aed' : 'var(--muted-c)' }}>
+                  {filtroStatus.includes('Aguardando Retorno') ? '● Filtro ativo' : 'Clique para filtrar aguardando retorno'}
                 </span>
               </div>
 
               {/* Card 5: Abertos */}
               <div
-                onClick={() => setFiltroStatus(filtroStatus === 'Aberto' ? '' : 'Aberto')}
+                onClick={() => {
+                  setFiltroStatus(prev =>
+                    prev.includes('Aberto')
+                      ? prev.filter(s => s !== 'Aberto')
+                      : [...prev, 'Aberto']
+                  );
+                }}
                 style={{
                   padding: '14px 18px',
                   borderRadius: 12,
-                  background: filtroStatus === 'Aberto' ? 'rgba(13, 124, 61, 0.12)' : 'var(--card-bg)',
-                  border: filtroStatus === 'Aberto' ? '1.5px solid #0D7C3D' : '1px solid rgba(13, 124, 61, 0.25)',
+                  background: filtroStatus.includes('Aberto') ? 'rgba(13, 124, 61, 0.12)' : 'var(--card-bg)',
+                  border: filtroStatus.includes('Aberto') ? '1.5px solid #0D7C3D' : '1px solid rgba(13, 124, 61, 0.25)',
                   borderLeft: '4px solid #0D7C3D',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: filtroStatus === 'Aberto' ? '0 4px 12px rgba(13, 124, 61, 0.15)' : 'none',
+                  boxShadow: filtroStatus.includes('Aberto') ? '0 4px 12px rgba(13, 124, 61, 0.15)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 6
@@ -1332,8 +1418,8 @@ export default function ConsultaProtocolo() {
                     abertos
                   </span>
                 </div>
-                <span style={{ fontSize: 11, color: filtroStatus === 'Aberto' ? '#0D7C3D' : 'var(--muted-c)' }}>
-                  {filtroStatus === 'Aberto' ? '● Filtro ativo' : 'Clique para filtrar abertos'}
+                <span style={{ fontSize: 11, color: filtroStatus.includes('Aberto') ? '#0D7C3D' : 'var(--muted-c)' }}>
+                  {filtroStatus.includes('Aberto') ? '● Filtro ativo' : 'Clique para filtrar abertos'}
                 </span>
               </div>
             </div>
@@ -1368,8 +1454,19 @@ export default function ConsultaProtocolo() {
             >
               <Filter size={14} />
               Filtros Avançados
-              {(filtroStatus || filtroSecretaria || filtroTipo || filtroResponsavel || filtroPrioridade) && (
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', marginLeft: 2 }} />
+              {totalFiltrosAtivos > 0 && (
+                <span style={{
+                  background: '#0D7C3D',
+                  color: '#ffffff',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  borderRadius: 10,
+                  padding: '1px 6px',
+                  marginLeft: 2,
+                  lineHeight: '14px'
+                }}>
+                  {totalFiltrosAtivos}
+                </span>
               )}
             </button>
 
@@ -1400,96 +1497,150 @@ export default function ConsultaProtocolo() {
             </div>
           </div>
 
-          {/* Área expansível de filtros */}
+          {/* Área expansível de filtros com Seleção Múltipla */}
           {mostrarFiltrosAvan && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 4, padding: '12px 14px', background: 'rgba(0,0,0,0.02)', borderRadius: 8, border: '1px solid rgba(0,0,0,0.04)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 4, padding: '14px 16px', background: 'rgba(0,0,0,0.02)', borderRadius: 10, border: '1px solid rgba(0,0,0,0.05)', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 45 }}>Status:</span>
-                <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} style={{ ...SEL, minWidth: 160 }}>
-                  <option value="">Todos</option>
-                  {STATUS_OPCOES.map(st => <option key={st} value={st}>{st}</option>)}
-                </select>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600 }}>Status:</span>
+                <MultiSelectDropdown
+                  values={filtroStatus}
+                  onChange={setFiltroStatus}
+                  options={opcoesStatus}
+                  placeholder="Todos"
+                  searchPlaceholder="Buscar status..."
+                  minWidth={140}
+                  counts={contagensFiltros.status}
+                />
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 65 }}>Secretaria:</span>
-                <select value={filtroSecretaria} onChange={e => setFiltroSecretaria(e.target.value)} style={{ ...SEL, minWidth: 160 }}>
-                  <option value="">Todas</option>
-                  {SECRETARIAS.map(sec => <option key={sec.nome} value={sec.nome}>{sec.nome}</option>)}
-                </select>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600 }}>Secretaria:</span>
+                <MultiSelectDropdown
+                  values={filtroSecretaria}
+                  onChange={setFiltroSecretaria}
+                  options={opcoesSecretarias}
+                  placeholder="Todas"
+                  searchPlaceholder="Buscar secretaria..."
+                  minWidth={170}
+                  feminine={true}
+                  counts={contagensFiltros.sec}
+                />
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 35 }}>Tipo:</span>
-                <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)} style={{ ...SEL, maxWidth: 220 }}>
-                  <option value="">Todos</option>
-                  {tiposDisponiveis.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
-                </select>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600 }}>Tipo:</span>
+                <MultiSelectDropdown
+                  values={filtroTipo}
+                  onChange={setFiltroTipo}
+                  options={opcoesTipo}
+                  placeholder="Todos"
+                  searchPlaceholder="Buscar tipo..."
+                  minWidth={180}
+                  counts={contagensFiltros.tipo}
+                />
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 75 }}>Responsável:</span>
-                <select value={filtroResponsavel} onChange={e => setFiltroResponsavel(e.target.value)} style={{ ...SEL, maxWidth: 180 }}>
-                  <option value="">Todos</option>
-                  <option value="Não atribuído">Não atribuído</option>
-                  {operadores.map(op => <option key={op} value={op}>{op}</option>)}
-                </select>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600 }}>Responsável:</span>
+                <MultiSelectDropdown
+                  values={filtroResponsavel}
+                  onChange={setFiltroResponsavel}
+                  options={opcoesResponsaveis}
+                  placeholder="Todos"
+                  searchPlaceholder="Buscar responsável..."
+                  minWidth={150}
+                  counts={contagensFiltros.resp}
+                />
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600, width: 62 }}>Prioridade:</span>
-                <select value={filtroPrioridade} onChange={e => setFiltroPrioridade(e.target.value)} style={{ ...SEL, maxWidth: 160 }}>
-                  <option value="">Todas</option>
-                  <option value="Baixa">Baixa</option>
-                  <option value="Normal">Normal</option>
-                  <option value="Alta">Alta</option>
-                  <option value="Urgente">Urgente</option>
-                </select>
+                <span style={{ fontSize: 11, color: 'var(--muted-c)', fontWeight: 600 }}>Prioridade:</span>
+                <MultiSelectDropdown
+                  values={filtroPrioridade}
+                  onChange={setFiltroPrioridade}
+                  options={opcoesPrioridades}
+                  placeholder="Todas"
+                  searchPlaceholder="Buscar prioridade..."
+                  minWidth={130}
+                  feminine={true}
+                  counts={contagensFiltros.prio}
+                />
               </div>
             </div>
           )}
 
           {/* Tags de Filtros Ativos */}
-          {(filtroStatus || filtroSecretaria || filtroTipo || filtroResponsavel || filtroPrioridade) && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-              {filtroStatus && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
-                  <span style={{ color: 'var(--muted-c)' }}>Status:</span> {filtroStatus}
-                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroStatus('')}>×</span>
+          {totalFiltrosAtivos > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4, alignItems: 'center' }}>
+              {filtroStatus.map(st => (
+                <div key={`st-${st}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--card-bg, #fff)', border: '1px solid var(--border-c, rgba(0,0,0,0.08))', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: CORES_STATUS[st]?.text || '#15A050' }} />
+                  <span style={{ color: 'var(--muted-c)' }}>Status:</span> <strong>{st}</strong>
+                  <span
+                    style={{ cursor: 'pointer', marginLeft: 3, color: 'var(--muted-c)', fontWeight: 700 }}
+                    onClick={() => setFiltroStatus(prev => prev.filter(s => s !== st))}
+                  >
+                    ×
+                  </span>
                 </div>
-              )}
-              {filtroSecretaria && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
-                  <span style={{ color: 'var(--muted-c)' }}>Secretaria:</span> {filtroSecretaria}
-                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroSecretaria('')}>×</span>
+              ))}
+
+              {filtroSecretaria.map(sec => (
+                <div key={`sec-${sec}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--card-bg, #fff)', border: '1px solid var(--border-c, rgba(0,0,0,0.08))', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Secretaria:</span> <strong>{sec}</strong>
+                  <span
+                    style={{ cursor: 'pointer', marginLeft: 3, color: 'var(--muted-c)', fontWeight: 700 }}
+                    onClick={() => setFiltroSecretaria(prev => prev.filter(s => s !== sec))}
+                  >
+                    ×
+                  </span>
                 </div>
-              )}
-              {filtroTipo && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
-                  <span style={{ color: 'var(--muted-c)' }}>Tipo:</span> {filtroTipo}
-                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroTipo('')}>×</span>
+              ))}
+
+              {filtroTipo.map(tipo => (
+                <div key={`tipo-${tipo}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--card-bg, #fff)', border: '1px solid var(--border-c, rgba(0,0,0,0.08))', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Tipo:</span> <strong>{tipo}</strong>
+                  <span
+                    style={{ cursor: 'pointer', marginLeft: 3, color: 'var(--muted-c)', fontWeight: 700 }}
+                    onClick={() => setFiltroTipo(prev => prev.filter(t => t !== tipo))}
+                  >
+                    ×
+                  </span>
                 </div>
-              )}
-              {filtroResponsavel && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
-                  <span style={{ color: 'var(--muted-c)' }}>Resp:</span> {filtroResponsavel}
-                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroResponsavel('')}>×</span>
+              ))}
+
+              {filtroResponsavel.map(resp => (
+                <div key={`resp-${resp}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--card-bg, #fff)', border: '1px solid var(--border-c, rgba(0,0,0,0.08))', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ color: 'var(--muted-c)' }}>Resp:</span> <strong>{resp}</strong>
+                  <span
+                    style={{ cursor: 'pointer', marginLeft: 3, color: 'var(--muted-c)', fontWeight: 700 }}
+                    onClick={() => setFiltroResponsavel(prev => prev.filter(r => r !== resp))}
+                  >
+                    ×
+                  </span>
                 </div>
-              )}
-              {filtroPrioridade && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
-                  <span style={{ color: 'var(--muted-c)' }}>Prio:</span> {filtroPrioridade}
-                  <span style={{ cursor: 'pointer', marginLeft: 4, color: 'var(--muted-c)' }} onClick={() => setFiltroPrioridade('')}>×</span>
+              ))}
+
+              {filtroPrioridade.map(prio => (
+                <div key={`prio-${prio}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--card-bg, #fff)', border: '1px solid var(--border-c, rgba(0,0,0,0.08))', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: CORES_PRIORIDADE[prio]?.text || '#64748b' }} />
+                  <span style={{ color: 'var(--muted-c)' }}>Prio:</span> <strong>{prio}</strong>
+                  <span
+                    style={{ cursor: 'pointer', marginLeft: 3, color: 'var(--muted-c)', fontWeight: 700 }}
+                    onClick={() => setFiltroPrioridade(prev => prev.filter(p => p !== prio))}
+                  >
+                    ×
+                  </span>
                 </div>
-              )}
+              ))}
               
               <div 
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, color: 'var(--muted-c)', cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, color: '#dc2626', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
                 onClick={() => {
-                  setFiltroStatus(''); setFiltroSecretaria(''); setFiltroTipo(''); setFiltroResponsavel(''); setFiltroPrioridade('');
+                  setFiltroStatus([]); setFiltroSecretaria([]); setFiltroTipo([]); setFiltroResponsavel([]); setFiltroPrioridade([]);
                 }}
               >
-                Limpar todos
+                Limpar todos os filtros
               </div>
             </div>
           )}

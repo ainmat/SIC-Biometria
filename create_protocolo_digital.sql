@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS protocolo_digital (
   secretaria VARCHAR(100) NOT NULL,
   tipo_solicitacao VARCHAR(100) NOT NULL,
   descricao TEXT,
-  status VARCHAR(30) NOT NULL DEFAULT 'Aberto' CHECK (status IN ('Aberto', 'Em Análise', 'Concluído')),
+  status VARCHAR(30) NOT NULL DEFAULT 'Aberto' CHECK (status IN ('Aberto', 'Em Análise', 'Aguardando Retorno', 'Concluído')),
   prioridade VARCHAR(30) DEFAULT 'Normal',
   responsavel VARCHAR(255),
   data_conclusao DATE,
@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_protocolo_data ON protocolo_digital(data_abertura
 
 -- Atualizar check constraint de status, coluna de prioridade, responsável e data de conclusão se a tabela já existir no Supabase
 ALTER TABLE IF EXISTS protocolo_digital DROP CONSTRAINT IF EXISTS protocolo_digital_status_check;
-ALTER TABLE IF EXISTS protocolo_digital ADD CONSTRAINT protocolo_digital_status_check CHECK (status IN ('Aberto', 'Em Análise', 'Concluído'));
+ALTER TABLE IF EXISTS protocolo_digital ADD CONSTRAINT protocolo_digital_status_check CHECK (status IN ('Aberto', 'Em Análise', 'Aguardando Retorno', 'Concluído'));
 ALTER TABLE IF EXISTS protocolo_digital ADD COLUMN IF NOT EXISTS prioridade VARCHAR(30) DEFAULT 'Normal';
 ALTER TABLE IF EXISTS protocolo_digital ADD COLUMN IF NOT EXISTS responsavel VARCHAR(255);
 ALTER TABLE IF EXISTS protocolo_digital ADD COLUMN IF NOT EXISTS data_conclusao DATE;
