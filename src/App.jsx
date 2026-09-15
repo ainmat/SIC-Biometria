@@ -46,6 +46,9 @@ import PainelProtocolo       from '@/modules/protocolo/pages/PainelProtocolo';
 import ConsultaProtocolo     from '@/modules/protocolo/pages/ConsultaProtocolo';
 import NovoProtocolo         from '@/modules/protocolo/pages/NovoProtocolo';
 
+// Monitoramento TV (NOC)
+import PainelTv              from '@/pages/PainelTv';
+
 
 
 function RequireAuth({ children }) {
@@ -74,6 +77,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/tv" element={<PainelTv standalone />} />
 
       <Route element={<RequireAuth><Layout /></RequireAuth>}>
         {/* Equipamentos e Chamados */}
@@ -130,6 +134,9 @@ export default function App() {
           <Route path="consulta" element={<BlockApoio><ConsultaProtocolo /></BlockApoio>} />
           <Route path="novo" element={<BlockApoio><NovoProtocolo /></BlockApoio>} />
         </Route>
+
+        {/* Monitoramento TV */}
+        <Route path="monitoramento-tv" element={<PainelTv />} />
 
         {/* Administração */}
         <Route path="admin">
