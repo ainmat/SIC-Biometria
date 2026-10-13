@@ -4,22 +4,52 @@ dotenv.config();
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from '@google/genai';
 
-// --- Validação de Variáveis de Ambiente ---
-const ASANA_TOKEN = process.env.ASANA_ACCESS_TOKEN;
-const ASANA_PROJECT_ID = process.env.ASANA_PROJECT_ID;
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+// --- Validação e Higienização de Variáveis de Ambiente ---
+let rawAsanaToken = (process.env.ASANA_ACCESS_TOKEN || '').trim().replace(/^['"]|['"]$/g, '');
+if (rawAsanaToken.toLowerCase().startsWith('token:')) {
+  rawAsanaToken = rawAsanaToken.replace(/^token:\s*/i, '').trim();
+}
+if (rawAsanaToken.toLowerCase().startsWith('bearer ')) {
+  rawAsanaToken = rawAsanaToken.replace(/^bearer\s+/i, '').trim();
+}
+const ASANA_TOKEN = rawAsanaToken;
+
+let rawProjectId = (process.env.ASANA_PROJECT_ID || '').trim().replace(/^['"]|['"]$/g, '');
+const matchProject = rawProjectId.match(/project\/(\d+)/);
+if (matchProject) {
+  rawProjectId = matchProject[1];
+}
+const ASANA_PROJECT_ID = rawProjectId;
+
+let rawSupabaseUrl = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').trim().replace(/^['"]|['"]$/g, '');
+const SUPABASE_URL = rawSupabaseUrl;
+
+let rawSupabaseKey = (process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '').trim().replace(/^['"]|['"]$/g, '');
+if (rawSupabaseKey.startsWith('b_publishable_')) {
+  rawSupabaseKey = 's' + rawSupabaseKey;
+}
+const SUPABASE_KEY = rawSupabaseKey;
+
+let rawGeminiKey = (process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '').trim().replace(/^['"]|['"]$/g, '');
+const GEMINI_API_KEY = rawGeminiKey;
+
+const mask = (str, len = 4) => str ? `${str.slice(0, len)}...${str.slice(-len)} (${str.length} chars)` : '❌ AUSENTE';
 
 console.log('🔍 Validando Secrets configurados no ambiente:');
-console.log('  • ASANA_ACCESS_TOKEN:', ASANA_TOKEN ? `✓ Presente (${ASANA_TOKEN.length} caracteres)` : '❌ AUSENTE');
+console.log('  • ASANA_ACCESS_TOKEN:', mask(ASANA_TOKEN, 6));
 console.log('  • ASANA_PROJECT_ID:', ASANA_PROJECT_ID ? `✓ Presente (${ASANA_PROJECT_ID})` : '❌ AUSENTE');
 console.log('  • VITE_SUPABASE_URL:', SUPABASE_URL ? `✓ Presente (${SUPABASE_URL})` : '❌ AUSENTE');
-console.log('  • VITE_SUPABASE_ANON_KEY:', SUPABASE_KEY ? `✓ Presente (${SUPABASE_KEY.length} caracteres)` : '❌ AUSENTE');
-console.log('  • VITE_GEMINI_API_KEY:', GEMINI_API_KEY ? `✓ Presente (${GEMINI_API_KEY.length} caracteres)` : '⚠️ AUSENTE (usará heurística)');
+console.log('  • VITE_SUPABASE_ANON_KEY:', mask(SUPABASE_KEY, 8));
+console.log('  • VITE_GEMINI_API_KEY:', GEMINI_API_KEY ? mask(GEMINI_API_KEY, 6) : '⚠️ AUSENTE (usará heurística)');
 
-if (!ASANA_TOKEN || !ASANA_PROJECT_ID) {
-  console.error('\n❌ Erro: ASANA_ACCESS_TOKEN e ASANA_PROJECT_ID são obrigatórios.');
+if (!ASANA_TOKEN) {
+  console.error('\n❌ Erro: ASANA_ACCESS_TOKEN ausente.');
+  console.error('   💡 Configure o secret ASANA_ACCESS_TOKEN no GitHub com o seu Personal Access Token do Asana.');
+  process.exit(1);
+}
+
+if (!ASANA_PROJECT_ID) {
+  console.error('\n❌ Erro: ASANA_PROJECT_ID ausente.');
   process.exit(1);
 }
 
@@ -299,7 +329,17 @@ export async function sincronizarAsana() {
       headers: { 'Authorization': `Bearer ${ASANA_TOKEN}` }
     });
     if (!res.ok) {
-      throw new Error(`Erro na API do Asana (${res.status}): ${await res.text()}`);
+      const errBody = await res.text();
+      if (res.status === 401) {
+        console.error('\n❌ Erro 401 (Não Autorizado) na API do Asana!');
+        console.error(`   O token utilizado foi rejeitado pelo Asana.`);
+        console.error(`   Identificador do token: início "${ASANA_TOKEN.slice(0, 8)}...", fim "...${ASANA_TOKEN.slice(-6)}", tamanho: ${ASANA_TOKEN.length} caracteres.`);
+        console.error('   💡 Dica: Verifique se o secret ASANA_ACCESS_TOKEN no GitHub tem espaços antes/depois ou se expirou no Asana.');
+      } else if (res.status === 404) {
+        console.error('\n❌ Erro 404 (Projeto não encontrado) no Asana!');
+        console.error(`   ID do projeto verificado: "${ASANA_PROJECT_ID}".`);
+      }
+      throw new Error(`Erro na API do Asana (${res.status}): ${errBody}`);
     }
     const json = await res.json();
     todasTarefas.push(...(json.data || []));
