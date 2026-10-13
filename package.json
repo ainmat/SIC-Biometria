@@ -11,6 +11,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --no-coverage",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch --no-coverage",
     "lint": "eslint js/ --ext .js,.mjs",
+    "sync:asana": "node scripts/sync_asana.mjs",
     "lint:fix": "eslint js/ --ext .js,.mjs --fix",
     "format": "prettier --write js/ css/ *.html",
     "validate": "html-validate *.html",

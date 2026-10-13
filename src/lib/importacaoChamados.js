@@ -142,7 +142,47 @@ function extrairFallbackHeuristico(chamado, equipamentosLista = []) {
 }
 
 /**
- * Lê o arquivo e retorna as linhas como objetos JSON
+ * Função para extrair ticket de string ou notas (mesma lógica do sync_asana)
+ */
+export function extrairTicket(name, notes) {
+  if (!name) return null;
+
+  // 1. Procurar explicitamente por 'AUVO \d+' ou 'CHAMADO \d+' ou 'TICKET \d+'
+  const matchAuvo = name.match(/(?:AUVO|CHAMADO|TICKET)[^\d]*(\d{4,5})\b/i);
+  if (matchAuvo) return parseInt(matchAuvo[1], 10);
+
+  // 2. Número de 4 a 5 dígitos no final da linha com fronteira de palavra
+  const matchFim = name.match(/\b(\d{4,5})\s*$/);
+  if (matchFim) {
+    const val = parseInt(matchFim[1], 10);
+    if (val >= 4000 && val <= 6999) return val;
+  }
+
+  // 3. Número de 4 dígitos isolado na faixa de chamados (4000 a 6999)
+  const allMatches = name.match(/\b(\d{4})\b/g);
+  if (allMatches) {
+    const valid = allMatches.map(Number).filter(n => n >= 4000 && n <= 6999);
+    if (valid.length > 0) return valid[valid.length - 1];
+  }
+
+  // 4. Número de 4 dígitos colado a letras ou parênteses (ex: SELCICUS)5466 ou BANDEIRA4562)
+  const matchColado = name.match(/(?:[a-zA-Z\)])(\d{4})\b/g);
+  if (matchColado) {
+    const valid = matchColado.map(s => parseInt(s.slice(1), 10)).filter(n => n >= 4000 && n <= 6999);
+    if (valid.length > 0) return valid[valid.length - 1];
+  }
+
+  // 5. Tenta recuperar na descrição (notes)
+  if (notes) {
+    const matchN = notes.match(/(?:AUVO|CHAMADO|TICKET)[^\d]*(\d{4,5})\b/i);
+    if (matchN) return parseInt(matchN[1], 10);
+  }
+
+  return null;
+}
+
+/**
+ * Lê o arquivo e retorna as linhas como objetos JSON com detecção inteligente de cabeçalho
  */
 export async function lerArquivoPlanilha(file) {
   return new Promise((resolve, reject) => {
@@ -153,7 +193,32 @@ export async function lerArquivoPlanilha(file) {
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        
+        // 1. Ler em formato de matriz de linhas (array de arrays) para detectar cabeçalho real
+        const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+        
+        // Detectar qual linha é o cabeçalho (pode ser índice 0 ou índice 2 em exportações do Asana)
+        let headerRowIndex = 0;
+        for (let r = 0; r < Math.min(10, matrix.length); r++) {
+          const rowText = (matrix[r] || []).join(' ').toUpperCase();
+          if (rowText.includes('TASK ID') || rowText.includes('CÓDIGO') || rowText.includes('CODIGO') || (rowText.includes('NAME') && rowText.includes('SECTION'))) {
+            headerRowIndex = r;
+            break;
+          }
+        }
+
+        const headers = matrix[headerRowIndex] || [];
+        const jsonData = [];
+        for (let r = headerRowIndex + 1; r < matrix.length; r++) {
+          const row = matrix[r];
+          if (!row || row.length === 0 || row.every(cell => cell === '')) continue;
+          const obj = {};
+          headers.forEach((h, colIdx) => {
+            if (h) obj[h] = row[colIdx] ?? '';
+          });
+          jsonData.push(obj);
+        }
+
         resolve(jsonData);
       } catch (err) {
         reject(err);
@@ -241,20 +306,56 @@ async function classificarLoteLLM(chamadosLote, contextoEquipamentos = "", equip
 
 /**
  * Processa a lista de chamados, envia para LLM, e salva no Supabase
- * Recebe callback de progresso (opcional)
+ * Suporta layout clássico (CÓDIGO, TÍTULO, DESCRIÇÃO) e layout Asana (Task ID, Name, Notes)
  */
 export async function processarEImportarChamados(linhas, onProgress) {
   const chamadosParaInserir = [];
   const validRows = [];
   
-  // Primeiro, processamos e filtramos as linhas válidas
+  // Primeiro, processamos e filtramos as linhas válidas com suporte a ambos formatos
   for (let i = 0; i < linhas.length; i++) {
     const row = linhas[i];
-    if (!row['CÓDIGO'] && !row['CÓDIGO ']) continue;
-    const codigoStr = String(row['CÓDIGO'] || row['CÓDIGO '] || '').replace(/\D/g, '');
-    const ticket = parseInt(codigoStr, 10);
-    if (isNaN(ticket)) continue;
-    validRows.push({ row, ticket, indexOriginal: i });
+
+    // Formato 1: Padrão (com coluna CÓDIGO) -> AUVO
+    if (row['CÓDIGO'] || row['CÓDIGO '] || row['CODIGO']) {
+      const codigoStr = String(row['CÓDIGO'] || row['CÓDIGO '] || row['CODIGO'] || '').replace(/\D/g, '');
+      const ticket = parseInt(codigoStr, 10);
+      if (!isNaN(ticket)) {
+        validRows.push({
+          row,
+          ticket,
+          titulo: row['TITULO'] || row['TÍTULO'] || '',
+          descricao: row['DESCRIÇÃO'] || row['DESCRICAO'] || '',
+          dataRaw: row['DATA ABERTURA'] || row['DATA DE CADASTRO'] || null,
+          status: row['STATUS'] || 'Aguardando Atendimento',
+          origem: 'AUVO',
+          indexOriginal: i
+        });
+        continue;
+      }
+    }
+
+    // Formato 2: Asana (com Task ID / Name) -> ASANA
+    if (row['Task ID'] || (row['Name'] && row['Section/Column'])) {
+      const secName = String(row['Section/Column'] || '');
+      if (secName.toUpperCase() === 'RESPOSTA PADRÃO AUVO') continue;
+
+      const ticket = extrairTicket(row['Name'], row['Notes']);
+      if (ticket) {
+        const isConcluido = secName.toUpperCase().includes('CONCLU') || !!row['Completed At'];
+        validRows.push({
+          row,
+          ticket,
+          titulo: row['Name'] || '',
+          descricao: row['Notes'] || '',
+          dataRaw: row['Created At'] || null,
+          status: isConcluido ? 'Atendimento Encerrado' : 'Aguardando Atendimento',
+          origem: 'ASANA',
+          secaoAsana: secName,
+          indexOriginal: i
+        });
+      }
+    }
   }
 
   // Buscar lista de equipamentos para contextualizar a IA e o fallback
@@ -277,8 +378,8 @@ export async function processarEImportarChamados(linhas, onProgress) {
     
     // Preparar dados para LLM
     const loteLLM = lote.map(item => ({
-      titulo: item.row['TITULO'] || item.row['TÍTULO'] || '',
-      descricao: item.row['DESCRIÇÃO'] || item.row['DESCRICAO'] || ''
+      titulo: item.titulo,
+      descricao: item.descricao
     }));
 
     // Classificação em lote com retry e fallback
@@ -286,39 +387,49 @@ export async function processarEImportarChamados(linhas, onProgress) {
 
     for (let j = 0; j < lote.length; j++) {
       const item = lote[j];
-      const { row, ticket } = item;
+      const { ticket, titulo, descricao, dataRaw, status, origem, secaoAsana } = item;
       const classif = classificacoes[j] || { secretaria: 'NÃO IDENTIFICADO', unidade: 'NÃO IDENTIFICADO', motivo: 'EQUIPAMENTO' };
 
       // Extrair data
-      let dataAberturaRaw = row['DATA ABERTURA'] || row['DATA DE CADASTRO'] || null;
       let data_abertura = null;
-      if (dataAberturaRaw) {
-        if (typeof dataAberturaRaw === 'number') {
-           const date = XLSX.SSF.parse_date_code(dataAberturaRaw);
+      if (dataRaw) {
+        if (typeof dataRaw === 'number') {
+           const date = XLSX.SSF.parse_date_code(dataRaw);
            data_abertura = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
-        } else if (typeof dataAberturaRaw === 'string') {
-            const ddMMyyyy = dataAberturaRaw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-            if (ddMMyyyy) {
-               data_abertura = `${ddMMyyyy[3]}-${ddMMyyyy[2].padStart(2, '0')}-${ddMMyyyy[1].padStart(2, '0')}`;
+        } else if (typeof dataRaw === 'string') {
+            const isoMatch = dataRaw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+              data_abertura = isoMatch[0];
             } else {
-               const yyyyMMdd = dataAberturaRaw.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-               if (yyyyMMdd) {
-                   data_abertura = `${yyyyMMdd[1]}-${yyyyMMdd[2].padStart(2, '0')}-${yyyyMMdd[3].padStart(2, '0')}`;
-               }
+              const ddMMyyyy = dataRaw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+              if (ddMMyyyy) {
+                 data_abertura = `${ddMMyyyy[3]}-${ddMMyyyy[2].padStart(2, '0')}-${ddMMyyyy[1].padStart(2, '0')}`;
+              }
             }
         }
       }
 
-      chamadosParaInserir.push({
+      const itemInsert = {
         ticket,
         data_abertura,
         secretaria: classif.secretaria,
         unidade: classif.unidade,
-        problema: item.row['DESCRIÇÃO'] || item.row['DESCRICAO'] || '',
+        problema: descricao,
         motivo: classif.motivo,
-        status: row['STATUS'] || 'Aguardando Atendimento'
-      });
+        status: status || 'Aguardando Atendimento'
+      };
+
+      if (origem === 'AUVO') {
+        itemInsert.status_auvo = status || 'Aguardando Atendimento';
+      } else if (origem === 'ASANA') {
+        itemInsert.status_asana = status || 'Aguardando Atendimento';
+        if (secaoAsana) itemInsert.secao_asana = secaoAsana;
+      }
+
+      chamadosParaInserir.push(itemInsert);
     }
+
+
 
     if (onProgress) {
       onProgress(Math.min(i + LOTE_SIZE, validRows.length), validRows.length);

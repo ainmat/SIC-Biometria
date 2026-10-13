@@ -11,8 +11,9 @@ import { motion } from 'motion/react';
 const FILTROS_SEC = ['Todos', 'Saúde', 'Educação', 'Outros'];
 const FILTROS_MOT = ['Todos', 'EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE PONTO', 'CADASTRO'];
 const FILTROS_ST = ['Todos', 'Aguardando Atendimento', 'Atendimento Encerrado'];
+const FILTROS_FONTE = ['Todos', 'Com Divergência (Auvo ≠ Asana)', 'Apenas AUVO', 'Apenas ASANA'];
 
-function aplicarFiltros(dados, { secretaria, motivo, status, ticket, unidade }) {
+function aplicarFiltros(dados, { secretaria, motivo, status, fonte, ticket, unidade }) {
   let r = dados;
   if (secretaria !== 'Todos') {
     if (secretaria === 'Saúde') r = r.filter((d) => d.secretaria === 'SS');
@@ -21,7 +22,20 @@ function aplicarFiltros(dados, { secretaria, motivo, status, ticket, unidade }) 
     else r = r.filter((d) => d.secretaria === secretaria);
   }
   if (motivo !== 'Todos') r = r.filter((d) => d.motivo === motivo);
-  if (status !== 'Todos') r = r.filter((d) => (d.status || 'Aguardando Atendimento') === status);
+  if (status !== 'Todos') r = r.filter((d) => (d.status_auvo || d.status || 'Aguardando Atendimento') === status);
+  if (fonte !== 'Todos') {
+    if (fonte === 'Com Divergência (Auvo ≠ Asana)') {
+      r = r.filter((d) => {
+        const stAuvo = d.status_auvo || d.status;
+        const stAsana = d.status_asana;
+        return stAuvo && stAsana && stAuvo !== stAsana;
+      });
+    } else if (fonte === 'Apenas AUVO') {
+      r = r.filter((d) => (d.status_auvo || d.status) && !d.status_asana);
+    } else if (fonte === 'Apenas ASANA') {
+      r = r.filter((d) => d.status_asana && !d.status_auvo);
+    }
+  }
   if (ticket) r = r.filter((d) => d.ticket.toString().includes(ticket));
   if (unidade) r = r.filter((d) => d.unidade?.toLowerCase().includes(unidade.toLowerCase()));
   return r;
@@ -30,18 +44,30 @@ function aplicarFiltros(dados, { secretaria, motivo, status, ticket, unidade }) 
 function ChamadoModal({ chamado, onClose }) {
   const navigate = useNavigate();
   if (!chamado) return null;
-  const st = chamado.status || 'Aguardando Atendimento';
+  const stAuvo = chamado.status_auvo || chamado.status || '—';
+  const stAsana = chamado.status_asana ? `${chamado.status_asana}${chamado.secao_asana ? ` (${chamado.secao_asana})` : ''}` : '—';
+  const temDivergencia = chamado.status_auvo && chamado.status_asana && chamado.status_auvo !== chamado.status_asana;
+
   return (
     <div className="modal-overlay show" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="chamado-modal" role="dialog" aria-modal="true">
         <div className="chamado-modal-header">
-          <div className="chamado-modal-title">Detalhes do Chamado</div>
+          <div className="chamado-modal-title">Detalhes do Chamado #{chamado.ticket}</div>
           <button className="chamado-modal-close" onClick={onClose}>×</button>
         </div>
+
+        {temDivergencia && (
+          <div style={{ background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(234, 179, 8, 0.3)', borderRadius: 8, padding: '10px 14px', margin: '0 24px 16px', fontSize: 12, color: '#ca8a04', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>⚠️</span>
+            <span><strong>Divergência detectada:</strong> No Auvo está como <strong>{chamado.status_auvo}</strong>, enquanto no Asana está como <strong>{chamado.status_asana}</strong>.</span>
+          </div>
+        )}
+
         <div className="chamado-modal-grid">
           {[
             ['Ticket', `#${chamado.ticket}`],
-            ['Status', st],
+            ['Status AUVO', stAuvo],
+            ['Status ASANA', stAsana],
             ['Unidade', chamado.unidade],
             ['Secretaria', chamado.secretaria],
             ['Motivo', chamado.motivo],
@@ -79,6 +105,7 @@ export default function TodosChamados() {
     secretaria: 'Todos',
     motivo: 'Todos',
     status: 'Todos',
+    fonte: 'Todos',
     ticket: '',
     unidade: '',
   });
@@ -159,9 +186,10 @@ export default function TodosChamados() {
       <div className="content">
         {/* Filtros empilhados */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+          <FilterGroup label="Origem / Visão" filterKey="fonte" options={FILTROS_FONTE} />
           <FilterGroup label="Secretaria" filterKey="secretaria" options={FILTROS_SEC} />
           <FilterGroup label="Motivo" filterKey="motivo" options={FILTROS_MOT} />
-          <FilterGroup label="Status" filterKey="status" options={FILTROS_ST} />
+          <FilterGroup label="Status AUVO" filterKey="status" options={FILTROS_ST} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <input
               type="text"
@@ -189,21 +217,25 @@ export default function TodosChamados() {
                 <th style={{ textAlign: 'center' }}>Secretaria</th>
                 <th style={{ textAlign: 'center' }}>Motivo</th>
                 <th style={{ textAlign: 'center' }}>Abertura</th>
-                <th style={{ textAlign: 'center' }}>Status</th>
+                <th style={{ textAlign: 'center' }}>Status AUVO</th>
+                <th style={{ textAlign: 'center' }}>Status ASANA</th>
                 <th>Descrição</th>
               </tr>
             </thead>
             <tbody>
               {arr.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--muted-c)' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--muted-c)' }}>
                     Nenhum chamado encontrado para o filtro selecionado.
                   </td>
                 </tr>
               ) : (
                 arr.map((r, i) => {
-                  const st = r.status || 'Aguardando Atendimento';
+                  const stAuvo = r.status_auvo || r.status || 'Aguardando Atendimento';
+                  const stAsana = r.status_asana;
                   const cor = COR_SEC[r.secretaria] || '#64748b';
+                  const temDivergencia = r.status_auvo && r.status_asana && r.status_auvo !== r.status_asana;
+
                   return (
                     <motion.tr
                       key={r.ticket}
@@ -212,9 +244,11 @@ export default function TodosChamados() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03, duration: 0.2 }}
+                      style={temDivergencia ? { background: 'rgba(234, 179, 8, 0.03)' } : undefined}
                     >
                       <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, color: '#15A050', fontSize: 11 }}>
                         #{r.ticket}
+                        {temDivergencia && <span title="Divergência entre Auvo e Asana" style={{ marginLeft: 4 }}>⚠️</span>}
                       </td>
                       <td style={{ color: 'var(--text)', fontWeight: 500, fontSize: 11 }}>{r.unidade || 'N/A'}</td>
                       <td style={{ textAlign: 'center' }}>
@@ -224,11 +258,32 @@ export default function TodosChamados() {
                       </td>
                       <td style={{ textAlign: 'center', fontSize: 11 }}>{r.motivo}</td>
                       <td style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>{fmtDate(r.data_abertura)}</td>
+                      
+                      {/* Status AUVO */}
                       <td style={{ textAlign: 'center' }}>
-                        <span className={`badge ${st === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto'}`} style={{ fontSize: 9 }}>
-                          {st}
+                        <span className={`badge ${stAuvo === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto'}`} style={{ fontSize: 9 }}>
+                          {stAuvo}
                         </span>
                       </td>
+
+                      {/* Status ASANA */}
+                      <td style={{ textAlign: 'center' }}>
+                        {stAsana ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <span className={`badge ${stAsana === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto'}`} style={{ fontSize: 9 }}>
+                              {stAsana}
+                            </span>
+                            {r.secao_asana && (
+                              <span style={{ fontSize: 8, color: 'var(--muted-c)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.secao_asana}>
+                                {r.secao_asana}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>—</span>
+                        )}
+                      </td>
+
                       <td style={{ fontSize: 11, color: 'var(--sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {r.problema || '—'}
                       </td>

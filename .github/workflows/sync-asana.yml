@@ -1,0 +1,38 @@
+name: Sincronização Asana Chamados
+
+on:
+  schedule:
+    # Roda a cada 30 minutos em dias úteis (Segunda a Sexta, das 07:00 às 20:00 Horário de Brasília / 10:00 às 23:00 UTC)
+    - cron: '*/30 10-23 * * 1-5'
+  workflow_dispatch: # Permite acionar manualmente a qualquer momento pela interface do GitHub
+
+concurrency:
+  group: sync-asana
+  cancel-in-progress: true
+
+jobs:
+  sincronizar:
+    name: Sincronizar Asana com Supabase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependências
+        run: npm ci
+
+      - name: Executar Sincronização
+        env:
+          ASANA_ACCESS_TOKEN: ${{ secrets.ASANA_ACCESS_TOKEN }}
+          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+        run: node scripts/sync_asana.mjs
