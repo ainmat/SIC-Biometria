@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { RefreshCw, Download, ChevronRight } from 'lucide-react';
+import {
+  RefreshCw, Download, ChevronRight, ChevronLeft,
+  PanelLeftClose, PanelLeftOpen, Menu
+} from 'lucide-react';
 import logoDarh from '../../../img/logo-darh.png';
-import { IconBar, IconBarItem } from '@/components/ui/icon-bar';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
-
 
 const NAV = [
   {
@@ -245,7 +245,6 @@ const NAV = [
       },
     ],
   },
-
   {
     section: 'Protocolo Digital',
     items: [
@@ -320,27 +319,29 @@ const NAV = [
 
 /* ─── NavItem ─────────────────────────────────────────────────────────────── */
 
-function NavItem({ to, label, icon, end }) {
+function NavItem({ to, label, icon, end, collapsed }) {
   return (
     <NavLink
       to={to}
       end={end ?? false}
+      title={collapsed ? label : undefined}
       className={({ isActive }) =>
         [
-          'group flex items-center gap-2.5 px-2.5 rounded-md cursor-pointer transition-all duration-150 select-none no-underline relative',
+          'group flex items-center rounded-md cursor-pointer transition-all duration-150 select-none no-underline relative',
+          collapsed ? 'justify-center px-0 py-2 w-10 mx-auto' : 'gap-2.5 px-2.5 py-1.5 w-full',
           isActive
             ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold'
             : 'text-muted-foreground hover:bg-black/[0.04] dark:hover:bg-white/5 hover:text-foreground/90',
         ].join(' ')
       }
-      style={{ paddingTop: 7, paddingBottom: 7, color: 'inherit' }}
+      style={{ color: 'inherit' }}
     >
       {({ isActive }) => (
         <>
           {isActive && (
             <motion.div
               layoutId="navItemIndicator"
-              className="absolute left-0 w-[3px] h-[16px] bg-emerald-500 rounded-r-md"
+              className="absolute left-0 w-[3px] h-[18px] bg-emerald-500 rounded-r-md"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
@@ -349,23 +350,26 @@ function NavItem({ to, label, icon, end }) {
           <span
             className="shrink-0 transition-colors"
             style={{
-              width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: isActive ? 'inherit' : 'var(--muted-c)',
-              marginLeft: isActive ? '4px' : '0px',
             }}
           >
             {icon}
           </span>
-          <span style={{ fontSize: 13, letterSpacing: '0.01em', lineHeight: 1 }}>{label}</span>
+          {!collapsed && (
+            <span style={{ fontSize: 13, letterSpacing: '0.01em', lineHeight: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {label}
+            </span>
+          )}
         </>
       )}
     </NavLink>
   );
 }
 
-/* ─── NavSection (collapsible) ────────────────────────────────────────────── */
+/* ─── NavSection ─────────────────────────────────────────────────────────── */
 
-function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
+function NavSection({ section, items, isAdmin, isMaster, isApoio, collapsed }) {
   const location = useLocation();
   const visibleItems = items.filter(({ adminOnly, masterOnly, apoioAllowed }) => {
     if (masterOnly && !isMaster) return false;
@@ -375,7 +379,6 @@ function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
   });
   if (!visibleItems.length) return null;
 
-  // Auto-open if a child is active
   const hasActive = visibleItems.some(item => {
     if (item.end) return location.pathname === item.to;
     return location.pathname === item.to || location.pathname.startsWith(item.to + '/');
@@ -383,9 +386,27 @@ function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
 
   const [open, setOpen] = useState(hasActive);
 
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center" style={{ gap: 4 }}>
+        <div style={{ width: 24, height: 1, background: 'var(--border-c)', opacity: 0.7, margin: '6px 0 2px' }} />
+        {visibleItems.map(item => (
+          <NavItem
+            key={item.to}
+            to={item.to}
+            label={item.label}
+            icon={item.icon}
+            end={item.end}
+            collapsed={true}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col">
-      {/* Section heading — clickable to collapse */}
+      {/* Section heading */}
       <button
         onClick={() => setOpen(o => !o)}
         className="group flex items-center justify-between px-2 mb-0.5 cursor-pointer select-none border-none bg-transparent w-full text-left"
@@ -429,6 +450,7 @@ function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
                   label={item.label}
                   icon={item.icon}
                   end={item.end}
+                  collapsed={false}
                 />
               ))}
             </div>
@@ -439,88 +461,175 @@ function NavSection({ section, items, isAdmin, isMaster, isApoio }) {
   );
 }
 
-/* ─── Layout/Sidebar ──────────────────────────────────────────────────────── */
+/* ─── Sidebar Principal ─────────────────────────────────────────────────── */
 
 export default function Sidebar() {
-  const { sessao, isAdmin, isMaster, isApoio, logout } = useAuth();
-  const [modalSenha, setModalSenha] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  const { isAdmin, isMaster, isApoio } = useAuth();
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('sic_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
     }
-    localStorage.setItem('theme', theme);
-    window.dispatchEvent(new Event('themechange'));
-  }, [theme]);
+  });
 
-  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+  // Atualiza a variável CSS global --sidebar-w e persiste o estado
+  useEffect(() => {
+    const width = collapsed ? '68px' : '228px';
+    document.documentElement.style.setProperty('--sidebar-w', width);
+    try {
+      localStorage.setItem('sic_sidebar_collapsed', String(collapsed));
+    } catch (e) {
+      console.warn(e);
+    }
+  }, [collapsed]);
 
-  function handleLogout() {
-    logout();
-    navigate('/login', { replace: true });
-  }
-
-  const roleColor  = isMaster ? '#f59e0b' : isAdmin ? '#0D7C3D' : isApoio ? '#3b82f6' : '#10b981';
-  const roleLabel  = isMaster ? 'Master'  : isAdmin ? 'Administrador' : isApoio ? 'Apoio' : 'Visitante';
-  const roleBg     = isMaster ? 'rgba(245,158,11,.08)' : isAdmin ? 'rgba(13,124,61,.08)' : isApoio ? 'rgba(59,130,246,.08)' : 'rgba(16,185,129,.08)';
-  const roleBorder = isMaster ? 'rgba(245,158,11,.2)'  : isAdmin ? 'rgba(13,124,61,.2)'  : isApoio ? 'rgba(59,130,246,.2)' : 'rgba(16,185,129,.2)';
+  const toggleCollapsed = () => setCollapsed(prev => !prev);
 
   return (
-    <>
-      <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* ── Logo ── */}
-        <div className="logo" style={{ flexShrink: 0 }}>
+    <aside
+      className="sidebar"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        width: collapsed ? 68 : 228,
+        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
+    >
+      {/* ── Header / Logo & Botão Retrátil ── */}
+      <div
+        className="logo"
+        style={{
+          flexShrink: 0,
+          padding: collapsed ? '16px 12px' : '18px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'space-between',
+          gap: 10
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
           <img
             src={logoDarh}
             alt="DARH Osasco"
-            style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }}
+            style={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
           />
-          <div className="logo-text" style={{ color: 'var(--text)' }}>SIC · Biometria</div>
+          {!collapsed && (
+            <div className="logo-text" style={{ color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              SIC · Biometria
+            </div>
+          )}
         </div>
 
-        {/* ── Scrollable nav ── */}
-        <nav
-          className="nav"
+        {/* Botão de Recolher / Expandir */}
+        <button
+          onClick={toggleCollapsed}
+          title={collapsed ? "Expandir menu lateral (Ctrl + B)" : "Recolher menu lateral"}
           style={{
-            flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            paddingRight: 2,
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
+            background: 'rgba(0,0,0,0.03)',
+            border: '1px solid var(--border-c)',
+            borderRadius: 6,
+            padding: 5,
+            cursor: 'pointer',
+            color: 'var(--muted-c)',
             display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.15s ease',
+            flexShrink: 0
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(13,124,61,0.1)';
+            e.currentTarget.style.color = '#0D7C3D';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
+            e.currentTarget.style.color = 'var(--muted-c)';
           }}
         >
-          <div className="flex flex-col mb-4" style={{ gap: 20 }}>
-            {NAV.map(section => (
-              <NavSection
-                key={section.section}
-                section={section.section}
-                items={section.items}
-                isAdmin={isAdmin}
-                isMaster={isMaster}
-                isApoio={isApoio}
-              />
-            ))}
-          </div>
-        </nav>
+          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+        </button>
+      </div>
 
-        {/* ── Footer ── */}
-        <div className="sidebar-footer" style={{ flexShrink: 0 }}>
+      {/* ── Scrollable nav ── */}
+      <nav
+        className="nav"
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: collapsed ? '12px 6px' : '14px 10px',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: collapsed ? 10 : 8,
+        }}
+      >
+        <div className="flex flex-col mb-4" style={{ gap: collapsed ? 8 : 20 }}>
+          {NAV.map(section => (
+            <NavSection
+              key={section.section}
+              section={section.section}
+              items={section.items}
+              isAdmin={isAdmin}
+              isMaster={isMaster}
+              isApoio={isApoio}
+              collapsed={collapsed}
+            />
+          ))}
+        </div>
+      </nav>
+
+      {/* ── Footer ── */}
+      <div
+        className="sidebar-footer"
+        style={{
+          flexShrink: 0,
+          padding: collapsed ? '12px 8px' : '12px 16px 16px',
+        }}
+      >
+        {collapsed ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+            <button
+              onClick={() => window.location.reload()}
+              title="Atualizar Sistema"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 38, height: 38, borderRadius: 8,
+                background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)',
+                color: 'var(--text)', cursor: 'pointer', transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.08)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
+            >
+              <RefreshCw size={15} />
+            </button>
+            <button
+              onClick={() => window.print()}
+              title="Exportar Tela (Imprimir / PDF)"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 38, height: 38, borderRadius: 8,
+                background: '#0D7C3D', border: 'none',
+                color: '#fff', cursor: 'pointer', transition: 'opacity 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <Download size={15} />
+            </button>
+          </div>
+        ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button
               onClick={() => window.location.reload()}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                padding: '10px 14px', borderRadius: 8,
+                padding: '9px 12px', borderRadius: 8,
                 background: 'rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 0, 0, 0.06)',
-                color: 'var(--text)', cursor: 'pointer', fontSize: 13, fontWeight: 500,
+                color: 'var(--text)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
                 width: '100%', transition: 'background 0.2s'
               }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.08)'}
@@ -532,9 +641,9 @@ export default function Sidebar() {
               onClick={() => window.print()}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                padding: '10px 14px', borderRadius: 8,
+                padding: '9px 12px', borderRadius: 8,
                 background: '#0D7C3D', border: 'none',
-                color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600,
                 width: '100%', transition: 'opacity 0.2s'
               }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
@@ -543,30 +652,8 @@ export default function Sidebar() {
               <Download size={14} /> Exportar Tela
             </button>
           </div>
-        </div>
-      </aside>
-    </>
-  );
-}
-
-/* ─── Tiny helper ─────────────────────────────────────────────────────────── */
-function ActionBtn({ title, onClick, hoverColor = '#15A050', children }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <button
-      title={title}
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: hov ? (hoverColor + '15') : 'none',
-        border: 'none', cursor: 'pointer', padding: 4,
-        color: hov ? hoverColor : 'var(--muted-c)',
-        display: 'flex', alignItems: 'center',
-        borderRadius: 5, transition: 'color .15s, background .15s',
-      }}
-    >
-      {children}
-    </button>
+        )}
+      </div>
+    </aside>
   );
 }

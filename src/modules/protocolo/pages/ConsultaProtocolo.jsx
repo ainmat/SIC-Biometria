@@ -50,7 +50,7 @@ function formatarDataSimples(isoStr) {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-export function obterIniciais(nome) {
+function obterIniciais(nome) {
   if (!nome) return '';
   return nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 }
@@ -637,7 +637,7 @@ export default function ConsultaProtocolo() {
 
   const opcoesTipo = tiposDisponiveis;
 
-  // Contagens para os filtros múltiplos
+  // Contagens para os filtros múltiplos com filtragem cruzada dinâmica (faceted search)
   const contagensFiltros = useMemo(() => {
     const status = {};
     const sec = {};
@@ -645,18 +645,62 @@ export default function ConsultaProtocolo() {
     const resp = {};
     const prio = {};
 
+    STATUS_OPCOES.forEach(st => { status[st] = 0; });
+    ['Baixa', 'Normal', 'Alta', 'Urgente'].forEach(pr => { prio[pr] = 0; });
+
+    const termo = busca.trim().toLowerCase();
+    const nomeLimpo = meuNome ? meuNome.trim().toLowerCase() : '';
+
     dados.forEach(p => {
-      if (p.status) status[p.status] = (status[p.status] || 0) + 1;
-      if (p.secretaria) sec[p.secretaria] = (sec[p.secretaria] || 0) + 1;
-      if (p.tipo_solicitacao) tipo[p.tipo_solicitacao] = (tipo[p.tipo_solicitacao] || 0) + 1;
-      const r = p.responsavel?.trim() || 'Não atribuído';
-      resp[r] = (resp[r] || 0) + 1;
-      const pr = p.prioridade || 'Normal';
-      prio[pr] = (prio[pr] || 0) + 1;
+      const matchBusca = !termo ||
+        p.numero_protocolo?.toLowerCase().includes(termo) ||
+        p.requerente_nome?.toLowerCase().includes(termo) ||
+        (p.requerente_matricula && p.requerente_matricula.includes(termo));
+      
+      const matchAba = abaAtiva !== 'meus' || (p.responsavel && p.responsavel.trim().toLowerCase() === nomeLimpo);
+
+      if (!matchBusca || !matchAba) return;
+
+      const pStatus = p.status;
+      const pSec = p.secretaria;
+      const pTipo = p.tipo_solicitacao;
+      const pResp = p.responsavel?.trim() || 'Não atribuído';
+      const pPrio = p.prioridade || 'Normal';
+
+      const matchStatus = filtroStatus.length === 0 || filtroStatus.includes(pStatus);
+      const matchSec = filtroSecretaria.length === 0 || filtroSecretaria.includes(pSec);
+      const matchTipo = filtroTipo.length === 0 || filtroTipo.includes(pTipo);
+      const matchResp = filtroResponsavel.length === 0 || filtroResponsavel.includes(pResp);
+      const matchPrio = filtroPrioridade.length === 0 || filtroPrioridade.includes(pPrio);
+
+      // Status: considera todos os outros filtros ativos exceto o próprio filtroStatus
+      if (matchSec && matchTipo && matchResp && matchPrio) {
+        if (pStatus) status[pStatus] = (status[pStatus] || 0) + 1;
+      }
+
+      // Secretaria: considera todos os outros filtros ativos exceto o próprio filtroSecretaria
+      if (matchStatus && matchTipo && matchResp && matchPrio) {
+        if (pSec) sec[pSec] = (sec[pSec] || 0) + 1;
+      }
+
+      // Tipo: considera todos os outros filtros ativos exceto o próprio filtroTipo
+      if (matchStatus && matchSec && matchResp && matchPrio) {
+        if (pTipo) tipo[pTipo] = (tipo[pTipo] || 0) + 1;
+      }
+
+      // Responsável: considera todos os outros filtros ativos exceto o próprio filtroResponsavel
+      if (matchStatus && matchSec && matchTipo && matchPrio) {
+        resp[pResp] = (resp[pResp] || 0) + 1;
+      }
+
+      // Prioridade: considera todos os outros filtros ativos exceto o próprio filtroPrioridade
+      if (matchStatus && matchSec && matchTipo && matchResp) {
+        prio[pPrio] = (prio[pPrio] || 0) + 1;
+      }
     });
 
     return { status, sec, tipo, resp, prio };
-  }, [dados]);
+  }, [dados, busca, abaAtiva, meuNome, filtroStatus, filtroSecretaria, filtroTipo, filtroResponsavel, filtroPrioridade]);
 
   const opcoesStatus = useMemo(() => {
     return STATUS_OPCOES.map(st => ({

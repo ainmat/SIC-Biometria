@@ -300,17 +300,28 @@ export default function PainelTv({ standalone = false }) {
   const maxUnidadeCount = topUnidadesCriticas[0]?.count || 1;
 
   // 5 Chamados mais antigos ainda em aberto (desconsiderando ADVANCIS)
-  const chamadosAbertos = chamados.filter(
-    (c) =>
-      c.status !== 'Atendimento Encerrado' &&
-      c.status !== 'Atendimento Cancelado' &&
-      c.status !== 'Concluído' &&
-      c.unidade?.toUpperCase() !== 'ADVANCIS' &&
-      c.secretaria?.toUpperCase() !== 'ADVANCIS'
-  );
+  const chamadosAbertos = chamados.filter((c) => {
+    const st = (c.status || '').trim().toLowerCase();
+    const und = (c.unidade || '').trim().toUpperCase();
+    const sec = (c.secretaria || '').trim().toUpperCase();
+    const isClosed =
+      st === 'atendimento encerrado' ||
+      st === 'atendimento cancelado' ||
+      st === 'concluído' ||
+      st === 'concluido' ||
+      st === 'fechado' ||
+      st === 'encerrado' ||
+      st === 'cancelado';
+    const isAdvancis = und === 'ADVANCIS' || sec === 'ADVANCIS';
+    return !isClosed && !isAdvancis;
+  });
+
   const chamadosMaisAntigos = [...chamadosAbertos]
-    .filter((c) => c.data_abertura)
-    .sort((a, b) => new Date(a.data_abertura) - new Date(b.data_abertura))
+    .sort((a, b) => {
+      const dtA = a.data_abertura ? new Date(a.data_abertura).getTime() : Infinity;
+      const dtB = b.data_abertura ? new Date(b.data_abertura).getTime() : Infinity;
+      return dtA - dtB;
+    })
     .slice(0, 5);
 
   // Gráfico Mensal (Chart.js - Barras Modernas)
@@ -1317,6 +1328,29 @@ export default function PainelTv({ standalone = false }) {
                         </div>
                       );
                     })}
+
+                    {Array.from({ length: Math.max(0, 5 - topUnidadesCriticas.length) }).map((_, idx) => (
+                      <div
+                        key={`empty-und-${idx}`}
+                        style={{
+                          flex: 1,
+                          minHeight: 0,
+                          background: 'rgba(255, 255, 255, 0.012)',
+                          border: '1px dashed rgba(255, 255, 255, 0.06)',
+                          borderRadius: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          color: '#64748B',
+                          fontSize: 12,
+                          fontWeight: 500,
+                        }}
+                      >
+                        <CheckCircle2 size={14} color="#10B981" />
+                        <span>Posição #{topUnidadesCriticas.length + idx + 1} sem reincidências</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -1375,150 +1409,178 @@ export default function PainelTv({ standalone = false }) {
                       <div
                         style={{
                           display: 'flex',
+                          flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
                           height: '100%',
                           color: '#94A3B8',
                           fontSize: 14,
+                          gap: 8,
                         }}
                       >
-                        Nenhum chamado pendente no momento 🎉
+                        <CheckCircle2 size={32} color="#10B981" />
+                        <span>Nenhum chamado pendente no momento 🎉</span>
                       </div>
                     ) : (
-                      chamadosMaisAntigos.map((c) => {
-                        const dias = calcularDiasEmAberto(c.data_abertura);
-                        const dataFmt = c.data_abertura
-                          ? new Date(c.data_abertura + 'T00:00:00').toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                            })
-                          : '—';
+                      <>
+                        {chamadosMaisAntigos.map((c) => {
+                          const dias = calcularDiasEmAberto(c.data_abertura);
+                          const dataFmt = c.data_abertura
+                            ? new Date(c.data_abertura + 'T00:00:00').toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              })
+                            : '—';
 
-                        const ehPausado = c.status === 'Atendimento Pausado';
+                          const ehPausado = c.status === 'Atendimento Pausado';
 
-                        return (
-                          <div
-                            key={c.ticket}
-                            style={{
-                              flex: 1,
-                              minHeight: 0,
-                              background: 'rgba(255, 255, 255, 0.035)',
-                              border: '1px solid rgba(255, 255, 255, 0.07)',
-                              borderLeft: `4px solid ${ehPausado ? '#F59E0B' : '#F43F5E'}`,
-                              borderRadius: 10,
-                              padding: '8px 14px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'center',
-                              gap: 4,
-                            }}
-                          >
+                          return (
                             <div
+                              key={c.ticket}
                               style={{
+                                flex: 1,
+                                minHeight: 0,
+                                background: 'rgba(255, 255, 255, 0.035)',
+                                border: '1px solid rgba(255, 255, 255, 0.07)',
+                                borderLeft: `4px solid ${ehPausado ? '#F59E0B' : '#F43F5E'}`,
+                                borderRadius: 10,
+                                padding: '8px 14px',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                gap: 4,
                               }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                <span
-                                  style={{
-                                    fontSize: 13,
-                                    fontWeight: 900,
-                                    color: '#FFFFFF',
-                                    fontVariantNumeric: 'tabular-nums',
-                                  }}
-                                >
-                                  #{c.ticket}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    background: 'rgba(59, 130, 246, 0.2)',
-                                    color: '#60A5FA',
-                                    padding: '2px 6px',
-                                    borderRadius: 4,
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  {c.secretaria || 'N/A'}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: 10,
-                                    fontWeight: 600,
-                                    background: 'rgba(245, 158, 11, 0.15)',
-                                    color: '#FBBF24',
-                                    padding: '2px 6px',
-                                    borderRadius: 4,
-                                  }}
-                                >
-                                  {c.motivo || 'EQUIPAMENTO'}
-                                </span>
-                                {c.status && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                  <span
+                                    style={{
+                                      fontSize: 13,
+                                      fontWeight: 900,
+                                      color: '#FFFFFF',
+                                      fontVariantNumeric: 'tabular-nums',
+                                    }}
+                                  >
+                                    #{c.ticket}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      background: 'rgba(59, 130, 246, 0.2)',
+                                      color: '#60A5FA',
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      textTransform: 'uppercase',
+                                    }}
+                                  >
+                                    {c.secretaria || 'N/A'}
+                                  </span>
                                   <span
                                     style={{
                                       fontSize: 10,
                                       fontWeight: 600,
-                                      background: ehPausado ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.06)',
-                                      color: ehPausado ? '#FCD34D' : '#94A3B8',
+                                      background: 'rgba(245, 158, 11, 0.15)',
+                                      color: '#FBBF24',
                                       padding: '2px 6px',
                                       borderRadius: 4,
                                     }}
                                   >
-                                    {c.status}
+                                    {c.motivo || 'EQUIPAMENTO'}
                                   </span>
-                                )}
+                                  {c.status && (
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 600,
+                                        background: ehPausado ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                                        color: ehPausado ? '#FCD34D' : '#94A3B8',
+                                        padding: '2px 6px',
+                                        borderRadius: 4,
+                                      }}
+                                    >
+                                      {c.status}
+                                    </span>
+                                  )}
+                                </div>
+                                <span
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 900,
+                                    color: dias > 30 ? '#F43F5E' : '#F59E0B',
+                                    fontVariantNumeric: 'tabular-nums',
+                                  }}
+                                >
+                                  {dias !== null ? (dias === 0 ? 'Hoje' : `Há ${dias} dias`) : dataFmt}
+                                </span>
                               </div>
-                              <span
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 900,
-                                  color: dias > 30 ? '#F43F5E' : '#F59E0B',
-                                  fontVariantNumeric: 'tabular-nums',
-                                }}
-                              >
-                                {dias !== null ? (dias === 0 ? 'Hoje' : `Há ${dias} dias`) : dataFmt}
-                              </span>
-                            </div>
 
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                gap: 10,
-                              }}
-                            >
-                              <span
+                              <div
                                 style={{
-                                  fontSize: 13,
-                                  fontWeight: 700,
-                                  color: '#F8FAFC',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  maxWidth: '70%',
-                                }}
-                                title={c.unidade}
-                              >
-                                {c.unidade || 'Unidade não identificada'}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  color: '#64748B',
-                                  fontVariantNumeric: 'tabular-nums',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: 10,
                                 }}
                               >
-                                Aberto em {dataFmt}
-                              </span>
+                                <span
+                                  style={{
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    color: '#F8FAFC',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: '70%',
+                                  }}
+                                  title={c.unidade}
+                                >
+                                  {c.unidade || 'Unidade não identificada'}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    color: '#64748B',
+                                    fontVariantNumeric: 'tabular-nums',
+                                  }}
+                                >
+                                  Aberto em {dataFmt}
+                                </span>
+                              </div>
                             </div>
+                          );
+                        })}
+
+                        {Array.from({ length: Math.max(0, 5 - chamadosMaisAntigos.length) }).map((_, idx) => (
+                          <div
+                            key={`empty-slot-${idx}`}
+                            style={{
+                              flex: 1,
+                              minHeight: 0,
+                              background: 'rgba(255, 255, 255, 0.012)',
+                              border: '1px dashed rgba(255, 255, 255, 0.06)',
+                              borderRadius: 10,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 8,
+                              color: '#64748B',
+                              fontSize: 12,
+                              fontWeight: 500,
+                            }}
+                          >
+                            <CheckCircle2 size={14} color="#10B981" />
+                            <span>Posição #{chamadosMaisAntigos.length + idx + 1} livre · Fila em dia</span>
                           </div>
-                        );
-                      })
+                        ))}
+                      </>
                     )}
                   </div>
                 </div>
