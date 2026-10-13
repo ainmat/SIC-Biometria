@@ -282,8 +282,31 @@ export async function sincronizarAsana() {
   console.log(`🚀 INICIANDO SINCRONIZAÇÃO ASANA → SIC-BIOMETRIA [${new Date().toISOString()}]`);
   console.log('═══════════════════════════════════════════════════════════════');
 
-  // 1. Obter estado atual do Supabase
-  console.log('📦 1. Consultando banco de dados Supabase...');
+  // 1. Validar autenticação com Asana (/users/me)
+  console.log('🔑 1. Validando credenciais e conexão com Asana...');
+  try {
+    const meRes = await fetch('https://app.asana.com/api/1.0/users/me', {
+      headers: { 'Authorization': `Bearer ${ASANA_TOKEN}` }
+    });
+    if (!meRes.ok) {
+      const errText = await meRes.text();
+      if (meRes.status === 401) {
+        console.error('\n❌ Erro 401 (Não Autorizado) na API do Asana!');
+        console.error('   O token configurado em ASANA_ACCESS_TOKEN foi rejeitado pela API do Asana.');
+        console.error(`   Identificador recebido: início "${ASANA_TOKEN.slice(0, 8)}...", fim "...${ASANA_TOKEN.slice(-6)}", tamanho: ${ASANA_TOKEN.length} caracteres.`);
+        console.error('   💡 Solução: No GitHub, vá em Settings > Secrets and variables > Actions > ASANA_ACCESS_TOKEN e cole o token correto sem o prefixo "Token:".');
+      }
+      throw new Error(`Asana API retornou status ${meRes.status}: ${errText}`);
+    }
+    const meJson = await meRes.json();
+    const nomeUsuario = meJson.data?.name || meJson.data?.email || 'Usuário Asana';
+    console.log(`   ✓ Autenticado com sucesso como: ${nomeUsuario} (${meJson.data?.email || ''})`);
+  } catch (err) {
+    throw new Error(`Falha na validação de credenciais Asana: ${err.message}`);
+  }
+
+  // 2. Obter estado atual do Supabase
+  console.log('📦 2. Consultando banco de dados Supabase...');
   let temColunasAsana = false;
   let dbRows = [];
   const { data: testRows, error: testErr } = await supabase

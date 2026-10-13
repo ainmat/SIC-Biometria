@@ -28,6 +28,29 @@ jobs:
       - name: Instalar Dependências
         run: npm ci --omit=dev
 
+      - name: Validar Conexão Asana
+        env:
+          ASANA_ACCESS_TOKEN: ${{ secrets.ASANA_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$ASANA_ACCESS_TOKEN" ]; then
+            echo "❌ ERRO: O secret ASANA_ACCESS_TOKEN não está definido nas configurações do repositório."
+            echo "   Vá em Settings > Secrets and variables > Actions e adicione o secret ASANA_ACCESS_TOKEN."
+            exit 1
+          fi
+          TOKEN=$(echo "$ASANA_ACCESS_TOKEN" | sed -E 's/^[Tt]oken:[[:space:]]*//' | sed -E 's/^[Bb]earer[[:space:]]+//' | tr -d '\r\n[:space:]"')
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" https://app.asana.com/api/1.0/users/me)
+          if [ "$HTTP_STATUS" -eq 401 ]; then
+            echo "❌ ERRO: Asana retornou HTTP 401 (Não Autorizado)."
+            echo "   O token configurado em ASANA_ACCESS_TOKEN é inválido ou expirou."
+            echo "   Tamanho do token recebido: ${#ASANA_ACCESS_TOKEN} caracteres."
+            echo "   💡 Dica: No GitHub Secrets, certifique-se de colar apenas o código (sem 'Token:' na frente)."
+            exit 1
+          elif [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "❌ ERRO: Asana retornou HTTP $HTTP_STATUS ao validar token."
+            exit 1
+          fi
+          echo "✓ ASANA_ACCESS_TOKEN verificado e válido com a API do Asana!"
+
       - name: Executar Sincronização
         env:
           ASANA_ACCESS_TOKEN: ${{ secrets.ASANA_ACCESS_TOKEN }}
