@@ -11,13 +11,29 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
+console.log('🔍 Validando Secrets configurados no ambiente:');
+console.log('  • ASANA_ACCESS_TOKEN:', ASANA_TOKEN ? `✓ Presente (${ASANA_TOKEN.length} caracteres)` : '❌ AUSENTE');
+console.log('  • ASANA_PROJECT_ID:', ASANA_PROJECT_ID ? `✓ Presente (${ASANA_PROJECT_ID})` : '❌ AUSENTE');
+console.log('  • VITE_SUPABASE_URL:', SUPABASE_URL ? `✓ Presente (${SUPABASE_URL})` : '❌ AUSENTE');
+console.log('  • VITE_SUPABASE_ANON_KEY:', SUPABASE_KEY ? `✓ Presente (${SUPABASE_KEY.length} caracteres)` : '❌ AUSENTE');
+console.log('  • VITE_GEMINI_API_KEY:', GEMINI_API_KEY ? `✓ Presente (${GEMINI_API_KEY.length} caracteres)` : '⚠️ AUSENTE (usará heurística)');
+
 if (!ASANA_TOKEN || !ASANA_PROJECT_ID) {
-  console.error('❌ Erro: ASANA_ACCESS_TOKEN e ASANA_PROJECT_ID são obrigatórios.');
+  console.error('\n❌ Erro: ASANA_ACCESS_TOKEN e ASANA_PROJECT_ID são obrigatórios.');
   process.exit(1);
 }
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('❌ Erro: VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY são obrigatórios.');
+if (!SUPABASE_URL || !SUPABASE_URL.startsWith('http')) {
+  console.error('\n❌ Erro: VITE_SUPABASE_URL deve ser uma URL válida (ex: https://iemysploewouodsoevyv.supabase.co).');
+  console.error(`   Valor recebido: "${SUPABASE_URL}"`);
+  console.error('   💡 Corrija o secret VITE_SUPABASE_URL no GitHub com: https://iemysploewouodsoevyv.supabase.co');
+  process.exit(1);
+}
+
+if (!SUPABASE_KEY || !SUPABASE_KEY.startsWith('sb_')) {
+  console.error('\n❌ Erro: VITE_SUPABASE_ANON_KEY parece incorreto.');
+  console.error(`   Valor recebido começa com "${(SUPABASE_KEY || '').substring(0, 5)}", mas deve começar com "sb_publishable_..."`);
+  console.error('   💡 Corrija o secret VITE_SUPABASE_ANON_KEY no GitHub adicionando o "s" no início.');
   process.exit(1);
 }
 
