@@ -370,9 +370,10 @@ export async function sincronizarAsana() {
   }
   console.log(`   ✓ ${todasTarefas.length} tarefas recebidas do Asana.`);
 
-  // 4. Analisar e identificar: Novos vs Atualizados
+  // 4. Analisar e identificar: Novos, Atualizados e Removidos do Asana
   const novosParaInserir = [];
   const statusParaAtualizar = [];
+  const ticketsNoAsana = new Set();
 
   for (const t of todasTarefas) {
     const secName = t.memberships?.[0]?.section?.name || '';
@@ -381,6 +382,7 @@ export async function sincronizarAsana() {
     const ticket = extrairTicket(t.name, t.notes);
     if (!ticket) continue; // Sem ticket associado
 
+    ticketsNoAsana.add(ticket);
     const statusAtual = mapearStatus(t);
 
     if (!dbMap.has(ticket)) {
@@ -400,17 +402,37 @@ export async function sincronizarAsana() {
         status_auvo: null
       });
     } else {
-      // Chamado existente: verificar se o status do Asana ou a seção mudou
+      // Chamado existente: Asana é a verdade do momento para o status principal
       const reg = dbMap.get(ticket);
       const statusAsanaDb = reg.status_asana;
       const secaoDb = reg.secao_asana || '';
+      const statusPrincipalDb = reg.status;
 
-      if (statusAsanaDb !== statusAtual || secaoDb !== secName) {
+      if (statusAsanaDb !== statusAtual || secaoDb !== secName || statusPrincipalDb !== statusAtual) {
         statusParaAtualizar.push({
           ticket,
           status_asana: statusAtual,
           secao_asana: secName,
-          status: reg.status_auvo || reg.status || statusAtual // Preserva o status do Auvo se existir
+          status: statusAtual
+        });
+      }
+    }
+  }
+
+  // 4.1 Identificar chamados removidos do Asana
+  const ticketsParaExcluir = []; // Chamados criados apenas pelo Asana que sumiram do Asana
+  const ticketsParaDesvincular = []; // Chamados que vieram do Auvo mas sumiram do Asana
+
+  for (const [ticket, reg] of dbMap.entries()) {
+    if (reg.status_asana && !ticketsNoAsana.has(ticket)) {
+      if (!reg.status_auvo) {
+        // Chamado veio exclusivamente do Asana: pode excluir do banco!
+        ticketsParaExcluir.push(ticket);
+      } else {
+        // Chamado veio do Auvo: preserva o chamado, apenas desvincula do Asana e restaura status para status_auvo
+        ticketsParaDesvincular.push({
+          ticket,
+          status: reg.status_auvo
         });
       }
     }
@@ -418,20 +440,66 @@ export async function sincronizarAsana() {
 
   console.log(`\n📊 3. Diagnóstico das tarefas:`);
   console.log(`   • Novos chamados a importar: ${novosParaInserir.length}`);
-  console.log(`   • Chamados com status alterado no Asana: ${statusParaAtualizar.length}`);
+  console.log(`   • Chamados com status a atualizar: ${statusParaAtualizar.length}`);
+  console.log(`   • Chamados exclusivos do Asana a excluir: ${ticketsParaExcluir.length}`);
+  console.log(`   • Chamados do Auvo a desvincular do Asana: ${ticketsParaDesvincular.length}`);
 
   let totalInseridos = 0;
   let totalAtualizados = 0;
+  let totalExcluidos = 0;
+  let totalDesvinculados = 0;
 
-  // 5. Atualizar chamados com status modificado no Asana (NUNCA toca em status_auvo)
+  // 5. Excluir chamados órfãos do Asana (sem registro no Auvo)
+  if (ticketsParaExcluir.length > 0) {
+    console.log(`\n🗑️ 4. Removendo ${ticketsParaExcluir.length} chamado(s) excluído(s) no Asana (origem exclusiva Asana)...`);
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < ticketsParaExcluir.length; i += CHUNK_SIZE) {
+      const chunk = ticketsParaExcluir.slice(i, i + CHUNK_SIZE);
+      const { error } = await supabase
+        .from('chamados')
+        .delete()
+        .in('ticket', chunk);
+
+      if (error) {
+        console.error('   ❌ Erro ao excluir chamados do Asana:', error.message);
+      } else {
+        totalExcluidos += chunk.length;
+        console.log(`   ✓ ${chunk.length} chamado(s) excluído(s) do banco: ${chunk.map(t => '#' + t).join(', ')}`);
+      }
+    }
+  }
+
+  // 6. Desvincular chamados do Auvo que não estão mais no Asana
+  if (ticketsParaDesvincular.length > 0) {
+    console.log(`\n🔗 5. Desvinculando ${ticketsParaDesvincular.length} chamado(s) do Auvo removidos do Asana...`);
+    for (const item of ticketsParaDesvincular) {
+      const { error } = await supabase
+        .from('chamados')
+        .update({
+          status_asana: null,
+          secao_asana: null,
+          status: item.status
+        })
+        .eq('ticket', item.ticket);
+
+      if (error) {
+        console.error(`   ❌ Erro ao desvincular ticket #${item.ticket}:`, error.message);
+      } else {
+        totalDesvinculados++;
+      }
+    }
+    console.log(`   ✓ ${totalDesvinculados} chamado(s) do Auvo preservados e desvinculados do Asana.`);
+  }
+
+  // 7. Atualizar chamados com status modificado no Asana (prevalecendo Asana no status principal)
   if (statusParaAtualizar.length > 0) {
-    console.log(`\n🔄 4. Atualizando ${statusParaAtualizar.length} status do Asana no Supabase...`);
+    console.log(`\n🔄 6. Atualizando ${statusParaAtualizar.length} status no Supabase (Asana como verdade)...`);
     const CHUNK_SIZE = 25;
     for (let i = 0; i < statusParaAtualizar.length; i += CHUNK_SIZE) {
       const chunk = statusParaAtualizar.slice(i, i + CHUNK_SIZE);
       await Promise.all(chunk.map(async (item) => {
         const payload = temColunasAsana
-          ? { status_asana: item.status_asana, secao_asana: item.secao_asana }
+          ? { status_asana: item.status_asana, secao_asana: item.secao_asana, status: item.status }
           : { status: item.status_asana };
 
         const { error } = await supabase
@@ -446,7 +514,7 @@ export async function sincronizarAsana() {
         }
       }));
     }
-    console.log(`   ✓ ${totalAtualizados} status do Asana atualizados com sucesso (status do Auvo preservado).`);
+    console.log(`   ✓ ${totalAtualizados} status atualizados com sucesso (prevalecendo Asana).`);
   }
 
   // 6. Processar novos chamados com Inteligência Artificial
@@ -514,9 +582,11 @@ export async function sincronizarAsana() {
   console.log(`🎉 SINCRONIZAÇÃO CONCLUÍDA EM ${duracao}s!`);
   console.log(`   • Novos chamados inseridos: ${totalInseridos}`);
   console.log(`   • Status atualizados: ${totalAtualizados}`);
+  if (totalExcluidos > 0) console.log(`   • Chamados excluídos (origem exclusiva Asana): ${totalExcluidos}`);
+  if (totalDesvinculados > 0) console.log(`   • Chamados Auvo desvinculados do Asana: ${totalDesvinculados}`);
   console.log('═══════════════════════════════════════════════════════════════\n');
 
-  return { totalInseridos, totalAtualizados, duracao };
+  return { totalInseridos, totalAtualizados, totalExcluidos, totalDesvinculados, duracao };
 }
 
 // Executar diretamente se chamado via CLI
