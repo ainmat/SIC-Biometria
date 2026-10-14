@@ -49,6 +49,28 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onCha
   const [copiado, setCopiado] = useState(false);
   const [copiadoTexto, setCopiadoTexto] = useState(false);
 
+  // Trava o scroll da página de fundo (lista de chamados) enquanto o drawer estiver aberto
+  useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+
+    // Compensar largura da scrollbar para evitar pulo no layout
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+    };
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
@@ -101,6 +123,14 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onCha
         exit={{ opacity: 0 }}
         transition={{ duration: 0.18, ease: 'easeOut' }}
         onClick={onClose}
+        onWheel={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onTouchMove={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       />
       <motion.aside
         className="drawer-panel"
