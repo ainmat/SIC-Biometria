@@ -3,8 +3,16 @@ name: 🚀 CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/sync-asana.yml'
+      - 'scripts/sync_asana.mjs'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/sync-asana.yml'
+      - 'scripts/sync_asana.mjs'
 
 env:
   NODE_VERSION: '18'
