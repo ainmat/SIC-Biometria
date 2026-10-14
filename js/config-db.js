@@ -3,27 +3,27 @@
 // Configuração com credenciais reais do projeto
 window.CONFIG = {
   supabase: {
-    url: 'https://iemysploewouodsoevyv.supabase.co',
-    anonKey: 'sb_publishable_XggfXmsdnywLlSXKiTl3_A_nTwAHa8Y'
+    url: "https://iemysploewouodsoevyv.supabase.co",
+    anonKey: "sb_publishable_XggfXmsdnywLlSXKiTl3_A_nTwAHa8Y",
   },
   api: {
-    baseUrl: '/api'
+    baseUrl: "/api",
   },
   app: {
-    name: 'SIC-Biometria',
-    version: '2.0.0',
-    environment: 'development'
-  }
+    name: "SIC-Biometria",
+    version: "2.0.0",
+    environment: "development",
+  },
 };
 
-console.log('✅ Configuração carregada com credenciais reais');
+console.log("✅ Configuração carregada com credenciais reais");
 
 // Security utilities
 window.sanitizeInput = (input) => {
-  if (typeof input !== 'string') return input;
+  if (typeof input !== "string") return input;
   return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<[^>]*>/g, '')
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<[^>]*>/g, "")
     .trim();
 };
 
@@ -34,10 +34,10 @@ window.validateTicketNumber = (ticket) => {
 
 // Error boundaries
 window.AppError = class AppError extends Error {
-  constructor(message, code = 'UNKNOWN_ERROR') {
+  constructor(message, code = "UNKNOWN_ERROR") {
     super(message);
     this.code = code;
-    this.name = 'AppError';
+    this.name = "AppError";
   }
 };
 

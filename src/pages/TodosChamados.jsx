@@ -19,6 +19,7 @@ import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown';
 import { DateRangeFilterDropdown } from '@/components/ui/DateRangeFilterDropdown';
 import { getNome, getCor } from '@/lib/secretarias';
 import { motion, AnimatePresence } from 'motion/react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 // Constantes de Filtro
 const FILTROS_MOT = ['Todos', 'EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE PONTO', 'CADASTRO'];
@@ -708,23 +709,93 @@ export default function TodosChamados() {
           <p>{statusText}</p>
         </div>
         <div className="topbar-right">
-          <button
-            onClick={exportarExcel}
-            className="pagination-btn"
-            style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            title="Exportar dados filtrados em planilha Excel formatada (.xlsx)"
-          >
-            <FileSpreadsheet size={14} className="text-emerald-500" /> Exportar Excel
-          </button>
+          {/* Dropdown Unificado de Exportação (Economiza espaço horizontal) */}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                className="pagination-btn"
+                style={{
+                  padding: '7px 12px',
+                  fontSize: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+                title="Exportar dados filtrados"
+              >
+                <Download size={14} className="text-emerald-500" />
+                <span>Exportar</span>
+                <ChevronDown size={12} style={{ opacity: 0.6 }} />
+              </button>
+            </DropdownMenu.Trigger>
 
-          <button
-            onClick={exportarCSV}
-            className="pagination-btn"
-            style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            title="Exportar dados filtrados em planilha CSV (ponto e vírgula, UTF-8)"
-          >
-            <Download size={14} /> Exportar CSV
-          </button>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={6}
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-c)',
+                  borderRadius: 10,
+                  padding: '6px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                  zIndex: 1000,
+                  minWidth: 230,
+                }}
+              >
+                <DropdownMenu.Item
+                  onClick={exportarExcel}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: 'var(--text)',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'background 120ms ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <FileSpreadsheet size={16} className="text-emerald-500 shrink-0" />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 600 }}>Planilha Excel (.xlsx)</span>
+                    <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>Visual profissional com cores</span>
+                  </div>
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Item
+                  onClick={exportarCSV}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: 'var(--text)',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'background 120ms ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Download size={16} className="text-blue-500 shrink-0" />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 600 }}>Arquivo CSV (.csv)</span>
+                    <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>Padrão Brasil (separador ;)</span>
+                  </div>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
 
           <button
             onClick={() => setModalImportacaoAberta(true)}
@@ -735,17 +806,18 @@ export default function TodosChamados() {
               background: '#0D7C3D',
               color: '#ffffff',
               border: 'none',
-              padding: '7px 14px',
+              padding: '7px 12px',
               borderRadius: 8,
-              fontSize: 12.5,
+              fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
               transition: 'opacity 140ms ease',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.92')}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
-            <Upload size={14} /> Importar Planilha
+            <Upload size={14} /> <span className="topbar-btn-text">Importar Planilha</span>
           </button>
 
           <TopbarAvatar />

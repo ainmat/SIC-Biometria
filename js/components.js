@@ -1,9 +1,9 @@
 // Reusable UI Components
-import { store, actions } from './store.js';
+import { store, actions } from "./store.js";
 
 // Loading Component
 export class LoadingSpinner {
-  constructor(container, size = 'medium') {
+  constructor(container, size = "medium") {
     this.container = container;
     this.size = size;
     this.render();
@@ -11,19 +11,19 @@ export class LoadingSpinner {
 
   render() {
     const sizes = {
-      small: '16px',
-      medium: '24px',
-      large: '32px'
+      small: "16px",
+      medium: "24px",
+      large: "32px",
     };
 
-    this.element = document.createElement('div');
-    this.element.className = 'loading-spinner';
+    this.element = document.createElement("div");
+    this.element.className = "loading-spinner";
     this.element.innerHTML = `
       <div class="spinner" style="width: ${sizes[this.size]}; height: ${sizes[this.size]};">
         <div class="spinner-circle"></div>
       </div>
     `;
-    
+
     this.container.appendChild(this.element);
   }
 
@@ -44,8 +44,8 @@ export class ErrorMessage {
   }
 
   render() {
-    this.element = document.createElement('div');
-    this.element.className = 'error-message';
+    this.element = document.createElement("div");
+    this.element.className = "error-message";
     this.element.innerHTML = `
       <div class="error-content">
         <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -54,7 +54,7 @@ export class ErrorMessage {
           <line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
         <span class="error-text">${this.message}</span>
-        ${this.onRetry ? '<button class="retry-btn" onclick="this.parentElement.parentElement.retry()">Tentar Novamente</button>' : ''}
+        ${this.onRetry ? '<button class="retry-btn" onclick="this.parentElement.parentElement.retry()">Tentar Novamente</button>' : ""}
       </div>
     `;
 
@@ -74,15 +74,18 @@ export class ErrorMessage {
 
 // Toast Notification Component
 export class Toast {
-  static show(message, type = 'info', duration = 3000) {
-    const toast = document.createElement('div');
+  static show(message, type = "info", duration = 3000) {
+    const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
-    
+
     const icons = {
-      success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
-      error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-      warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-      info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+      success:
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+      error:
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      warning:
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
     };
 
     toast.innerHTML = `
@@ -95,11 +98,11 @@ export class Toast {
     document.body.appendChild(toast);
 
     // Trigger animation
-    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.add("show"), 10);
 
     // Auto remove
     setTimeout(() => {
-      toast.classList.add('hide');
+      toast.classList.add("hide");
       setTimeout(() => toast.remove(), 300);
     }, duration);
   }
@@ -111,26 +114,26 @@ export class Modal {
     this.title = title;
     this.content = content;
     this.options = {
-      size: 'medium',
+      size: "medium",
       closable: true,
-      ...options
+      ...options,
     };
     this.render();
   }
 
   render() {
     // Create overlay
-    this.overlay = document.createElement('div');
-    this.overlay.className = 'modal-overlay';
+    this.overlay = document.createElement("div");
+    this.overlay.className = "modal-overlay";
 
     // Create modal
-    this.modal = document.createElement('div');
-    this.modal.className = 'modal modal-' + this.options.size;
-    
+    this.modal = document.createElement("div");
+    this.modal.className = "modal modal-" + this.options.size;
+
     this.modal.innerHTML = `
       <div class="modal-header">
         <h3 class="modal-title">${this.title}</h3>
-        ${this.options.closable ? '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">×</button>' : ''}
+        ${this.options.closable ? '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">×</button>' : ""}
       </div>
       <div class="modal-body">
         ${this.content}
@@ -142,7 +145,7 @@ export class Modal {
 
     // Close on overlay click
     if (this.options.closable) {
-      this.overlay.addEventListener('click', (e) => {
+      this.overlay.addEventListener("click", (e) => {
         if (e.target === this.overlay) {
           this.remove();
         }
@@ -151,19 +154,19 @@ export class Modal {
 
     // Close on escape
     this.handleEscape = (e) => {
-      if (e.key === 'Escape' && this.options.closable) {
+      if (e.key === "Escape" && this.options.closable) {
         this.remove();
       }
     };
-    document.addEventListener('keydown', this.handleEscape);
+    document.addEventListener("keydown", this.handleEscape);
   }
 
   remove() {
     if (this.overlay && this.overlay.parentNode) {
-      this.overlay.classList.add('hide');
+      this.overlay.classList.add("hide");
       setTimeout(() => {
         this.overlay.remove();
-        document.removeEventListener('keydown', this.handleEscape);
+        document.removeEventListener("keydown", this.handleEscape);
       }, 300);
     }
   }
@@ -179,15 +182,17 @@ export class KPICard {
 
   render() {
     const { title, value, change, icon, color } = this.data;
-    
-    this.element = document.createElement('div');
-    this.element.className = 'kpi-card';
-    
-    const changeHtml = change ? `
-      <div class="kpi-change ${change >= 0 ? 'positive' : 'negative'}">
-        ${change >= 0 ? '↑' : '↓'} ${Math.abs(change)}%
+
+    this.element = document.createElement("div");
+    this.element.className = "kpi-card";
+
+    const changeHtml = change
+      ? `
+      <div class="kpi-change ${change >= 0 ? "positive" : "negative"}">
+        ${change >= 0 ? "↑" : "↓"} ${Math.abs(change)}%
       </div>
-    ` : '';
+    `
+      : "";
 
     this.element.innerHTML = `
       <div class="kpi-header">
