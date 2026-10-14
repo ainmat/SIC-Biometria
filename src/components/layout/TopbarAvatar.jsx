@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw, Download, Moon, Sun, KeyRound, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import ModalAlterarSenha from './ModalAlterarSenha';
+import SyncStatusBadge from './SyncStatusBadge';
 
 export default function TopbarAvatar() {
   const { sessao, logout } = useAuth();
@@ -28,7 +29,8 @@ export default function TopbarAvatar() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <SyncStatusBadge />
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '6px 12px', borderRadius: 12,

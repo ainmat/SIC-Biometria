@@ -586,13 +586,46 @@ export async function sincronizarAsana() {
   if (totalDesvinculados > 0) console.log(`   • Chamados Auvo desvinculados do Asana: ${totalDesvinculados}`);
   console.log('═══════════════════════════════════════════════════════════════\n');
 
+  // Registrar metadados no Supabase para visualização no Dashboard
+  await registrarLogSincronizacao({ totalInseridos, totalAtualizados, totalExcluidos, totalDesvinculados, duracao });
+
   return { totalInseridos, totalAtualizados, totalExcluidos, totalDesvinculados, duracao };
+}
+
+async function registrarLogSincronizacao(resultado, erro = null) {
+  try {
+    const payload = erro ? {
+      timestamp: new Date().toISOString(),
+      status: 'erro',
+      mensagem_erro: erro.message || String(erro),
+      origem: process.env.GITHUB_ACTIONS ? 'github_actions' : 'local'
+    } : {
+      timestamp: new Date().toISOString(),
+      status: 'sucesso',
+      novos_inseridos: resultado.totalInseridos || 0,
+      status_atualizados: resultado.totalAtualizados || 0,
+      excluidos: resultado.totalExcluidos || 0,
+      desvinculados: resultado.totalDesvinculados || 0,
+      duracao_segundos: Number(resultado.duracao) || 0,
+      origem: process.env.GITHUB_ACTIONS ? 'github_actions' : 'local'
+    };
+
+    await supabase.from('configuracoes').upsert({
+      chave: 'ultima_sincronizacao_asana',
+      valor: JSON.stringify(payload),
+      descricao: 'Metadados e timestamp da última sincronização do Asana'
+    });
+    console.log('📝 Status da sincronização registrado com sucesso no Supabase.');
+  } catch (logErr) {
+    console.warn('⚠️ Não foi possível registrar log no Supabase:', logErr.message);
+  }
 }
 
 // Executar diretamente se chamado via CLI
 if (process.argv[1]?.endsWith('sync_asana.mjs')) {
-  sincronizarAsana().catch(err => {
+  sincronizarAsana().catch(async (err) => {
     console.error('❌ Falha fatal na sincronização:', err);
+    await registrarLogSincronizacao(null, err);
     process.exit(1);
   });
 }
