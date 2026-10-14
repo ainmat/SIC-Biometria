@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./styles/chamados.css";
+@import "./styles/enterprise-hr.css";
 
 /* -------------------------------------------------------------------------- */
 /* CORREÇÃO DO LEAFLET (MAPA) PARA DARK MODE                                  */

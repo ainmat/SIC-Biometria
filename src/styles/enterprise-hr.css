@@ -1,0 +1,315 @@
+/* ==========================================================================
+   ENTERPRISE HR & PEOPLE OPERATIONS DESIGN SYSTEM
+   Standardized based on Workday, BambooHR, Rippling, and Apple Human Interface.
+   ========================================================================== */
+
+/* ─── Metric Strip (Executive KPI Deck) ─────────────────────────────────── */
+.hr-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.hr-metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border-c);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+              border-color 160ms ease-out,
+              box-shadow 160ms ease-out;
+  user-select: none;
+}
+
+.hr-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border2);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .hr-metric-card:hover {
+  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.4);
+}
+
+.hr-metric-card:active {
+  transform: scale(0.985);
+}
+
+.hr-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.hr-metric-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-c);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hr-metric-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hr-metric-number {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+
+.hr-metric-footnote {
+  font-size: 11px;
+  color: var(--sub);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Command Filter & Search Bar ────────────────────────────────────────── */
+.hr-toolbar {
+  background: var(--surface);
+  border: 1px solid var(--border-c);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hr-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hr-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  max-width: 480px;
+}
+
+.hr-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--sub);
+  pointer-events: none;
+}
+
+.hr-search-input {
+  width: 100% !important;
+  padding-left: 34px !important;
+  padding-right: 32px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  border: 1px solid var(--border-c) !important;
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  transition: border-color 140ms ease, box-shadow 140ms ease !important;
+}
+
+.hr-search-input:focus {
+  background: var(--surface) !important;
+  border-color: #0D7C3D !important;
+  box-shadow: 0 0 0 3px rgba(13, 124, 61, 0.1) !important;
+}
+
+.dark .hr-search-input:focus {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+.hr-filter-select {
+  height: 32px;
+  padding: 0 28px 0 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 500;
+  border-radius: 6px !important;
+  border: 1px solid var(--border-c) !important;
+  background-color: var(--bg) !important;
+  color: var(--muted-c);
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+
+.hr-filter-select:hover {
+  border-color: var(--border2) !important;
+  color: var(--text);
+}
+
+.hr-filter-select.active-filter {
+  border-color: rgba(13, 124, 61, 0.4) !important;
+  color: #0D7C3D;
+  background-color: rgba(13, 124, 61, 0.04) !important;
+  font-weight: 600;
+}
+
+.dark .hr-filter-select.active-filter {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #10B981;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+/* ─── Enterprise High-Density Table ─────────────────────────────────────── */
+.hr-table-container {
+  background: var(--surface);
+  border: 1px solid var(--border-c);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.hr-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.hr-table th {
+  background: var(--bg);
+  color: var(--muted-c);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-c);
+  white-space: nowrap;
+}
+
+.hr-table td {
+  padding: 12px 14px;
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--border-c);
+  vertical-align: middle;
+}
+
+.hr-table-row {
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.hr-table-row:hover td {
+  background: rgba(13, 124, 61, 0.035);
+}
+
+.dark .hr-table-row:hover td {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.hr-table-row:active td {
+  background: rgba(13, 124, 61, 0.06);
+}
+
+.hr-table-row.row-selected td {
+  background: rgba(13, 124, 61, 0.08);
+}
+
+.hr-table-row.row-selected td:first-child {
+  border-left: 3px solid #0D7C3D;
+}
+
+.dark .hr-table-row.row-selected td:first-child {
+  border-left: 3px solid #10B981;
+}
+
+/* ─── Avatar Initials Pill (Workday/BambooHR style) ──────────────────────── */
+.hr-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.hr-regime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-c);
+  color: var(--muted-c);
+}
+
+.dark .hr-regime-badge {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.hr-regime-efetivo {
+  color: #0D7C3D;
+  background: rgba(13, 124, 61, 0.08);
+  border-color: rgba(13, 124, 61, 0.2);
+}
+
+.dark .hr-regime-efetivo {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.hr-regime-comissionado {
+  color: #B45309;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.dark .hr-regime-comissionado {
+  color: #FBBF24;
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* ─── Matricula Mono Pill ───────────────────────────────────────────────── */
+.hr-matricula-pill {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-c);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dark .hr-matricula-pill {
+  background: rgba(255, 255, 255, 0.05);
+}

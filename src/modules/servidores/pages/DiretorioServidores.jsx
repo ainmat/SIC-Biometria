@@ -1,25 +1,51 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, X, Download, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import {
+  Search, X, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+  User, Building2, Briefcase, Calendar, Clock, Award, Shield, Copy, Check, ExternalLink,
+  SlidersHorizontal, Filter, Users
+} from 'lucide-react';
 import { baixarCSV } from '@/lib/exportar';
 import {
   fetchServidoresPaginado,
   fetchServidorDetalhe,
   fetchOpcoesServidores,
 } from '@/modules/servidores/services/servidoresService';
+import { motion, AnimatePresence } from 'motion/react';
+import { COR_SEC } from '@/lib/constants';
 
-/* ── helpers ── */
-const dash = (v) => v || '—';
+const PER_PAGE = 35;
 
 function fmtData(s) {
   if (!s) return '—';
-  // "17/07/1968 00:00" → "17/07/1968"
   return s.split(' ')[0];
+}
+
+function getAvatarColor(nome) {
+  if (!nome) return { bg: 'rgba(100,116,139,0.12)', text: '#64748b' };
+  const cores = [
+    { bg: 'rgba(13, 124, 61, 0.12)', text: '#0D7C3D' },
+    { bg: 'rgba(16, 185, 129, 0.12)', text: '#059669' },
+    { bg: 'rgba(59, 130, 246, 0.12)', text: '#2563eb' },
+    { bg: 'rgba(139, 92, 246, 0.12)', text: '#7c3aed' },
+    { bg: 'rgba(234, 179, 8, 0.14)', text: '#B45309' },
+    { bg: 'rgba(244, 63, 94, 0.12)', text: '#e11d48' },
+  ];
+  let hash = 0;
+  for (let i = 0; i < nome.length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+  const idx = Math.abs(hash) % cores.length;
+  return cores[idx];
+}
+
+function getInitials(nome) {
+  if (!nome) return '?';
+  const parts = nome.trim().split(/\s+/).filter(p => p.length > 1);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function calcularTempoServicoExtenso(dtAdmissaoStr) {
   if (!dtAdmissaoStr) return null;
-  
   let dia, mes, ano;
   const dataLimpa = dtAdmissaoStr.split(' ')[0];
   if (dataLimpa.includes('/')) {
@@ -38,9 +64,7 @@ function calcularTempoServicoExtenso(dtAdmissaoStr) {
 
   const dtInicio = new Date(ano, mes - 1, dia);
   const dtFim = new Date();
-
-  if (isNaN(dtInicio.getTime())) return null;
-  if (dtInicio > dtFim) return '0 Dia(s)';
+  if (isNaN(dtInicio.getTime()) || dtInicio > dtFim) return '0 Dia(s)';
 
   let anos = dtFim.getFullYear() - dtInicio.getFullYear();
   let meses = dtFim.getMonth() - dtInicio.getMonth();
@@ -51,324 +75,767 @@ function calcularTempoServicoExtenso(dtAdmissaoStr) {
     const prevMonth = new Date(dtFim.getFullYear(), dtFim.getMonth(), 0);
     dias += prevMonth.getDate();
   }
-
   if (meses < 0) {
     anos--;
     meses += 12;
   }
 
   const partes = [];
-  if (anos > 0) partes.push(`${anos} Ano(s)`);
-  if (meses > 0) partes.push(`${meses} Mese(s)`);
-  if (dias > 0 || partes.length === 0) partes.push(`${dias} Dia(s)`);
-
-  if (partes.length === 3) {
-    return `${partes[0]}, ${partes[1]} e ${partes[2]}.`;
-  } else if (partes.length === 2) {
-    return `${partes[0]} e ${partes[1]}.`;
-  } else {
-    return `${partes[0]}.`;
-  }
+  if (anos > 0) partes.push(`${anos} ano${anos > 1 ? 's' : ''}`);
+  if (meses > 0) partes.push(`${meses} m${meses > 1 ? 'eses' : 'ês'}`);
+  if (dias > 0 || partes.length === 0) partes.push(`${dias} dia${dias > 1 ? 's' : ''}`);
+  return partes.join(', ');
 }
 
-const PER_PAGE = 50;
-
-const SEL_ST = {
-  padding: '7px 10px', borderRadius: 8, background: 'var(--card-bg)',
-  border: '1px solid rgba(0, 0, 0, 0.06)', color: 'var(--text)', fontSize: 12,
-  outline: 'none', minWidth: 120,
-};
-
-/* ── Modal de detalhe ── */
-function ModalServidor({ matricula, onClose }) {
-  const [dados,   setDados]   = useState(null);
+// ─── Slide-Over Drawer: Ficha Funcional do Servidor ─────────────────────────
+function FichaServidorDrawer({ matricula, onClose }) {
+  const [dados, setDados] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [erro,    setErro]    = useState(null);
+  const [erro, setErro] = useState(null);
+  const [copiado, setCopiado] = useState(false);
+  const [copiadoTexto, setCopiadoTexto] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   useEffect(() => {
     setLoading(true);
+    setErro(null);
     fetchServidorDetalhe(matricula)
       .then(setDados)
-      .catch(e => setErro(e.message))
+      .catch((e) => setErro(e.message))
       .finally(() => setLoading(false));
   }, [matricula]);
 
-  function campo(label, valor, mono = false) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <span style={{ fontSize: 10, color: 'var(--muted-c)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</span>
-        <span style={{ fontSize: 13, color: mono ? '#15A050' : '#334155', fontFamily: mono ? 'monospace' : 'inherit', fontWeight: mono ? 700 : 400 }}>{dash(valor)}</span>
-      </div>
-    );
-  }
+  const copiarMatricula = () => {
+    navigator.clipboard.writeText(String(matricula));
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
 
-  const tempoServicoReal = dados ? (calcularTempoServicoExtenso(dados.DtAdmissao) || dados.Tempo_Contrato_Extenso) : null;
+  const copiarResumo = () => {
+    if (!dados) return;
+    const resumo = `👤 Ficha Funcional — Matrícula #${dados.Matricula}
+• Nome: ${dados.Nome_Funcionario || 'N/A'}
+• Cargo: ${dados.Des_Cargo || 'N/A'}
+• Secretaria: ${dados.Des_Secretaria || dados.SiglaSec || 'N/A'}
+• Lotação: ${dados.Des_LocalTrab || 'N/A'}
+• Regime: ${dados.Des_RegTrab || 'N/A'} (Padrão: ${dados.Des_Padrao_Adm || 'N/A'})
+• Admissão: ${fmtData(dados.DtAdmissao)}`;
+    navigator.clipboard.writeText(resumo);
+    setCopiadoTexto(true);
+    setTimeout(() => setCopiadoTexto(false), 2200);
+  };
+
+  const tempoServico = dados
+    ? calcularTempoServicoExtenso(dados.DtAdmissao) || dados.Tempo_Contrato_Extenso
+    : null;
+  const corSec = dados ? COR_SEC[dados.SiglaSec] || '#64748b' : '#64748b';
+  const avatarStyle = dados ? getAvatarColor(dados.Nome_Funcionario) : { bg: '#eee', text: '#333' };
 
   return (
-    <div className="modal-overlay show" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="chamado-modal" style={{ maxWidth: 600 }}>
-        <div className="chamado-modal-header">
-          <div className="chamado-modal-title">Detalhes do Servidor</div>
-          <button className="chamado-modal-close" onClick={onClose}>×</button>
+    <>
+      <motion.div
+        className="drawer-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        onClick={onClose}
+      />
+      <motion.aside
+        className="drawer-panel"
+        style={{ width: 'min(560px, 100vw)' }}
+        initial={{ transform: 'translateX(100%)' }}
+        animate={{ transform: 'translateX(0%)' }}
+        exit={{ transform: 'translateX(100%)' }}
+        transition={{ type: 'spring', damping: 28, stiffness: 320, mass: 0.8 }}
+        aria-label="Ficha do Servidor"
+      >
+        {/* Header */}
+        <div className="drawer-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+            <div
+              className="hr-avatar"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                fontSize: 15,
+                background: avatarStyle.bg,
+                color: avatarStyle.text,
+              }}
+            >
+              {dados ? getInitials(dados.Nome_Funcionario) : '?'}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: 'var(--text)',
+                  lineHeight: 1.2,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {dados?.Nome_Funcionario || 'Carregando servidor...'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <span className="hr-matricula-pill">
+                  Mat. {matricula}
+                  <button onClick={copiarMatricula} className="ticket-copy-btn" title="Copiar matrícula">
+                    {copiado ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                  </button>
+                </span>
+                {dados?.SiglaSec && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: '2px 7px',
+                      borderRadius: 4,
+                      background: `${corSec}18`,
+                      color: corSec,
+                    }}
+                  >
+                    {dados.SiglaSec}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button onClick={onClose} className="drawer-close-btn" title="Fechar (Esc)">
+            <X size={16} />
+          </button>
         </div>
 
-        {loading && <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--muted-c)' }}>Carregando...</div>}
-        {erro    && <div style={{ padding: '16px 24px', color: '#dc2626', fontSize: 13 }}>{erro}</div>}
+        {/* Body */}
+        <div className="drawer-body">
+          {loading && (
+            <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--muted-c)', fontSize: 13 }}>
+              Carregando dados funcionais...
+            </div>
+          )}
 
-        {dados && (
-          <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {/* cabeçalho */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 10, background: 'rgba(13,124,61,.07)', border: '1px solid rgba(13,124,61,.15)' }}>
-              <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'rgba(13,124,61,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <User size={22} color="#818cf8" />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{dados.Nome_Funcionario || '—'}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, color: '#15A050', fontFamily: 'monospace', fontWeight: 700 }}>Mat. {dados.Matricula}</span>
-                  {dados.Des_Cargo && <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>· {dados.Des_Cargo}</span>}
-                  {dados.SiglaSec && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#4338ca', padding: '2px 8px', borderRadius: 20, background: 'rgba(13,124,61,.15)', border: '1px solid rgba(13,124,61,.25)' }}>
-                      {dados.SiglaSec}
-                    </span>
-                  )}
+          {erro && (
+            <div
+              style={{
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: 'rgba(239,68,68,0.1)',
+                border: '1px solid rgba(239,68,68,0.3)',
+                color: '#dc2626',
+                fontSize: 12.5,
+              }}
+            >
+              {erro}
+            </div>
+          )}
+
+          {dados && (
+            <>
+              {/* Lotação e Alocação */}
+              <div>
+                <div className="drawer-section-title">
+                  <Building2 size={13} /> Lotação e Posto de Trabalho
+                </div>
+                <div className="drawer-key-val-grid">
+                  <div className="drawer-key-val-card" style={{ gridColumn: 'span 2' }}>
+                    <div className="drawer-key">Secretaria Municipal</div>
+                    <div className="drawer-val" style={{ fontSize: 13 }}>
+                      {dados.Des_Secretaria || '—'}
+                    </div>
+                  </div>
+
+                  <div className="drawer-key-val-card" style={{ gridColumn: 'span 2' }}>
+                    <div className="drawer-key">Local de Trabalho Oficial</div>
+                    <div className="drawer-val" style={{ fontSize: 13 }}>
+                      {dados.Des_LocalTrab || '—'}
+                    </div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Centro de Custeio</div>
+                    <div className="drawer-val">{dados.Des_Custeio || '—'}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Cód. Custeio</div>
+                    <div className="drawer-val" style={{ fontFamily: 'monospace', color: '#0D7C3D' }}>
+                      {dados.CdCusteio || '—'}
+                    </div>
+                  </div>
+
+                  <div className="drawer-key-val-card" style={{ gridColumn: 'span 2' }}>
+                    <div className="drawer-key">Escala / Horário Cadastrado</div>
+                    <div className="drawer-val">{dados.Des_Horario || '—'}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Lotação */}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Lotação</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                {campo('Secretaria',       dados.Des_Secretaria)}
-                {campo('Sigla',            dados.SiglaSec, true)}
-                {campo('Custeio',          dados.Des_Custeio)}
-                {campo('Cód. Custeio',     dados.CdCusteio, true)}
-                {campo('Local de Trabalho', dados.Des_LocalTrab)}
-                {campo('Horário',          dados.Des_Horario)}
+              {/* Vínculo & Vida Funcional */}
+              <div>
+                <div className="drawer-section-title">
+                  <Briefcase size={13} /> Contrato e Vida Funcional
+                </div>
+                <div className="drawer-key-val-grid">
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Cargo / Função</div>
+                    <div className="drawer-val">{dados.Des_Cargo || '—'}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Regime de Trabalho</div>
+                    <div className="drawer-val">
+                      <span
+                        className={`hr-regime-badge ${
+                          dados.Des_RegTrab?.toUpperCase().includes('ESTAT')
+                            ? 'hr-regime-efetivo'
+                            : dados.Des_RegTrab?.toUpperCase().includes('COMIS')
+                            ? 'hr-regime-comissionado'
+                            : ''
+                        }`}
+                      >
+                        {dados.Des_RegTrab || '—'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Padrão Administrativo</div>
+                    <div className="drawer-val">{dados.Des_Padrao_Adm || '—'}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Jornada Semanal</div>
+                    <div className="drawer-val">{dados.HrSem ? `${dados.HrSem}h semanais` : '—'}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Data de Nomeação</div>
+                    <div className="drawer-val">{fmtData(dados.DtNomeacao)}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Data de Posse</div>
+                    <div className="drawer-val">{fmtData(dados.DtPosse)}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Admissão Oficial</div>
+                    <div className="drawer-val">{fmtData(dados.DtAdmissao)}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Início do Exercício</div>
+                    <div className="drawer-val">{fmtData(dados.DtIniExerc)}</div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
+              {/* Tempo de Serviço Dedicado */}
+              {tempoServico && (
+                <div
+                  style={{
+                    background: 'rgba(13, 124, 61, 0.06)',
+                    border: '1px solid rgba(13, 124, 61, 0.2)',
+                    borderRadius: 10,
+                    padding: '14px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Award size={18} className="text-emerald-600" />
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted-c)' }}>
+                        Tempo de Serviço na Prefeitura
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0D7C3D' }}>
+                        {tempoServico}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            {/* Contrato */}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Contrato e Vínculo</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-                {campo('Regime',        dados.Des_RegTrab)}
-                {campo('Padrão Adm.',   dados.Des_Padrao_Adm)}
-                {campo('Cargo',         dados.Des_Cargo)}
-                {campo('Contrato',      dados.Des_Contrato)}
-                {campo('Cat. SEFIP',    dados.Des_CategSefip)}
-                {campo('Hrs/Semana',    dados.HrSem ? `${dados.HrSem}h` : null)}
-                 {campo('Nomeação',      fmtData(dados.DtNomeacao))}
-                {campo('Posse',         fmtData(dados.DtPosse))}
-                {campo('Admissão',      fmtData(dados.DtAdmissao))}
-                {campo('Início Exerc.', fmtData(dados.DtIniExerc))}
-                {campo('Tempo de serviço', tempoServicoReal)}
+              {/* Dados Pessoais & Escolaridade */}
+              <div>
+                <div className="drawer-section-title">
+                  <User size={13} /> Dados Pessoais & Qualificação
+                </div>
+                <div className="drawer-key-val-grid">
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Gênero / Sexo</div>
+                    <div className="drawer-val">{dados.Sexo || '—'}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card">
+                    <div className="drawer-key">Idade</div>
+                    <div className="drawer-val">{dados.Idade ? `${dados.Idade} anos` : '—'}</div>
+                  </div>
+
+                  <div className="drawer-key-val-card" style={{ gridColumn: 'span 2' }}>
+                    <div className="drawer-key">Grau de Instrução / Escolaridade</div>
+                    <div className="drawer-val">{dados.Des_GrInstrucao || 'Não informado'}</div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </>
+          )}
+        </div>
 
-            <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
-
-            {/* Dados pessoais */}
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Dados Pessoais</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-                {campo('Sexo',        dados.Sexo)}
-                {campo('Idade',       dados.Idade ? `${dados.Idade} anos` : null)}
-                {campo('Escolaridade', dados.Des_GrInstrucao)}
-              </div>
-            </div>
-
-            {/* Tempo de serviço em destaque */}
-            {dados.Tempo_Contrato_Anos != null && (
+        {/* Footer */}
+        <div className="drawer-footer">
+          <button onClick={copiarResumo} className="pagination-btn" style={{ padding: '8px 14px' }}>
+            {copiadoTexto ? (
               <>
-                <div style={{ height: 1, background: 'rgba(0, 0, 0, 0.04)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, background: 'rgba(13,124,61,.06)', border: '1px solid rgba(13,124,61,.15)' }}>
-                  <span style={{ fontSize: 12, color: 'var(--muted-c)', fontWeight: 600 }}>Tempo de serviço</span>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: '#15A050', fontVariantNumeric: 'tabular-nums' }}>
-                    {tempoServicoReal || `${dados.Tempo_Contrato_Anos} anos`}
-                  </span>
-                </div>
+                <Check size={14} className="text-emerald-500" /> Resumo Copiado!
+              </>
+            ) : (
+              <>
+                <Copy size={14} /> Copiar Resumo
               </>
             )}
-          </div>
-        )}
-      </div>
-    </div>
+          </button>
+
+          <button
+            onClick={onClose}
+            className="pagination-btn"
+            style={{ padding: '8px 16px', background: 'var(--surface)', fontWeight: 600 }}
+          >
+            Fechar
+          </button>
+        </div>
+      </motion.aside>
+    </>
   );
 }
 
-/* ── Componente principal ── */
+// ─── Componente Principal ───────────────────────────────────────────────────
 export default function DiretorioServidores() {
-  const [lista,    setLista]    = useState([]);
-  const [total,    setTotal]    = useState(0);
-  const [page,     setPage]     = useState(0);
-  const [loading,  setLoading]  = useState(false);
-  const [erro,     setErro]     = useState(null);
+  const [lista, setLista] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState(null);
 
-  const [busca,       setBusca]       = useState('');
-  const [filtroSec,   setFiltroSec]   = useState('');
-  const [filtroReg,   setFiltroReg]   = useState('');
-  const [filtroPad,   setFiltroPad]   = useState('');
+  const [busca, setBusca] = useState('');
+  const [filtroSec, setFiltroSec] = useState('');
+  const [filtroReg, setFiltroReg] = useState('');
+  const [filtroPad, setFiltroPad] = useState('');
 
-  const [opcoes,    setOpcoes]    = useState({ secretarias: [], regimes: [], padroes: [] });
-  const [selected,  setSelected]  = useState(null);
+  const [opcoes, setOpcoes] = useState({ secretarias: [], regimes: [], padroes: [] });
+  const [selectedMatricula, setSelectedMatricula] = useState(null);
 
   const buscaTimer = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     fetchOpcoesServidores().then(setOpcoes).catch(() => {});
   }, []);
 
-  const carregar = useCallback((p = 0) => {
-    setLoading(true);
-    setErro(null);
-    fetchServidoresPaginado(
-      { busca, secretaria: filtroSec, regime: filtroReg, padrao: filtroPad },
-      p, PER_PAGE
-    )
-      .then(({ data, count }) => { setLista(data); setTotal(count); setPage(p); })
-      .catch(e => setErro(e.message))
-      .finally(() => setLoading(false));
-  }, [busca, filtroSec, filtroReg, filtroPad]);
+  const carregar = useCallback(
+    (p = 0) => {
+      setLoading(true);
+      setErro(null);
+      fetchServidoresPaginado(
+        { busca, secretaria: filtroSec, regime: filtroReg, padrao: filtroPad },
+        p,
+        PER_PAGE
+      )
+        .then(({ data, count }) => {
+          setLista(data);
+          setTotal(count);
+          setPage(p);
+        })
+        .catch((e) => setErro(e.message))
+        .finally(() => setLoading(false));
+    },
+    [busca, filtroSec, filtroReg, filtroPad]
+  );
 
   useEffect(() => {
     clearTimeout(buscaTimer.current);
-    buscaTimer.current = setTimeout(() => carregar(0), 300);
+    buscaTimer.current = setTimeout(() => carregar(0), 280);
     return () => clearTimeout(buscaTimer.current);
   }, [carregar]);
+
+  // Tecla de atalho /
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   function exportar() {
     fetchServidoresPaginado(
       { busca, secretaria: filtroSec, regime: filtroReg, padrao: filtroPad },
-      0, 9999
-    ).then(({ data }) => {
-      baixarCSV('servidores.csv',
-        ['Matrícula','Nome','Cargo','Secretaria','Local de Trabalho','Regime','Padrão Adm.','Admissão'],
-        data.map(r => [r.Matricula, r.Nome_Funcionario, r.Des_Cargo, r.Des_Secretaria, r.Des_LocalTrab, r.Des_RegTrab, r.Des_Padrao_Adm, fmtData(r.DtAdmissao)])
-      );
-    }).catch(e => alert(e.message));
+      0,
+      9999
+    )
+      .then(({ data }) => {
+        baixarCSV(
+          'servidores_osasco.csv',
+          ['Matrícula', 'Nome', 'Cargo', 'Secretaria', 'Local de Trabalho', 'Regime', 'Padrão Adm.', 'Admissão'],
+          data.map((r) => [
+            r.Matricula,
+            r.Nome_Funcionario,
+            r.Des_Cargo,
+            r.Des_Secretaria,
+            r.Des_LocalTrab,
+            r.Des_RegTrab,
+            r.Des_Padrao_Adm,
+            fmtData(r.DtAdmissao),
+          ])
+        );
+      })
+      .catch((e) => alert(e.message));
   }
 
-  const totalPages = Math.ceil(total / PER_PAGE);
-  const temFiltro  = busca || filtroSec || filtroReg || filtroPad;
+  const totalPages = Math.ceil(total / PER_PAGE) || 1;
+  const temFiltro = busca || filtroSec || filtroReg || filtroPad;
 
   return (
     <div>
+      {/* Topbar */}
       <div className="topbar">
         <div className="topbar-left">
-          <h1>Diretório de Servidores</h1>
-          <p>Consulta e detalhamento do quadro de pessoal</p>
+          <h1>Diretório Geral de Servidores</h1>
+          <p>Consulta cadastral e funcional do quadro de pessoal da Prefeitura de Osasco</p>
         </div>
         <div className="topbar-right">
-          <button onClick={exportar} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(16,185,129,.15)', border: '1px solid rgba(16,185,129,.3)', color: '#047857', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-            <Download size={13} /> CSV
+          <button
+            onClick={exportar}
+            className="pagination-btn"
+            style={{ padding: '7px 12px', fontSize: 12 }}
+            title="Exportar planilha de servidores"
+          >
+            <Download size={13} /> Exportar CSV
           </button>
           <TopbarAvatar />
         </div>
       </div>
 
       <div className="content">
-        {/* Filtros */}
-        <div className="chart-card" style={{ marginBottom: 16, padding: '14px 18px' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-            <div style={{ position: 'relative', flex: '1 1 260px' }}>
-              <Search size={14} color="#475569" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+        {/* Metric Strip (Resumo Executivo do Quadro) */}
+        <div className="hr-metric-strip">
+          <div className="hr-metric-card">
+            <div className="hr-metric-top">
+              <span className="hr-metric-title">
+                <Users size={13} /> Total no Diretório
+              </span>
+              <span className="hr-metric-badge" style={{ background: 'rgba(100,116,139,0.1)', color: 'var(--muted-c)' }}>
+                Base Ativa
+              </span>
+            </div>
+            <div className="hr-metric-number">{total.toLocaleString('pt-BR')}</div>
+            <div className="hr-metric-footnote">Servidores registrados</div>
+          </div>
+
+          <div className="hr-metric-card">
+            <div className="hr-metric-top">
+              <span className="hr-metric-title">
+                <Building2 size={13} /> Secretarias Mapeadas
+              </span>
+              <span className="hr-metric-badge" style={{ background: 'rgba(13,124,61,0.1)', color: '#0D7C3D' }}>
+                Órgãos
+              </span>
+            </div>
+            <div className="hr-metric-number">{opcoes.secretarias.length}</div>
+            <div className="hr-metric-footnote">Lotações e unidades gestoras</div>
+          </div>
+
+          <div className="hr-metric-card">
+            <div className="hr-metric-top">
+              <span className="hr-metric-title">
+                <Shield size={13} /> Regimes Funcionais
+              </span>
+              <span className="hr-metric-badge" style={{ background: 'rgba(59,130,246,0.1)', color: '#2563eb' }}>
+                Vínculos
+              </span>
+            </div>
+            <div className="hr-metric-number">{opcoes.regimes.length}</div>
+            <div className="hr-metric-footnote">Estatutários, CLT e comissionados</div>
+          </div>
+        </div>
+
+        {/* Toolbar de Busca e Filtros */}
+        <div className="hr-toolbar">
+          <div className="hr-toolbar-row">
+            <div className="hr-search-box">
+              <Search size={14} className="hr-search-icon" />
               <input
-                value={busca} onChange={e => setBusca(e.target.value)}
-                placeholder="Nome, cargo ou matrícula..."
-                style={{ ...SEL_ST, paddingLeft: 32, width: '100%', boxSizing: 'border-box' }}
+                ref={searchInputRef}
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar por nome, cargo ou matrícula... (pressione /)"
+                className="hr-search-input"
               />
               {busca && (
-                <button onClick={() => setBusca('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-c)', display: 'flex' }}>
+                <button
+                  onClick={() => setBusca('')}
+                  className="chamados-search-clear"
+                  title="Limpar busca"
+                >
                   <X size={13} />
                 </button>
               )}
             </div>
 
-            <select value={filtroSec} onChange={e => setFiltroSec(e.target.value)} style={SEL_ST}>
-              <option value="">Todas as secretarias</option>
-              {opcoes.secretarias.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <select
+                value={filtroSec}
+                onChange={(e) => setFiltroSec(e.target.value)}
+                className={`hr-filter-select ${filtroSec ? 'active-filter' : ''}`}
+              >
+                <option value="">Todas as Secretarias</option>
+                {opcoes.secretarias.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
 
-            <select value={filtroReg} onChange={e => setFiltroReg(e.target.value)} style={SEL_ST}>
-              <option value="">Todos os regimes</option>
-              {opcoes.regimes.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+              <select
+                value={filtroReg}
+                onChange={(e) => setFiltroReg(e.target.value)}
+                className={`hr-filter-select ${filtroReg ? 'active-filter' : ''}`}
+              >
+                <option value="">Todos os Regimes</option>
+                {opcoes.regimes.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
 
-            <select value={filtroPad} onChange={e => setFiltroPad(e.target.value)} style={SEL_ST}>
-              <option value="">Todos os padrões</option>
-              {opcoes.padroes.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+              <select
+                value={filtroPad}
+                onChange={(e) => setFiltroPad(e.target.value)}
+                className={`hr-filter-select ${filtroPad ? 'active-filter' : ''}`}
+              >
+                <option value="">Todos os Padrões</option>
+                {opcoes.padroes.map((p) => (
+                  <option key={p} value={p}>
+                    Padrão: {p}
+                  </option>
+                ))}
+              </select>
 
-            {temFiltro && (
-              <button onClick={() => { setBusca(''); setFiltroSec(''); setFiltroReg(''); setFiltroPad(''); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 12, cursor: 'pointer' }}>
-                <X size={12} /> Limpar
-              </button>
-            )}
-
-            <span style={{ fontSize: 12, color: 'var(--muted-c)', marginLeft: 'auto', whiteSpace: 'nowrap' }}>
-              {loading ? 'Buscando...' : `${total.toLocaleString('pt-BR')} servidores`}
-            </span>
+              {temFiltro && (
+                <button
+                  onClick={() => {
+                    setBusca('');
+                    setFiltroSec('');
+                    setFiltroReg('');
+                    setFiltroPad('');
+                  }}
+                  className="chamados-reset-btn"
+                >
+                  <X size={12} /> Limpar
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {erro && <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.25)', color: '#dc2626', fontSize: 13, marginBottom: 16 }}>{erro}</div>}
+        {erro && (
+          <div
+            style={{
+              padding: '12px 16px',
+              borderRadius: 8,
+              background: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.25)',
+              color: '#dc2626',
+              fontSize: 13,
+              marginBottom: 16,
+            }}
+          >
+            {erro}
+          </div>
+        )}
 
-        {/* Tabela */}
-        <div className="chart-card" style={{ padding: 0, overflow: 'hidden' }}>
+        {/* Tabela de Servidores */}
+        <div className="hr-table-container">
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="hr-table">
               <thead>
                 <tr>
-                  {['Matrícula','Nome','Cargo','Secretaria','Local de Trabalho','Regime','Padrão Adm.','Admissão'].map(h => (
-                    <th key={h} style={{ padding: '11px 14px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--muted-c)', textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,.07)', whiteSpace: 'nowrap', background: 'rgba(0,0,0,.2)' }}>{h}</th>
-                  ))}
+                  <th style={{ width: '100px' }}>Matrícula</th>
+                  <th>Servidor</th>
+                  <th style={{ width: '220px' }}>Cargo / Função</th>
+                  <th style={{ width: '180px' }}>Lotação</th>
+                  <th style={{ width: '130px' }}>Regime</th>
+                  <th style={{ width: '90px' }}>Padrão</th>
+                  <th style={{ width: '100px', textAlign: 'center' }}>Admissão</th>
                 </tr>
               </thead>
               <tbody>
                 {!loading && lista.length === 0 && (
                   <tr>
-                    <td colSpan={8} style={{ padding: '48px 14px', textAlign: 'center', color: 'var(--text)', fontSize: 13 }}>
-                      {total === 0 && !temFiltro ? 'Nenhum servidor cadastrado.' : 'Nenhum resultado para os filtros aplicados.'}
+                    <td colSpan={7}>
+                      <div className="chamados-empty-state">
+                        <div className="chamados-empty-icon">
+                          <Users size={22} />
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+                          Nenhum servidor encontrado
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--muted-c)' }}>
+                          {total === 0 && !temFiltro
+                            ? 'Nenhum servidor cadastrado na base.'
+                            : 'Nenhum resultado corresponde aos filtros informados.'}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 )}
-                {lista.map(r => (
-                  <tr key={r.Matricula}
-                    onClick={() => setSelected(r.Matricula)}
-                    style={{ cursor: 'pointer', borderBottom: '1px solid rgba(0, 0, 0, 0.02)', transition: 'background .1s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(13,124,61,.06)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = ''; }}
-                  >
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#15A050', fontFamily: 'monospace', fontWeight: 700, whiteSpace: 'nowrap' }}>{r.Matricula}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text)', fontWeight: 500, whiteSpace: 'nowrap', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.Nome_Funcionario || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.Des_Cargo || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{r.SiglaSec || r.Des_Secretaria || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.Des_LocalTrab || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{r.Des_RegTrab || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{r.Des_Padrao_Adm || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--muted-c)', whiteSpace: 'nowrap' }}>{fmtData(r.DtAdmissao)}</td>
-                  </tr>
-                ))}
+
+                {lista.map((r) => {
+                  const avatar = getAvatarColor(r.Nome_Funcionario);
+                  const isEfetivo = r.Des_RegTrab?.toUpperCase().includes('ESTAT');
+                  const isComiss = r.Des_RegTrab?.toUpperCase().includes('COMIS');
+                  const isSelected = selectedMatricula === r.Matricula;
+
+                  return (
+                    <tr
+                      key={r.Matricula}
+                      onClick={() => setSelectedMatricula(r.Matricula)}
+                      className={`hr-table-row ${isSelected ? 'row-selected' : ''}`}
+                    >
+                      <td>
+                        <span className="hr-matricula-pill">#{r.Matricula}</span>
+                      </td>
+
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div
+                            className="hr-avatar"
+                            style={{ background: avatar.bg, color: avatar.text }}
+                          >
+                            {getInitials(r.Nome_Funcionario)}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                color: 'var(--text)',
+                                fontSize: 12.5,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: 260,
+                              }}
+                            >
+                              {r.Nome_Funcionario || '—'}
+                            </div>
+                            <div style={{ fontSize: 10.5, color: 'var(--sub)' }}>
+                              {r.Des_LocalTrab || 'Lotação não informada'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 500 }}>
+                          {r.Des_Cargo || '—'}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span style={{ fontSize: 11.5, color: 'var(--muted-c)' }}>
+                          {r.SiglaSec || r.Des_Secretaria || '—'}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`hr-regime-badge ${
+                            isEfetivo ? 'hr-regime-efetivo' : isComiss ? 'hr-regime-comissionado' : ''
+                          }`}
+                        >
+                          {r.Des_RegTrab || '—'}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span style={{ fontSize: 11, color: 'var(--muted-c)', fontVariantNumeric: 'tabular-nums' }}>
+                          {r.Des_Padrao_Adm || '—'}
+                        </span>
+                      </td>
+
+                      <td style={{ textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: 'var(--muted-c)' }}>
+                        {fmtData(r.DtAdmissao)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
+          {/* Paginação */}
           {totalPages > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderTop: '1px solid rgba(0, 0, 0, 0.04)' }}>
-              <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>Página {page + 1} de {totalPages} · {total.toLocaleString('pt-BR')} servidores</span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => carregar(page - 1)} disabled={page === 0}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(0, 0, 0, 0.06)', background: 'rgba(0, 0, 0, 0.02)', color: page === 0 ? '#334155' : '#64748b', fontSize: 12, cursor: page === 0 ? 'default' : 'pointer' }}>
-                  <ChevronLeft size={13} /> Anterior
+            <div className="chamados-pagination-bar">
+              <span style={{ fontSize: 12, color: 'var(--muted-c)' }}>
+                Exibindo {page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, total)} de{' '}
+                {total.toLocaleString('pt-BR')} servidores
+              </span>
+
+              <div className="pagination-controls">
+                <button
+                  onClick={() => carregar(0)}
+                  disabled={page === 0}
+                  className="pagination-btn"
+                  title="Primeira página"
+                >
+                  <ChevronsLeft size={13} />
                 </button>
-                <button onClick={() => carregar(page + 1)} disabled={page >= totalPages - 1}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 7, border: '1px solid rgba(0, 0, 0, 0.06)', background: 'rgba(0, 0, 0, 0.02)', color: page >= totalPages - 1 ? '#334155' : '#64748b', fontSize: 12, cursor: page >= totalPages - 1 ? 'default' : 'pointer' }}>
-                  Próxima <ChevronRight size={13} />
+
+                <button
+                  onClick={() => carregar(page - 1)}
+                  disabled={page === 0}
+                  className="pagination-btn"
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={13} />
+                </button>
+
+                <span style={{ padding: '0 8px', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                  Página {page + 1} de {totalPages}
+                </span>
+
+                <button
+                  onClick={() => carregar(page + 1)}
+                  disabled={page >= totalPages - 1}
+                  className="pagination-btn"
+                  title="Próxima página"
+                >
+                  <ChevronRight size={13} />
+                </button>
+
+                <button
+                  onClick={() => carregar(totalPages - 1)}
+                  disabled={page >= totalPages - 1}
+                  className="pagination-btn"
+                  title="Última página"
+                >
+                  <ChevronsRight size={13} />
                 </button>
               </div>
             </div>
@@ -376,7 +843,15 @@ export default function DiretorioServidores() {
         </div>
       </div>
 
-      {selected !== null && <ModalServidor matricula={selected} onClose={() => setSelected(null)} />}
+      {/* Slide-Over Drawer: Ficha Funcional do Servidor */}
+      <AnimatePresence>
+        {selectedMatricula !== null && (
+          <FichaServidorDrawer
+            matricula={selectedMatricula}
+            onClose={() => setSelectedMatricula(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

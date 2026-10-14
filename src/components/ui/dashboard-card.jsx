@@ -126,11 +126,6 @@ export function KpiCard({ label, value, sub, cor = '#0D7C3D', icon, trend, trend
         willChange:    'transform, opacity',
       }}
     >
-      {/* Glow de fundo */}
-      <div style={{
-        position: 'absolute', top: -30, right: -30, width: 100, height: 100,
-        borderRadius: '50%', background: accentBg, filter: 'blur(24px)', pointerEvents: 'none',
-      }} />
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
         <span className="text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.muted }}>

@@ -1,182 +1,603 @@
 import TopbarAvatar from '@/components/layout/TopbarAvatar';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, fetchChamados } from '@/lib/supabase';
-import { fmtDate, contarPor } from '@/lib/utils';
+import { fmtDate } from '@/lib/utils';
 import { COR_SEC } from '@/lib/constants';
-import { Upload } from 'lucide-react';
+import {
+  Upload, Download, Search, X, Filter, SlidersHorizontal,
+  AlertTriangle, CheckCircle2, Clock, ChevronRight, ChevronLeft,
+  ChevronsLeft, ChevronsRight, Copy, Check, ExternalLink,
+  Building2, Wrench, ScanFace, UserCheck, HelpCircle,
+  RefreshCw, Inbox, AlertCircle, Eye, ArrowUpDown, ChevronDown
+} from 'lucide-react';
 import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
+// Constantes de Filtro
 const FILTROS_SEC = ['Todos', 'Saúde', 'Educação', 'Outros'];
 const FILTROS_MOT = ['Todos', 'EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE PONTO', 'CADASTRO'];
 const FILTROS_ST = ['Todos', 'Aguardando Atendimento', 'Atendimento Encerrado'];
 const FILTROS_FONTE = ['Todos', 'Com Divergência (Auvo ≠ Asana)', 'Apenas AUVO', 'Apenas ASANA'];
 
-function aplicarFiltros(dados, { secretaria, motivo, status, fonte, ticket, unidade }) {
-  let r = dados;
-  if (secretaria !== 'Todos') {
-    if (secretaria === 'Saúde') r = r.filter((d) => d.secretaria === 'SS');
-    else if (secretaria === 'Educação') r = r.filter((d) => d.secretaria === 'SED');
-    else if (secretaria === 'Outros') r = r.filter((d) => d.secretaria !== 'SS' && d.secretaria !== 'SED');
-    else r = r.filter((d) => d.secretaria === secretaria);
-  }
-  if (motivo !== 'Todos') r = r.filter((d) => d.motivo === motivo);
-  if (status !== 'Todos') r = r.filter((d) => (d.status_auvo || d.status || 'Aguardando Atendimento') === status);
-  if (fonte !== 'Todos') {
-    if (fonte === 'Com Divergência (Auvo ≠ Asana)') {
-      r = r.filter((d) => {
-        const stAuvo = d.status_auvo || d.status;
-        const stAsana = d.status_asana;
-        return stAuvo && stAsana && stAuvo !== stAsana;
-      });
-    } else if (fonte === 'Apenas AUVO') {
-      r = r.filter((d) => (d.status_auvo || d.status) && !d.status_asana);
-    } else if (fonte === 'Apenas ASANA') {
-      r = r.filter((d) => d.status_asana && !d.status_auvo);
-    }
-  }
-  if (ticket) r = r.filter((d) => d.ticket.toString().includes(ticket));
-  if (unidade) r = r.filter((d) => d.unidade?.toLowerCase().includes(unidade.toLowerCase()));
-  return r;
+function isDivergente(chamado) {
+  if (!chamado) return false;
+  const auvo = chamado.status_auvo || chamado.status;
+  const asana = chamado.status_asana;
+  return Boolean(auvo && asana && auvo !== asana);
 }
 
-function ChamadoModal({ chamado, onClose }) {
+function getMotivoIcon(motivo) {
+  switch (motivo) {
+    case 'EQUIPAMENTO':
+      return <Wrench size={12} className="text-rose-500 shrink-0" />;
+    case 'RECONHECIMENTO':
+      return <ScanFace size={12} className="text-emerald-500 shrink-0" />;
+    case 'ESPELHO DE PONTO':
+      return <Clock size={12} className="text-amber-500 shrink-0" />;
+    case 'CADASTRO':
+      return <UserCheck size={12} className="text-teal-500 shrink-0" />;
+    default:
+      return <HelpCircle size={12} className="text-slate-400 shrink-0" />;
+  }
+}
+
+// ─── Drawer Inspector (Slide-Over Sheet) ───────────────────────────────────────
+function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev }) {
   const navigate = useNavigate();
+  const [copiado, setCopiado] = useState(false);
+  const [copiadoTexto, setCopiadoTexto] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowDown' && onNavigateNext) {
+        e.preventDefault();
+        onNavigateNext();
+      }
+      if (e.key === 'ArrowUp' && onNavigatePrev) {
+        e.preventDefault();
+        onNavigatePrev();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, onNavigateNext, onNavigatePrev]);
+
   if (!chamado) return null;
-  const stAuvo = chamado.status_auvo || chamado.status || '—';
-  const stAsana = chamado.status_asana ? `${chamado.status_asana}${chamado.secao_asana ? ` (${chamado.secao_asana})` : ''}` : '—';
-  const temDivergencia = chamado.status_auvo && chamado.status_asana && chamado.status_auvo !== chamado.status_asana;
+
+  const stAuvo = chamado.status_auvo || chamado.status || 'Aguardando Atendimento';
+  const stAsana = chamado.status_asana;
+  const divergente = isDivergente(chamado);
+  const corSec = COR_SEC[chamado.secretaria] || '#64748b';
+
+  const copiarTicket = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(String(chamado.ticket));
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+
+  const copiarResumo = () => {
+    const resumo = `📋 Chamado #${chamado.ticket}
+• Unidade: ${chamado.unidade || 'N/A'} (${chamado.secretaria || 'N/A'})
+• Motivo: ${chamado.motivo || 'N/A'}
+• Status AUVO: ${stAuvo}
+• Status ASANA: ${stAsana || 'Não registrado'}
+• Data Abertura: ${fmtDate(chamado.data_abertura)}
+• Problema: ${chamado.problema || 'Sem descrição'}`;
+    navigator.clipboard.writeText(resumo);
+    setCopiadoTexto(true);
+    setTimeout(() => setCopiadoTexto(false), 2200);
+  };
 
   return (
-    <div className="modal-overlay show" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="chamado-modal" role="dialog" aria-modal="true">
-        <div className="chamado-modal-header">
-          <div className="chamado-modal-title">Detalhes do Chamado #{chamado.ticket}</div>
-          <button className="chamado-modal-close" onClick={onClose}>×</button>
-        </div>
+    <>
+      <motion.div
+        className="drawer-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        onClick={onClose}
+      />
+      <motion.aside
+        className="drawer-panel"
+        initial={{ transform: 'translateX(100%)' }}
+        animate={{ transform: 'translateX(0%)' }}
+        exit={{ transform: 'translateX(100%)' }}
+        transition={{ type: 'spring', damping: 28, stiffness: 320, mass: 0.8 }}
+        aria-label="Detalhes do Chamado"
+      >
+        {/* Drawer Header */}
+        <div className="drawer-header">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span className="ticket-pill" style={{ fontSize: 13, padding: '4px 9px' }}>
+                #{chamado.ticket}
+                <button
+                  onClick={copiarTicket}
+                  className="ticket-copy-btn"
+                  title="Copiar número do ticket"
+                  style={{ opacity: 1, marginLeft: 2 }}
+                >
+                  {copiado ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                </button>
+              </span>
 
-        {temDivergencia && (
-          <div style={{ background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(234, 179, 8, 0.3)', borderRadius: 8, padding: '10px 14px', margin: '0 24px 16px', fontSize: 12, color: '#ca8a04', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>⚠️</span>
-            <span><strong>Divergência detectada:</strong> No Auvo está como <strong>{chamado.status_auvo}</strong>, enquanto no Asana está como <strong>{chamado.status_asana}</strong>.</span>
-          </div>
-        )}
+              <span
+                className={`status-chip ${stAuvo === 'Atendimento Encerrado' ? 'status-chip-encerrado' : 'status-chip-aberto'}`}
+              >
+                <span className="status-dot-pulse" />
+                {stAuvo}
+              </span>
 
-        <div className="chamado-modal-grid">
-          {[
-            ['Ticket', `#${chamado.ticket}`],
-            ['Status AUVO', stAuvo],
-            ['Status ASANA', stAsana],
-            ['Unidade', chamado.unidade],
-            ['Secretaria', chamado.secretaria],
-            ['Motivo', chamado.motivo],
-            ['Data de Abertura', fmtDate(chamado.data_abertura)],
-          ].map(([label, value]) => (
-            <div key={label} className="chamado-modal-item">
-              <div className="chamado-modal-label">{label}</div>
-              <div className="chamado-modal-value">{value || '—'}</div>
+              {divergente && (
+                <span className="divergence-pill">
+                  <AlertTriangle size={11} /> Descompasso Auvo/Asana
+                </span>
+              )}
             </div>
-          ))}
-        </div>
-        <div className="chamado-modal-item">
-          <div className="chamado-modal-label">Descrição</div>
-          <div className="chamado-modal-desc">{chamado.problema || '—'}</div>
-        </div>
-        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+
+            <div style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+              Aberto em {fmtDate(chamado.data_abertura)}
+            </div>
+          </div>
+
           <button
-            onClick={() => { onClose(); navigate('/chamado-detalhe', { state: { chamado } }); }}
-            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(13,124,61,.12)', border: '1px solid rgba(13,124,61,.25)', color: '#15A050', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
+            onClick={onClose}
+            className="drawer-close-btn"
+            title="Fechar (Esc)"
+            aria-label="Fechar"
           >
-            Ver página completa →
+            <X size={16} />
           </button>
         </div>
-      </div>
-    </div>
+
+        {/* Drawer Body */}
+        <div className="drawer-body">
+          {/* Card de Alerta se houver Divergência */}
+          {divergente && (
+            <div
+              style={{
+                background: 'rgba(234, 179, 8, 0.08)',
+                border: '1px solid rgba(234, 179, 8, 0.3)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                display: 'flex',
+                gap: 12,
+                alignItems: 'flex-start',
+              }}
+            >
+              <AlertTriangle size={18} className="text-amber-500 shrink-0" style={{ marginTop: 2 }} />
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text)' }}>
+                <strong style={{ color: '#D97706', display: 'block', marginBottom: 2 }}>
+                  Divergência de Sincronização Detectada
+                </strong>
+                No <strong>Auvo</strong> consta como{' '}
+                <span style={{ textDecoration: 'underline' }}>{stAuvo}</span>, enquanto no{' '}
+                <strong>Asana</strong> está como{' '}
+                <span style={{ textDecoration: 'underline' }}>{stAsana}</span>
+                {chamado.secao_asana ? ` na seção "${chamado.secao_asana}"` : ''}.
+              </div>
+            </div>
+          )}
+
+          {/* Unidade e Secretaria */}
+          <div>
+            <div className="drawer-section-title">
+              <Building2 size={13} /> Unidade e Lotação
+            </div>
+            <div
+              style={{
+                background: 'var(--bg)',
+                border: '1px solid var(--border-c)',
+                borderRadius: 10,
+                padding: '12px 14px',
+              }}
+            >
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
+                {chamado.unidade || 'Unidade não identificada'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: 4,
+                    background: `${corSec}18`,
+                    color: corSec,
+                  }}
+                >
+                  {chamado.secretaria || 'N/I'}
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--sub)' }}>
+                  Secretaria responsável pelo ponto
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dados Técnicos */}
+          <div>
+            <div className="drawer-section-title">
+              <SlidersHorizontal size={13} /> Parâmetros do Incidente
+            </div>
+            <div className="drawer-key-val-grid">
+              <div className="drawer-key-val-card">
+                <div className="drawer-key">Categoria / Motivo</div>
+                <div className="drawer-val" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {getMotivoIcon(chamado.motivo)}
+                  {chamado.motivo || '—'}
+                </div>
+              </div>
+
+              <div className="drawer-key-val-card">
+                <div className="drawer-key">Técnico / Responsável</div>
+                <div className="drawer-val">
+                  {chamado.responsavel || 'Não atribuído'}
+                </div>
+              </div>
+
+              <div className="drawer-key-val-card">
+                <div className="drawer-key">Status Auvo</div>
+                <div className="drawer-val" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: stAuvo === 'Atendimento Encerrado' ? '#10B981' : '#F59E0B',
+                    }}
+                  />
+                  {stAuvo}
+                </div>
+              </div>
+
+              <div className="drawer-key-val-card">
+                <div className="drawer-key">Status Asana</div>
+                <div className="drawer-val" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: stAsana === 'Atendimento Encerrado' ? '#10B981' : stAsana ? '#F59E0B' : '#94A3B8',
+                    }}
+                  />
+                  {stAsana || 'Não integrado'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Descrição do Problema */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+              }}
+            >
+              <div className="drawer-section-title" style={{ margin: 0 }}>
+                <Inbox size={13} /> Relato do Chamado
+              </div>
+            </div>
+            <div className="drawer-description-box">
+              {chamado.problema || 'Nenhuma descrição detalhada informada.'}
+            </div>
+          </div>
+        </div>
+
+        {/* Drawer Footer */}
+        <div className="drawer-footer">
+          <button
+            onClick={copiarResumo}
+            className="pagination-btn"
+            style={{ padding: '8px 14px' }}
+          >
+            {copiadoTexto ? (
+              <>
+                <Check size={14} className="text-emerald-500" /> Resumo Copiado!
+              </>
+            ) : (
+              <>
+                <Copy size={14} /> Copiar Resumo
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              onClose();
+              navigate('/chamado-detalhe', { state: { chamado } });
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 16px',
+              borderRadius: 8,
+              background: '#0D7C3D',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: 12.5,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'opacity 140ms ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.92')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+          >
+            Ver página completa <ExternalLink size={13} />
+          </button>
+        </div>
+      </motion.aside>
+    </>
   );
 }
 
+// ─── Componente Principal ───────────────────────────────────────────────────────
 export default function TodosChamados() {
   const [dados, setDados] = useState([]);
-  const [status, setStatus] = useState('Carregando...');
-  const [modal, setModal] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [statusText, setStatusText] = useState('Carregando registros...');
+  const [drawerChamado, setDrawerChamado] = useState(null);
   const [modalImportacaoAberta, setModalImportacaoAberta] = useState(false);
-  const [filtros, setFiltros] = useState({
-    secretaria: 'Todos',
-    motivo: 'Todos',
-    status: 'Todos',
-    fonte: 'Todos',
-    ticket: '',
-    unidade: '',
-  });
 
+  // Filtros
+  const [busca, setBusca] = useState('');
+  const [quickView, setQuickView] = useState('todos'); // 'todos' | 'abertos' | 'divergencias' | 'encerrados'
+  const [filtroSec, setFiltroSec] = useState('Todos');
+  const [filtroMot, setFiltroMot] = useState('Todos');
+  const [filtroFonte, setFiltroFonte] = useState('Todos');
+  const [filtroStatus, setFiltroStatus] = useState('Todos');
+
+  // Paginação
+  const [pagina, setPagina] = useState(1);
+  const [itensPorPagina, setItensPorPagina] = useState(25);
+
+  const searchInputRef = useRef(null);
+
+  // Carregar dados Supabase
   const carregar = useCallback(async () => {
     try {
+      setCarregando(true);
       const data = await fetchChamados();
       setDados(data);
-      setStatus(
-        `Atualizado em ${new Date().toLocaleDateString('pt-BR', {
-          day: '2-digit', month: 'long', year: 'numeric',
-        })} · ${data.length} registros`
+      setStatusText(
+        `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${data.length} registros`
       );
     } catch (err) {
       console.error(err);
-      setStatus('Erro ao carregar dados');
+      setStatusText('Erro ao carregar registros do Supabase');
+    } finally {
+      setCarregando(false);
     }
   }, []);
 
   useEffect(() => {
     carregar();
     const ch = supabase
-      .channel('todos-rt')
+      .channel('todos-rt-stream')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, carregar)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [carregar]);
 
+  // Tecla de atalho para busca (/)
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') setModal(null); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && document.activeElement !== searchInputRef.current) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const arr = aplicarFiltros(dados, filtros);
+  // Métricas Computadas
+  const metricas = useMemo(() => {
+    const total = dados.length;
+    let abertos = 0;
+    let divergentes = 0;
+    let encerrados = 0;
 
-  const setF = (key, value) => setFiltros((prev) => ({ ...prev, [key]: value }));
+    for (let i = 0; i < dados.length; i++) {
+      const d = dados[i];
+      const st = d.status_auvo || d.status || 'Aguardando Atendimento';
+      if (st === 'Aguardando Atendimento') abertos++;
+      if (st === 'Atendimento Encerrado') encerrados++;
+      if (isDivergente(d)) divergentes++;
+    }
 
-  const FilterGroup = ({ label, filterKey, options }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-      <span className="filter-label">{label}</span>
-      {options.map((o) => (
-        <button
-          key={o}
-          className={`filter-btn${filtros[filterKey] === o ? ' on' : ''}`}
-          onClick={() => setF(filterKey, o)}
-        >
-          {o}
-        </button>
-      ))}
-    </div>
-  );
+    return { total, abertos, divergentes, encerrados };
+  }, [dados]);
+
+  // Filtragem dos dados
+  const dadosFiltrados = useMemo(() => {
+    let r = dados;
+
+    // Quick View (Segmented Control)
+    if (quickView === 'abertos') {
+      r = r.filter((d) => (d.status_auvo || d.status || 'Aguardando Atendimento') === 'Aguardando Atendimento');
+    } else if (quickView === 'divergencias') {
+      r = r.filter(isDivergente);
+    } else if (quickView === 'encerrados') {
+      r = r.filter((d) => (d.status_auvo || d.status) === 'Atendimento Encerrado');
+    }
+
+    // Busca textual ampla
+    if (busca.trim()) {
+      const q = busca.toLowerCase().trim();
+      r = r.filter((d) => {
+        const tMatch = String(d.ticket || '').toLowerCase().includes(q);
+        const uMatch = String(d.unidade || '').toLowerCase().includes(q);
+        const pMatch = String(d.problema || '').toLowerCase().includes(q);
+        const sMatch = String(d.secretaria || '').toLowerCase().includes(q);
+        const rMatch = String(d.responsavel || '').toLowerCase().includes(q);
+        return tMatch || uMatch || pMatch || sMatch || rMatch;
+      });
+    }
+
+    // Secretaria
+    if (filtroSec !== 'Todos') {
+      if (filtroSec === 'Saúde') r = r.filter((d) => d.secretaria === 'SS');
+      else if (filtroSec === 'Educação') r = r.filter((d) => d.secretaria === 'SED');
+      else if (filtroSec === 'Outros') r = r.filter((d) => d.secretaria !== 'SS' && d.secretaria !== 'SED');
+      else r = r.filter((d) => d.secretaria === filtroSec);
+    }
+
+    // Motivo
+    if (filtroMot !== 'Todos') {
+      r = r.filter((d) => d.motivo === filtroMot);
+    }
+
+    // Status Auvo
+    if (filtroStatus !== 'Todos') {
+      r = r.filter((d) => (d.status_auvo || d.status || 'Aguardando Atendimento') === filtroStatus);
+    }
+
+    // Fonte / Divergência específica
+    if (filtroFonte !== 'Todos') {
+      if (filtroFonte === 'Com Divergência (Auvo ≠ Asana)') {
+        r = r.filter(isDivergente);
+      } else if (filtroFonte === 'Apenas AUVO') {
+        r = r.filter((d) => (d.status_auvo || d.status) && !d.status_asana);
+      } else if (filtroFonte === 'Apenas ASANA') {
+        r = r.filter((d) => d.status_asana && !d.status_auvo);
+      }
+    }
+
+    return r;
+  }, [dados, quickView, busca, filtroSec, filtroMot, filtroStatus, filtroFonte]);
+
+  // Resetar página quando filtros mudam
+  useEffect(() => {
+    setPagina(1);
+  }, [quickView, busca, filtroSec, filtroMot, filtroStatus, filtroFonte, itensPorPagina]);
+
+  // Contagem de filtros ativos para botão Limpar
+  const totalFiltrosAtivos = useMemo(() => {
+    let count = 0;
+    if (quickView !== 'todos') count++;
+    if (busca.trim()) count++;
+    if (filtroSec !== 'Todos') count++;
+    if (filtroMot !== 'Todos') count++;
+    if (filtroFonte !== 'Todos') count++;
+    if (filtroStatus !== 'Todos') count++;
+    return count;
+  }, [quickView, busca, filtroSec, filtroMot, filtroFonte, filtroStatus]);
+
+  const limparFiltros = () => {
+    setQuickView('todos');
+    setBusca('');
+    setFiltroSec('Todos');
+    setFiltroMot('Todos');
+    setFiltroFonte('Todos');
+    setFiltroStatus('Todos');
+    setPagina(1);
+  };
+
+  // Paginação
+  const totalPaginas = Math.ceil(dadosFiltrados.length / itensPorPagina) || 1;
+  const dadosPaginados = useMemo(() => {
+    const inicio = (pagina - 1) * itensPorPagina;
+    return dadosFiltrados.slice(inicio, inicio + itensPorPagina);
+  }, [dadosFiltrados, pagina, itensPorPagina]);
+
+  // Navegação no Drawer (Próximo / Anterior)
+  const navegarDrawer = (delta) => {
+    if (!drawerChamado) return;
+    const idx = dadosFiltrados.findIndex((d) => d.ticket === drawerChamado.ticket);
+    if (idx === -1) return;
+    const novoIdx = idx + delta;
+    if (novoIdx >= 0 && novoIdx < dadosFiltrados.length) {
+      setDrawerChamado(dadosFiltrados[novoIdx]);
+    }
+  };
+
+  // Exportar CSV
+  const exportarCSV = () => {
+    if (!dadosFiltrados.length) return;
+    const colunas = [
+      'Ticket',
+      'Unidade',
+      'Secretaria',
+      'Motivo',
+      'Data Abertura',
+      'Status AUVO',
+      'Status ASANA',
+      'Divergente',
+      'Problema',
+    ];
+    const linhas = dadosFiltrados.map((d) => [
+      `"${d.ticket || ''}"`,
+      `"${(d.unidade || '').replace(/"/g, '""')}"`,
+      `"${d.secretaria || ''}"`,
+      `"${d.motivo || ''}"`,
+      `"${d.data_abertura || ''}"`,
+      `"${d.status_auvo || d.status || ''}"`,
+      `"${d.status_asana || ''}"`,
+      isDivergente(d) ? 'SIM' : 'NAO',
+      `"${(d.problema || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = '\uFEFF' + [colunas.join(','), ...linhas.map((e) => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `chamados_sic_biometria_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div>
+      {/* Topbar */}
       <div className="topbar">
         <div className="topbar-left">
-          <h1>Todos os Chamados</h1>
-          <p>{status}</p>
+          <h1>Central de Chamados</h1>
+          <p>{statusText}</p>
         </div>
         <div className="topbar-right">
-          <button 
+          <button
+            onClick={exportarCSV}
+            className="pagination-btn"
+            style={{ padding: '7px 12px', fontSize: 12 }}
+            title="Exportar dados filtrados em planilha CSV"
+          >
+            <Download size={14} /> Exportar CSV
+          </button>
+
+          <button
             onClick={() => setModalImportacaoAberta(true)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: '#0D7C3D', color: '#fff', border: 'none', 
-              padding: '6px 12px', borderRadius: 8, fontSize: 13, 
-              fontWeight: 600, cursor: 'pointer'
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: '#0D7C3D',
+              color: '#ffffff',
+              border: 'none',
+              padding: '7px 14px',
+              borderRadius: 8,
+              fontSize: 12.5,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'opacity 140ms ease',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.92')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
-            <Upload size={14} /> Importar
+            <Upload size={14} /> Importar Planilha
           </button>
 
           <TopbarAvatar />
@@ -184,126 +605,483 @@ export default function TodosChamados() {
       </div>
 
       <div className="content">
-        {/* Filtros empilhados */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-          <FilterGroup label="Origem / Visão" filterKey="fonte" options={FILTROS_FONTE} />
-          <FilterGroup label="Secretaria" filterKey="secretaria" options={FILTROS_SEC} />
-          <FilterGroup label="Motivo" filterKey="motivo" options={FILTROS_MOT} />
-          <FilterGroup label="Status AUVO" filterKey="status" options={FILTROS_ST} />
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <input
-              type="text"
-              placeholder="Buscar por ticket..."
-              value={filtros.ticket}
-              onChange={(e) => setF('ticket', e.target.value)}
-              style={{ width: 160 }}
-            />
-            <input
-              type="text"
-              placeholder="Buscar por unidade..."
-              value={filtros.unidade}
-              onChange={(e) => setF('unidade', e.target.value)}
-              style={{ width: 200 }}
-            />
+        {/* ── Operational Status Strip (Deck de Métricas) ── */}
+        <div className="chamados-metrics-strip">
+          {/* Card 1: Total */}
+          <div
+            className={`chamados-metric-cell ${quickView === 'todos' ? 'active-metric' : ''}`}
+            onClick={() => setQuickView('todos')}
+          >
+            <div className="chamados-metric-header">
+              <span className="chamados-metric-label">Total Monitorado</span>
+              <span className="chamados-metric-badge" style={{ background: 'rgba(100,116,139,0.1)', color: 'var(--muted-c)' }}>
+                Base Geral
+              </span>
+            </div>
+            <div className="chamados-metric-val">{metricas.total}</div>
+            <div className="chamados-metric-sub">
+              <span>Registros sincronizados</span>
+            </div>
+          </div>
+
+          {/* Card 2: Em Aberto */}
+          <div
+            className={`chamados-metric-cell ${quickView === 'abertos' ? 'active-metric' : ''}`}
+            onClick={() => setQuickView('abertos')}
+          >
+            <div className="chamados-metric-header">
+              <span className="chamados-metric-label">Em Aberto / Fila</span>
+              <span className="chamados-metric-badge" style={{ background: 'rgba(245,158,11,0.12)', color: '#D97706' }}>
+                <span className="status-dot-pulse" /> Atendimento
+              </span>
+            </div>
+            <div className="chamados-metric-val" style={{ color: '#D97706' }}>
+              {metricas.abertos}
+            </div>
+            <div className="chamados-metric-sub">
+              <span>Aguardando resolução técnica</span>
+            </div>
+          </div>
+
+          {/* Card 3: Divergências de Conciliação */}
+          <div
+            className={`chamados-metric-cell ${quickView === 'divergencias' ? 'active-metric' : ''}`}
+            onClick={() => setQuickView('divergencias')}
+            style={metricas.divergentes > 0 ? { borderColor: 'rgba(234, 179, 8, 0.4)' } : undefined}
+          >
+            <div className="chamados-metric-header">
+              <span className="chamados-metric-label">Divergências Auvo ⇄ Asana</span>
+              <span className="chamados-metric-badge" style={{ background: 'rgba(234,179,8,0.15)', color: '#B45309' }}>
+                <AlertTriangle size={11} /> Auditoria
+              </span>
+            </div>
+            <div className="chamados-metric-val" style={{ color: metricas.divergentes > 0 ? '#B45309' : 'inherit' }}>
+              {metricas.divergentes}
+            </div>
+            <div className="chamados-metric-sub">
+              <span>{metricas.divergentes > 0 ? 'Requer conciliação manual' : 'Status 100% alinhados'}</span>
+            </div>
+          </div>
+
+          {/* Card 4: Encerrados */}
+          <div
+            className={`chamados-metric-cell ${quickView === 'encerrados' ? 'active-metric' : ''}`}
+            onClick={() => setQuickView('encerrados')}
+          >
+            <div className="chamados-metric-header">
+              <span className="chamados-metric-label">Encerrados</span>
+              <span className="chamados-metric-badge" style={{ background: 'rgba(16,185,129,0.12)', color: '#059669' }}>
+                <CheckCircle2 size={11} /> Concluídos
+              </span>
+            </div>
+            <div className="chamados-metric-val" style={{ color: '#059669' }}>
+              {metricas.encerrados}
+            </div>
+            <div className="chamados-metric-sub">
+              <span>
+                {metricas.total > 0 ? `${Math.round((metricas.encerrados / metricas.total) * 100)}% de resolução` : '—'}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="table-card" style={{ overflow: 'auto' }}>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'right' }}>Ticket</th>
-                <th>Unidade</th>
-                <th style={{ textAlign: 'center' }}>Secretaria</th>
-                <th style={{ textAlign: 'center' }}>Motivo</th>
-                <th style={{ textAlign: 'center' }}>Abertura</th>
-                <th style={{ textAlign: 'center' }}>Status AUVO</th>
-                <th style={{ textAlign: 'center' }}>Status ASANA</th>
-                <th>Descrição</th>
-              </tr>
-            </thead>
-            <tbody>
-              {arr.length === 0 ? (
+        {/* ── Command & Control Bar (Busca + Segmented Views + Filtros) ── */}
+        <div className="chamados-control-bar">
+          <div className="chamados-control-top">
+            {/* Segmented Quick Views */}
+            <div className="segmented-views">
+              {[
+                { id: 'todos', label: 'Todos', count: metricas.total },
+                { id: 'abertos', label: 'Em Aberto', count: metricas.abertos },
+                { id: 'divergencias', label: 'Divergências', count: metricas.divergentes, icon: <AlertTriangle size={12} className="text-amber-500" /> },
+                { id: 'encerrados', label: 'Encerrados', count: metricas.encerrados },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setQuickView(tab.id)}
+                  className={`segmented-tab-btn ${quickView === tab.id ? 'active' : ''}`}
+                >
+                  {quickView === tab.id && (
+                    <motion.div
+                      layoutId="segmentedActiveTab"
+                      className="segmented-indicator"
+                      transition={{ type: 'spring', bounce: 0.15, duration: 0.25 }}
+                    />
+                  )}
+                  <span>
+                    {tab.icon}
+                    {tab.label}
+                  </span>
+                  <span className="segmented-count-badge">{tab.count}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Input de Busca */}
+            <div className="chamados-search-wrapper">
+              <Search size={14} className="chamados-search-icon" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Buscar por ticket, unidade, problema... (pressione /)"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="chamados-search-input"
+              />
+              {busca && (
+                <button onClick={() => setBusca('')} className="chamados-search-clear" title="Limpar busca">
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Segunda linha: Filtros específicos */}
+          <div className="chamados-control-bottom">
+            <div className="chamados-pills-row">
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-c)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Filtrar:
+              </span>
+
+              {/* Secretaria */}
+              <select
+                value={filtroSec}
+                onChange={(e) => setFiltroSec(e.target.value)}
+                className={`chamados-select-pill ${filtroSec !== 'Todos' ? 'has-value' : ''}`}
+              >
+                <option value="Todos">Todas as Secretarias</option>
+                {FILTROS_SEC.filter((s) => s !== 'Todos').map((s) => (
+                  <option key={s} value={s}>
+                    Secretaria: {s}
+                  </option>
+                ))}
+              </select>
+
+              {/* Motivo */}
+              <select
+                value={filtroMot}
+                onChange={(e) => setFiltroMot(e.target.value)}
+                className={`chamados-select-pill ${filtroMot !== 'Todos' ? 'has-value' : ''}`}
+              >
+                <option value="Todos">Todos os Motivos</option>
+                {FILTROS_MOT.filter((m) => m !== 'Todos').map((m) => (
+                  <option key={m} value={m}>
+                    Motivo: {m}
+                  </option>
+                ))}
+              </select>
+
+              {/* Status Auvo */}
+              <select
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                className={`chamados-select-pill ${filtroStatus !== 'Todos' ? 'has-value' : ''}`}
+              >
+                <option value="Todos">Status AUVO: Todos</option>
+                {FILTROS_ST.filter((st) => st !== 'Todos').map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+
+              {/* Fonte */}
+              <select
+                value={filtroFonte}
+                onChange={(e) => setFiltroFonte(e.target.value)}
+                className={`chamados-select-pill ${filtroFonte !== 'Todos' ? 'has-value' : ''}`}
+              >
+                <option value="Todos">Origem: Todas</option>
+                {FILTROS_FONTE.filter((f) => f !== 'Todos').map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {totalFiltrosAtivos > 0 && (
+                <button onClick={limparFiltros} className="chamados-reset-btn">
+                  <X size={12} /> Limpar {totalFiltrosAtivos} {totalFiltrosAtivos === 1 ? 'filtro' : 'filtros'}
+                </button>
+              )}
+              <span style={{ fontSize: 11.5, color: 'var(--sub)' }}>
+                {dadosFiltrados.length} de {metricas.total} chamados
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Tabela de Chamados ── */}
+        <div className="chamados-grid-card">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="chamados-table">
+              <thead>
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--muted-c)' }}>
-                    Nenhum chamado encontrado para o filtro selecionado.
-                  </td>
+                  <th style={{ width: '110px' }}>Ticket</th>
+                  <th>Unidade & Lotação</th>
+                  <th style={{ width: '160px' }}>Categoria / Motivo</th>
+                  <th style={{ width: '100px', textAlign: 'center' }}>Abertura</th>
+                  <th style={{ width: '140px' }}>Status AUVO</th>
+                  <th style={{ width: '150px' }}>Status ASANA</th>
+                  <th style={{ width: '240px' }}>Problema Relatado</th>
+                  <th style={{ width: '70px', textAlign: 'right' }}></th>
                 </tr>
-              ) : (
-                arr.map((r, i) => {
-                  const stAuvo = r.status_auvo || r.status || 'Aguardando Atendimento';
-                  const stAsana = r.status_asana;
-                  const cor = COR_SEC[r.secretaria] || '#64748b';
-                  const temDivergencia = r.status_auvo && r.status_asana && r.status_auvo !== r.status_asana;
+              </thead>
+              <tbody>
+                {dadosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan={8}>
+                      <div className="chamados-empty-state">
+                        <div className="chamados-empty-icon">
+                          <Inbox size={22} />
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+                          Nenhum chamado encontrado
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--muted-c)', maxWidth: 360, marginBottom: 16 }}>
+                          Não encontramos registros correspondentes aos filtros ou termo de busca selecionados.
+                        </div>
+                        {totalFiltrosAtivos > 0 && (
+                          <button onClick={limparFiltros} className="pagination-btn">
+                            Limpar filtros aplicados
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  dadosPaginados.map((r, i) => {
+                    const stAuvo = r.status_auvo || r.status || 'Aguardando Atendimento';
+                    const stAsana = r.status_asana;
+                    const divergente = isDivergente(r);
+                    const corSec = COR_SEC[r.secretaria] || '#64748b';
+                    const isSelected = drawerChamado?.ticket === r.ticket;
 
-                  return (
-                    <motion.tr
-                      key={r.ticket}
-                      className="clickable-row"
-                      onClick={() => setModal(r)}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03, duration: 0.2 }}
-                      style={temDivergencia ? { background: 'rgba(234, 179, 8, 0.03)' } : undefined}
-                    >
-                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontWeight: 600, color: '#15A050', fontSize: 11 }}>
-                        #{r.ticket}
-                        {temDivergencia && <span title="Divergência entre Auvo e Asana" style={{ marginLeft: 4 }}>⚠️</span>}
-                      </td>
-                      <td style={{ color: 'var(--text)', fontWeight: 500, fontSize: 11 }}>{r.unidade || 'N/A'}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: `${cor}20`, color: cor, fontWeight: 500 }}>
-                          {r.secretaria}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'center', fontSize: 11 }}>{r.motivo}</td>
-                      <td style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 10 }}>{fmtDate(r.data_abertura)}</td>
-                      
-                      {/* Status AUVO */}
-                      <td style={{ textAlign: 'center' }}>
-                        <span className={`badge ${stAuvo === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto'}`} style={{ fontSize: 9 }}>
-                          {stAuvo}
-                        </span>
-                      </td>
-
-                      {/* Status ASANA */}
-                      <td style={{ textAlign: 'center' }}>
-                        {stAsana ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                            <span className={`badge ${stAsana === 'Atendimento Encerrado' ? 'status-encerrado' : 'status-aberto'}`} style={{ fontSize: 9 }}>
-                              {stAsana}
-                            </span>
-                            {r.secao_asana && (
-                              <span style={{ fontSize: 8, color: 'var(--muted-c)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.secao_asana}>
-                                {r.secao_asana}
+                    return (
+                      <tr
+                        key={r.ticket}
+                        onClick={() => setDrawerChamado(r)}
+                        className={`chamados-row ${isSelected ? 'selected-row' : ''}`}
+                      >
+                        {/* Ticket */}
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span className="ticket-pill">#{r.ticket}</span>
+                            {divergente && (
+                              <span className="divergence-pill" style={{ fontSize: 9 }}>
+                                ⚠️ Descompasso
                               </span>
                             )}
                           </div>
-                        ) : (
-                          <span style={{ fontSize: 10, color: 'var(--muted-c)' }}>—</span>
-                        )}
-                      </td>
+                        </td>
 
-                      <td style={{ fontSize: 11, color: 'var(--sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {r.problema || '—'}
-                      </td>
-                    </motion.tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        {/* Unidade */}
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 12 }}>
+                              {r.unidade || 'Não identificada'}
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                              <span
+                                style={{
+                                  fontSize: 9.5,
+                                  fontWeight: 600,
+                                  padding: '1px 5px',
+                                  borderRadius: 4,
+                                  background: `${corSec}15`,
+                                  color: corSec,
+                                }}
+                              >
+                                {r.secretaria || 'N/I'}
+                              </span>
+                              {r.responsavel && (
+                                <span style={{ fontSize: 10, color: 'var(--sub)' }}>
+                                  · Resp: {r.responsavel}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Motivo */}
+                        <td>
+                          <div className="category-chip">
+                            {getMotivoIcon(r.motivo)}
+                            <span>{r.motivo || 'OUTROS'}</span>
+                          </div>
+                        </td>
+
+                        {/* Abertura */}
+                        <td style={{ textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 11, color: 'var(--muted-c)' }}>
+                          {fmtDate(r.data_abertura)}
+                        </td>
+
+                        {/* Status Auvo */}
+                        <td>
+                          <span
+                            className={`status-chip ${stAuvo === 'Atendimento Encerrado' ? 'status-chip-encerrado' : 'status-chip-aberto'}`}
+                          >
+                            <span className="status-dot-pulse" />
+                            {stAuvo}
+                          </span>
+                        </td>
+
+                        {/* Status Asana */}
+                        <td>
+                          {stAsana ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <span
+                                className={`status-chip ${stAsana === 'Atendimento Encerrado' ? 'status-chip-encerrado' : 'status-chip-aberto'}`}
+                              >
+                                <span className="status-dot-pulse" />
+                                {stAsana}
+                              </span>
+                              {r.secao_asana && (
+                                <span
+                                  style={{
+                                    fontSize: 9,
+                                    color: 'var(--sub)',
+                                    maxWidth: 140,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                  title={r.secao_asana}
+                                >
+                                  {r.secao_asana}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 11, color: 'var(--sub)' }}>—</span>
+                          )}
+                        </td>
+
+                        {/* Problema Preview */}
+                        <td>
+                          <div
+                            style={{
+                              fontSize: 11.5,
+                              color: 'var(--muted-c)',
+                              maxWidth: 240,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                            title={r.problema}
+                          >
+                            {r.problema || 'Sem descrição'}
+                          </div>
+                        </td>
+
+                        {/* Ação */}
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            className="pagination-btn"
+                            style={{ padding: '4px 8px', fontSize: 11 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDrawerChamado(r);
+                            }}
+                            title="Inspecionar chamado"
+                          >
+                            <Eye size={12} /> Ver
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Pagination Bar ── */}
+          {dadosFiltrados.length > 0 && (
+            <div className="chamados-pagination-bar">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>Linhas por página:</span>
+                <select
+                  value={itensPorPagina}
+                  onChange={(e) => setItensPorPagina(Number(e.target.value))}
+                  style={{ height: 26, padding: '0 20px 0 6px', fontSize: 11.5 }}
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span style={{ marginLeft: 8 }}>
+                  Mostrando {(pagina - 1) * itensPorPagina + 1}–
+                  {Math.min(pagina * itensPorPagina, dadosFiltrados.length)} de {dadosFiltrados.length}
+                </span>
+              </div>
+
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setPagina(1)}
+                  disabled={pagina === 1}
+                  className="pagination-btn"
+                  title="Primeira página"
+                >
+                  <ChevronsLeft size={13} />
+                </button>
+                <button
+                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
+                  disabled={pagina === 1}
+                  className="pagination-btn"
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={13} />
+                </button>
+
+                <span style={{ padding: '0 8px', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                  Página {pagina} de {totalPaginas}
+                </span>
+
+                <button
+                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+                  disabled={pagina === totalPaginas}
+                  className="pagination-btn"
+                  title="Próxima página"
+                >
+                  <ChevronRight size={13} />
+                </button>
+                <button
+                  onClick={() => setPagina(totalPaginas)}
+                  disabled={pagina === totalPaginas}
+                  className="pagination-btn"
+                  title="Última página"
+                >
+                  <ChevronsRight size={13} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <ChamadoModal chamado={modal} onClose={() => setModal(null)} />
+      {/* ── Slide-Over Detail Inspector ── */}
+      <AnimatePresence>
+        {drawerChamado && (
+          <ChamadoDrawer
+            chamado={drawerChamado}
+            onClose={() => setDrawerChamado(null)}
+            onNavigateNext={() => navegarDrawer(1)}
+            onNavigatePrev={() => navegarDrawer(-1)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Modal de Importação ── */}
       {modalImportacaoAberta && (
-        <ModalImportacaoChamados 
-          onClose={() => setModalImportacaoAberta(false)} 
+        <ModalImportacaoChamados
+          onClose={() => setModalImportacaoAberta(false)}
           onSucesso={() => {
             setModalImportacaoAberta(false);
             carregar();
-          }} 
+          }}
         />
       )}
     </div>

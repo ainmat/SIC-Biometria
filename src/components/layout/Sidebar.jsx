@@ -196,11 +196,11 @@ const NAV = [
     ],
   },
   {
-    section: 'Servidores',
+    section: 'Gestão de Pessoas',
     items: [
       {
         to: '/servidores/painel',
-        label: 'Painel',
+        label: 'Painel Geral',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <rect x="3" y="3" width="7" height="7" rx="1" />
