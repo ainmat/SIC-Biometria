@@ -13,10 +13,12 @@ import {
 } from 'lucide-react';
 import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
 import ChamadoAtividades from '@/components/chamados/ChamadoAtividades';
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown';
+import { DateRangeFilterDropdown } from '@/components/ui/DateRangeFilterDropdown';
+import { getNome, getCor } from '@/lib/secretarias';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Constantes de Filtro
-const FILTROS_SEC = ['Todos', 'Saúde', 'Educação', 'Outros'];
 const FILTROS_MOT = ['Todos', 'EQUIPAMENTO', 'RECONHECIMENTO', 'ESPELHO DE PONTO', 'CADASTRO'];
 const FILTROS_ST = ['Todos', 'Aguardando Atendimento', 'Atendimento Encerrado'];
 const FILTROS_FONTE = ['Todos', 'Com Divergência (Auvo ≠ Asana)', 'Apenas AUVO', 'Apenas ASANA'];
@@ -388,7 +390,9 @@ export default function TodosChamados() {
   // Filtros
   const [busca, setBusca] = useState('');
   const [quickView, setQuickView] = useState('todos'); // 'todos' | 'abertos' | 'divergencias' | 'encerrados'
-  const [filtroSec, setFiltroSec] = useState('Todos');
+  const [filtroData, setFiltroData] = useState({ preset: 'todos', dataInicio: '', dataFim: '' });
+  const [selectedSecs, setSelectedSecs] = useState([]);
+  const [selectedUnis, setSelectedUnis] = useState([]);
   const [filtroMot, setFiltroMot] = useState('Todos');
   const [filtroFonte, setFiltroFonte] = useState('Todos');
   const [filtroStatus, setFiltroStatus] = useState('Todos');
@@ -457,6 +461,68 @@ export default function TodosChamados() {
     return { total, abertos, divergentes, encerrados };
   }, [dados]);
 
+  // Opções para Filtro Multi-Select de Secretarias (com pesquisa estilo Excel e contadores)
+  const secretariasOpcoes = useMemo(() => {
+    const map = new Map();
+    for (const d of dados) {
+      const sec = (d.secretaria || 'N/I').trim();
+      if (!sec) continue;
+      map.set(sec, (map.get(sec) || 0) + 1);
+    }
+    const lista = Array.from(map.entries()).map(([sigla, count]) => {
+      const nomeCompleto = getNome(sigla);
+      return {
+        value: sigla,
+        label: nomeCompleto && nomeCompleto !== sigla ? `${sigla} - ${nomeCompleto}` : sigla,
+        color: getCor(sigla),
+        count,
+      };
+    });
+    lista.sort((a, b) => a.label.localeCompare(b.label));
+    return lista;
+  }, [dados]);
+
+  const secretariasCounts = useMemo(() => {
+    const c = {};
+    for (const opt of secretariasOpcoes) {
+      c[opt.value] = opt.count;
+    }
+    return c;
+  }, [secretariasOpcoes]);
+
+  // Opções para Filtro Multi-Select de Unidades (com pesquisa estilo Excel e contadores)
+  const unidadesOpcoes = useMemo(() => {
+    const map = new Map();
+    for (const d of dados) {
+      if (selectedSecs.length > 0 && !selectedSecs.includes(d.secretaria)) {
+        continue;
+      }
+      const uni = (d.unidade || '').trim();
+      if (!uni) continue;
+      map.set(uni, (map.get(uni) || 0) + 1);
+    }
+    for (const sel of selectedUnis) {
+      if (!map.has(sel)) {
+        map.set(sel, 0);
+      }
+    }
+    const lista = Array.from(map.entries()).map(([unidade, count]) => ({
+      value: unidade,
+      label: unidade,
+      count,
+    }));
+    lista.sort((a, b) => a.label.localeCompare(b.label));
+    return lista;
+  }, [dados, selectedSecs, selectedUnis]);
+
+  const unidadesCounts = useMemo(() => {
+    const c = {};
+    for (const opt of unidadesOpcoes) {
+      c[opt.value] = opt.count;
+    }
+    return c;
+  }, [unidadesOpcoes]);
+
   // Filtragem dos dados
   const dadosFiltrados = useMemo(() => {
     let r = dados;
@@ -483,12 +549,26 @@ export default function TodosChamados() {
       });
     }
 
-    // Secretaria
-    if (filtroSec !== 'Todos') {
-      if (filtroSec === 'Saúde') r = r.filter((d) => d.secretaria === 'SS');
-      else if (filtroSec === 'Educação') r = r.filter((d) => d.secretaria === 'SED');
-      else if (filtroSec === 'Outros') r = r.filter((d) => d.secretaria !== 'SS' && d.secretaria !== 'SED');
-      else r = r.filter((d) => d.secretaria === filtroSec);
+    // Filtro por Data de Abertura
+    if (filtroData && filtroData.preset !== 'todos') {
+      const { dataInicio, dataFim } = filtroData;
+      r = r.filter((d) => {
+        if (!d.data_abertura) return false;
+        const dStr = String(d.data_abertura).split('T')[0].trim();
+        if (dataInicio && dStr < dataInicio) return false;
+        if (dataFim && dStr > dataFim) return false;
+        return true;
+      });
+    }
+
+    // Filtro por Secretaria (Múltipla Seleção)
+    if (selectedSecs.length > 0) {
+      r = r.filter((d) => selectedSecs.includes(d.secretaria || 'N/I'));
+    }
+
+    // Filtro por Unidade (Múltipla Seleção)
+    if (selectedUnis.length > 0) {
+      r = r.filter((d) => selectedUnis.includes(d.unidade));
     }
 
     // Motivo
@@ -513,29 +593,33 @@ export default function TodosChamados() {
     }
 
     return r;
-  }, [dados, quickView, busca, filtroSec, filtroMot, filtroStatus, filtroFonte]);
+  }, [dados, quickView, busca, filtroData, selectedSecs, selectedUnis, filtroMot, filtroStatus, filtroFonte]);
 
   // Resetar página quando filtros mudam
   useEffect(() => {
     setPagina(1);
-  }, [quickView, busca, filtroSec, filtroMot, filtroStatus, filtroFonte, itensPorPagina]);
+  }, [quickView, busca, filtroData, selectedSecs, selectedUnis, filtroMot, filtroStatus, filtroFonte, itensPorPagina]);
 
   // Contagem de filtros ativos para botão Limpar
   const totalFiltrosAtivos = useMemo(() => {
     let count = 0;
     if (quickView !== 'todos') count++;
     if (busca.trim()) count++;
-    if (filtroSec !== 'Todos') count++;
+    if (filtroData && filtroData.preset !== 'todos') count++;
+    if (selectedSecs.length > 0) count++;
+    if (selectedUnis.length > 0) count++;
     if (filtroMot !== 'Todos') count++;
     if (filtroFonte !== 'Todos') count++;
     if (filtroStatus !== 'Todos') count++;
     return count;
-  }, [quickView, busca, filtroSec, filtroMot, filtroFonte, filtroStatus]);
+  }, [quickView, busca, filtroData, selectedSecs, selectedUnis, filtroMot, filtroFonte, filtroStatus]);
 
   const limparFiltros = () => {
     setQuickView('todos');
     setBusca('');
-    setFiltroSec('Todos');
+    setFiltroData({ preset: 'todos', dataInicio: '', dataFim: '' });
+    setSelectedSecs([]);
+    setSelectedUnis([]);
     setFiltroMot('Todos');
     setFiltroFonte('Todos');
     setFiltroStatus('Todos');
@@ -780,19 +864,37 @@ export default function TodosChamados() {
                 Filtrar:
               </span>
 
-              {/* Secretaria */}
-              <select
-                value={filtroSec}
-                onChange={(e) => setFiltroSec(e.target.value)}
-                className={`chamados-select-pill ${filtroSec !== 'Todos' ? 'has-value' : ''}`}
-              >
-                <option value="Todos">Todas as Secretarias</option>
-                {FILTROS_SEC.filter((s) => s !== 'Todos').map((s) => (
-                  <option key={s} value={s}>
-                    Secretaria: {s}
-                  </option>
-                ))}
-              </select>
+              {/* Período de Abertura */}
+              <DateRangeFilterDropdown
+                filtroData={filtroData}
+                onChange={setFiltroData}
+              />
+
+              {/* Secretarias (Seleção múltipla com busca estilo Excel) */}
+              <MultiSelectDropdown
+                placeholder="Todas as Secretarias"
+                searchPlaceholder="Pesquisar secretaria..."
+                options={secretariasOpcoes}
+                values={selectedSecs}
+                onChange={setSelectedSecs}
+                counts={secretariasCounts}
+                minWidth={175}
+                maxWidth={270}
+                feminine={true}
+              />
+
+              {/* Unidades (Seleção múltipla com busca estilo Excel) */}
+              <MultiSelectDropdown
+                placeholder="Todas as Unidades"
+                searchPlaceholder="Pesquisar escola, posto, setor..."
+                options={unidadesOpcoes}
+                values={selectedUnis}
+                onChange={setSelectedUnis}
+                counts={unidadesCounts}
+                minWidth={175}
+                maxWidth={270}
+                feminine={true}
+              />
 
               {/* Motivo */}
               <select
