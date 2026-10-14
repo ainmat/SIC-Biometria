@@ -7,6 +7,7 @@ import { fetchPublicadas } from '@/modules/previas/services/previasService';
 import { useAuth } from '@/contexts/AuthContext';
 import { matchUnidade } from '@/lib/utils';
 import { supabase, fetchAllSupabase } from '@/lib/supabase';
+import { baixarCSV } from '@/lib/exportar';
 
 function isExactSecretariaMatch(secCandidate, userSecretaria) {
   if (!userSecretaria || !secCandidate) return false;
@@ -293,13 +294,7 @@ export default function HistoricoPrevias() {
         analise.classificacao !== 'sem_historico' ? analise.classificacao : (d.classificacao_alerta ?? ''),
       ];
     });
-    const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `historico_previas_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    baixarCSV(`historico_previas_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
 
   return (

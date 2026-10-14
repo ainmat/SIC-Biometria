@@ -9,8 +9,10 @@ import {
   AlertTriangle, CheckCircle2, Clock, ChevronRight, ChevronLeft,
   ChevronsLeft, ChevronsRight, Copy, Check, ExternalLink,
   Building2, Wrench, ScanFace, UserCheck, HelpCircle,
-  RefreshCw, Inbox, AlertCircle, Eye, ArrowUpDown, ChevronDown
+  RefreshCw, Inbox, AlertCircle, Eye, ArrowUpDown, ChevronDown,
+  FileSpreadsheet
 } from 'lucide-react';
+import { baixarCSV, baixarExcel, formatarDataBR } from '@/lib/exportar';
 import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
 import ChamadoAtividades from '@/components/chamados/ChamadoAtividades';
 import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown';
@@ -644,41 +646,57 @@ export default function TodosChamados() {
     }
   };
 
-  // Exportar CSV
-  const exportarCSV = () => {
-    if (!dadosFiltrados.length) return;
+  // Extração e tratamento padronizado das colunas e linhas para exportação
+  const extrairDadosExportacao = () => {
     const colunas = [
       'Ticket',
       'Unidade',
       'Secretaria',
       'Motivo',
+      'Responsável',
       'Data Abertura',
       'Status AUVO',
       'Status ASANA',
+      'Seção ASANA',
       'Divergente',
-      'Problema',
+      'Problema Relatado',
     ];
+
     const linhas = dadosFiltrados.map((d) => [
-      `"${d.ticket || ''}"`,
-      `"${(d.unidade || '').replace(/"/g, '""')}"`,
-      `"${d.secretaria || ''}"`,
-      `"${d.motivo || ''}"`,
-      `"${d.data_abertura || ''}"`,
-      `"${d.status_auvo || d.status || ''}"`,
-      `"${d.status_asana || ''}"`,
-      isDivergente(d) ? 'SIM' : 'NAO',
-      `"${(d.problema || '').replace(/"/g, '""')}"`,
+      d.ticket || '',
+      d.unidade || 'Não identificada',
+      d.secretaria || 'N/I',
+      d.motivo || 'OUTROS',
+      d.responsavel || 'Não atribuído',
+      formatarDataBR(d.data_abertura),
+      d.status_auvo || d.status || 'Aguardando Atendimento',
+      d.status_asana || 'Não integrado',
+      d.secao_asana || '—',
+      isDivergente(d) ? 'SIM' : 'NÃO',
+      d.problema || 'Sem descrição informada',
     ]);
 
-    const csvContent = '\uFEFF' + [colunas.join(','), ...linhas.map((e) => e.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `chamados_sic_biometria_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return { colunas, linhas };
+  };
+
+  // Exportar CSV formatado para Excel Brasil (; e UTF-8 BOM)
+  const exportarCSV = () => {
+    if (!dadosFiltrados.length) return;
+    const { colunas, linhas } = extrairDadosExportacao();
+    const dataHora = new Date().toISOString().slice(0, 10);
+    baixarCSV(`chamados_sic_biometria_${dataHora}.csv`, colunas, linhas);
+  };
+
+  // Exportar Excel nativo (.xlsx) com visual profissional corporativo
+  const exportarExcel = () => {
+    if (!dadosFiltrados.length) return;
+    const { colunas, linhas } = extrairDadosExportacao();
+    const dataHora = new Date().toISOString().slice(0, 10);
+    baixarExcel(`chamados_sic_biometria_${dataHora}.xlsx`, colunas, linhas, {
+      nomePlanilha: 'Chamados',
+      titulo: 'PREFEITURA DO MUNICÍPIO DE OSASCO — SIC BIOMETRIA',
+      subtitulo: `Central de Chamados | Extraído em: ${new Date().toLocaleDateString('pt-BR')} | Total: ${linhas.length} registro(s)`,
+    });
   };
 
   return (
@@ -691,10 +709,19 @@ export default function TodosChamados() {
         </div>
         <div className="topbar-right">
           <button
+            onClick={exportarExcel}
+            className="pagination-btn"
+            style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            title="Exportar dados filtrados em planilha Excel formatada (.xlsx)"
+          >
+            <FileSpreadsheet size={14} className="text-emerald-500" /> Exportar Excel
+          </button>
+
+          <button
             onClick={exportarCSV}
             className="pagination-btn"
-            style={{ padding: '7px 12px', fontSize: 12 }}
-            title="Exportar dados filtrados em planilha CSV"
+            style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            title="Exportar dados filtrados em planilha CSV (ponto e vírgula, UTF-8)"
           >
             <Download size={14} /> Exportar CSV
           </button>
