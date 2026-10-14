@@ -29,10 +29,12 @@ function getMotivoIcon(motivo) {
   }
 }
 
+import ChamadoAtividades from '@/components/chamados/ChamadoAtividades';
+
 export default function ChamadoDetalhe() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const chamado = state?.chamado;
+  const [chamado, setChamado] = useState(state?.chamado);
   const [copiado, setCopiado] = useState(false);
   const [copiadoTexto, setCopiadoTexto] = useState(false);
 
@@ -282,6 +284,12 @@ export default function ChamadoDetalhe() {
                 {chamado.problema || 'Nenhuma descrição detalhada informada.'}
               </div>
             </div>
+
+            {/* Todas as atividades e Comentários */}
+            <ChamadoAtividades
+              chamado={chamado}
+              onChamadoUpdated={(updated) => setChamado(updated)}
+            />
           </div>
         </div>
       </div>

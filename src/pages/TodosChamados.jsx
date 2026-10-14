@@ -12,6 +12,7 @@ import {
   RefreshCw, Inbox, AlertCircle, Eye, ArrowUpDown, ChevronDown
 } from 'lucide-react';
 import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
+import ChamadoAtividades from '@/components/chamados/ChamadoAtividades';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Constantes de Filtro
@@ -43,7 +44,7 @@ function getMotivoIcon(motivo) {
 }
 
 // ─── Drawer Inspector (Slide-Over Sheet) ───────────────────────────────────────
-function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev }) {
+function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onChamadoUpdated }) {
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
   const [copiadoTexto, setCopiadoTexto] = useState(false);
@@ -290,6 +291,12 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev }) {
               {chamado.problema || 'Nenhuma descrição detalhada informada.'}
             </div>
           </div>
+
+          {/* Todas as atividades e Comentários */}
+          <ChamadoAtividades
+            chamado={chamado}
+            onChamadoUpdated={onChamadoUpdated}
+          />
         </div>
 
         {/* Drawer Footer */}
@@ -1070,6 +1077,12 @@ export default function TodosChamados() {
             onClose={() => setDrawerChamado(null)}
             onNavigateNext={() => navegarDrawer(1)}
             onNavigatePrev={() => navegarDrawer(-1)}
+            onChamadoUpdated={(updated) => {
+              setDrawerChamado(updated);
+              setDados((prev) =>
+                prev.map((d) => (d.ticket === updated.ticket ? { ...d, ...updated } : d))
+              );
+            }}
           />
         )}
       </AnimatePresence>
