@@ -406,10 +406,37 @@ export default function TodosChamados() {
 
   const searchInputRef = useRef(null);
 
-  // Carregar dados Supabase
-  const carregar = useCallback(async () => {
+  // Refs para monitorar estado de interação do usuário sem causar re-renders cíclicos
+  const drawerChamadoRef = useRef(drawerChamado);
+  useEffect(() => {
+    drawerChamadoRef.current = drawerChamado;
+  }, [drawerChamado]);
+
+  const modalImportacaoAbertaRef = useRef(modalImportacaoAberta);
+  useEffect(() => {
+    modalImportacaoAbertaRef.current = modalImportacaoAberta;
+  }, [modalImportacaoAberta]);
+
+  const pendingUpdateRef = useRef(false);
+
+  // Verifica se o usuário está executando uma ação ou se tem algum modal/drawer aberto
+  const isUserBusy = useCallback(() => {
+    // 1. Drawer lateral de detalhe do chamado aberto
+    if (drawerChamadoRef.current) return true;
+    // 2. Modal de importação de planilhas aberto
+    if (modalImportacaoAbertaRef.current) return true;
+    // 3. Usuário digitando em algum campo de busca ou texto
+    const activeEl = document.activeElement;
+    if (activeEl && ['INPUT', 'TEXTAREA'].includes(activeEl.tagName)) {
+      return true;
+    }
+    return false;
+  }, []);
+
+  // Carregar dados Supabase (suporta carregamento silencioso em background sem piscar a tela)
+  const carregar = useCallback(async (silencioso = false) => {
     try {
-      setCarregando(true);
+      if (!silencioso) setCarregando(true);
       const data = await fetchChamados();
       setDados(data);
       setStatusText(
@@ -417,22 +444,77 @@ export default function TodosChamados() {
       );
     } catch (err) {
       console.error(err);
-      setStatusText('Erro ao carregar registros do Supabase');
+      if (!silencioso) setStatusText('Erro ao carregar registros do Supabase');
     } finally {
-      setCarregando(false);
+      if (!silencioso) setCarregando(false);
     }
   }, []);
 
+  // Executa atualização se o usuário estiver livre; se estiver ocupado, marca como pendente
+  const dispararAtualizacaoInteligente = useCallback(() => {
+    if (isUserBusy()) {
+      pendingUpdateRef.current = true;
+      return;
+    }
+    carregar(true);
+  }, [isUserBusy, carregar]);
+
+  // Se havia atualização pendente e o usuário acabou de fechar o chamado (drawer) ou modal: atualiza na hora!
+  useEffect(() => {
+    if (!drawerChamado && !modalImportacaoAberta && pendingUpdateRef.current) {
+      pendingUpdateRef.current = false;
+      carregar(true);
+    }
+  }, [drawerChamado, modalImportacaoAberta, carregar]);
+
+  // Inscrição em tempo real + escuta de canal
   useEffect(() => {
     carregar();
     const ch = supabase
       .channel('todos-rt-stream')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, carregar)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chamados' }, dispararAtualizacaoInteligente)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracoes' }, (payload) => {
+        if (payload.new?.chave === 'ultima_sincronizacao_asana') {
+          dispararAtualizacaoInteligente();
+        }
+      })
       .subscribe();
+
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [carregar]);
+  }, [carregar, dispararAtualizacaoInteligente]);
+
+  // Verificação leve periódica (Smart Polling a cada 5 segundos)
+  // Detecta quando o Asana Webhook rodou, sem travar o navegador nem gastar recursos
+  useEffect(() => {
+    let ultimoTimestamp = null;
+    const intervalo = setInterval(async () => {
+      // Não faz nada se a aba estiver em segundo plano ou se o usuário estiver ocupado
+      if (document.hidden || isUserBusy()) return;
+
+      try {
+        const { data } = await supabase
+          .from('configuracoes')
+          .select('valor')
+          .eq('chave', 'ultima_sincronizacao_asana')
+          .maybeSingle();
+
+        if (data?.valor) {
+          const parsed = JSON.parse(data.valor);
+          const ts = parsed.timestamp;
+          if (ultimoTimestamp && ts && ts !== ultimoTimestamp) {
+            dispararAtualizacaoInteligente();
+          }
+          ultimoTimestamp = ts;
+        }
+      } catch {
+        // Ignora silenciosamente
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalo);
+  }, [isUserBusy, dispararAtualizacaoInteligente]);
 
   // Tecla de atalho para busca (/)
   useEffect(() => {
