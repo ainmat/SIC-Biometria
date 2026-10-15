@@ -817,16 +817,12 @@ input::placeholder, textarea::placeholder { color: rgba(100,116,139,.5); }
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    color-adjust: exact !important;
   }
 
   /* Elementos ocultos na impressão */
   .topbar-right,
   .sidebar-footer,
   .no-print { display: none !important; }
-
-  /* Sidebar visível na impressão */
-  .sidebar { }
 
   /* Layout forçado para bloco (o #root já está como block abaixo) */
   .layout { display: block !important; }
