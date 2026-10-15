@@ -263,12 +263,15 @@ export default async function handler(req, res) {
     }
     let mapAlterado = false;
 
-    // 1. Identificar tarefas criadas ou modificadas
-    const taskGids = [...new Set(
-      events
+    // 1. Identificar tarefas criadas, modificadas ou com novos comentários
+    const taskGids = [...new Set([
+      ...events
         .filter(e => e.resource?.resource_type === 'task' && (e.action === 'changed' || e.action === 'added'))
-        .map(e => e.resource.gid)
-    )];
+        .map(e => e.resource.gid),
+      ...events
+        .filter(e => e.parent?.resource_type === 'task' && e.resource?.resource_type === 'story')
+        .map(e => e.parent.gid),
+    ])];
 
     // 2. Identificar tarefas excluídas
     const deletedTaskGids = [...new Set(
@@ -390,23 +393,107 @@ export default async function handler(req, res) {
 
           const statusAtual = mapearStatus(task);
 
+          // Buscar comentários (stories) da tarefa no Asana
+          let stories = [];
+          try {
+            const storiesRes = await fetch(
+              `https://app.asana.com/api/1.0/tasks/${gid}/stories?opt_fields=created_at,created_by.name,text,type,resource_subtype`,
+              { headers: { Authorization: `Bearer ${asanaToken}` } }
+            );
+            if (storiesRes.ok) {
+              const storiesJson = await storiesRes.json();
+              stories = (storiesJson.data || []).filter(
+                s => s.resource_subtype === 'comment_added' || (s.type === 'comment' && s.text && s.text.trim())
+              );
+            }
+          } catch (storyErr) {
+            console.warn(`Aviso ao buscar comentários da tarefa ${gid}:`, storyErr.message);
+          }
+
           // Verificar se já existe no Supabase
           const { data: dbRows } = await supabase
             .from('chamados')
-            .select('ticket, status, status_asana, secao_asana')
+            .select('ticket, status, status_asana, secao_asana, problema, secretaria, unidade, motivo, historico_tramitacao')
             .eq('ticket', ticket);
 
           const existente = dbRows?.[0];
 
           if (existente) {
+            const updatePayload = {
+              status: statusAtual,
+              status_asana: statusAtual,
+              secao_asana: secName,
+            };
+
+            const novaDescricao = task.notes || '';
+            // Atualiza a descrição/problema se houver ou se mudou
+            if (novaDescricao !== (existente.problema || '')) {
+              updatePayload.problema = novaDescricao;
+            }
+
+            // Sincronizar comentários do Asana no historico_tramitacao
+            const historicoBase = Array.isArray(existente.historico_tramitacao) ? [...existente.historico_tramitacao] : [];
+            let historicoAlterado = false;
+
+            for (const s of stories) {
+              const autor = s.created_by?.name || 'Asana';
+              const textoLimpo = s.text.trim();
+              const observacaoFormatada = `${textoLimpo} (${autor})`;
+
+              const jaExiste = historicoBase.some(item =>
+                item.asana_gid === s.gid ||
+                (item.observacao === observacaoFormatada && Math.abs(new Date(item.data).getTime() - new Date(s.created_at).getTime()) < 60000)
+              );
+
+              if (!jaExiste) {
+                historicoBase.push({
+                  data: s.created_at,
+                  status: statusAtual,
+                  observacao: observacaoFormatada,
+                  asana_gid: s.gid,
+                  origem: 'asana'
+                });
+                historicoAlterado = true;
+              }
+            }
+
+            if (historicoAlterado) {
+              historicoBase.sort((a, b) => new Date(a.data) - new Date(b.data));
+              updatePayload.historico_tramitacao = historicoBase;
+            }
+
+            // Reclassificar com IA/Heurística caso a descrição/título tenham mudado ou faltem dados
+            const precisaReclassificar =
+              !existente.secretaria ||
+              existente.secretaria === 'NÃO IDENTIFICADO' ||
+              !existente.unidade ||
+              existente.unidade === 'NÃO IDENTIFICADO' ||
+              (novaDescricao && novaDescricao !== (existente.problema || ''));
+
+            if (precisaReclassificar) {
+              const classif = await classificarChamadoLLM(
+                { titulo: task.name, descricao: novaDescricao },
+                contextoEquipamentos,
+                equipamentosLista,
+                ai
+              );
+
+              if (classif.secretaria && classif.secretaria !== 'NÃO IDENTIFICADO') {
+                updatePayload.secretaria = classif.secretaria;
+              }
+              if (classif.unidade && classif.unidade !== 'NÃO IDENTIFICADO') {
+                updatePayload.unidade = classif.unidade;
+              }
+              if (classif.motivo) {
+                updatePayload.motivo = classif.motivo;
+              }
+            }
+
             await supabase
               .from('chamados')
-              .update({
-                status: statusAtual,
-                status_asana: statusAtual,
-                secao_asana: secName,
-              })
+              .update(updatePayload)
               .eq('ticket', ticket);
+
             atualizados++;
           } else {
             const classif = await classificarChamadoLLM(
@@ -415,6 +502,21 @@ export default async function handler(req, res) {
               equipamentosLista,
               ai
             );
+
+            // Montar histórico inicial com os comentários do Asana
+            const historicoInicial = [];
+            for (const s of stories) {
+              const autor = s.created_by?.name || 'Asana';
+              const textoLimpo = s.text.trim();
+              historicoInicial.push({
+                data: s.created_at,
+                status: statusAtual,
+                observacao: `${textoLimpo} (${autor})`,
+                asana_gid: s.gid,
+                origem: 'asana'
+              });
+            }
+            historicoInicial.sort((a, b) => new Date(a.data) - new Date(b.data));
 
             await supabase.from('chamados').upsert({
               ticket,
@@ -427,6 +529,7 @@ export default async function handler(req, res) {
               status_asana: statusAtual,
               secao_asana: secName,
               status_auvo: null,
+              historico_tramitacao: historicoInicial,
             }, { onConflict: 'ticket' });
 
             inseridos++;

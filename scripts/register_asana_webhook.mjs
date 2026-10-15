@@ -82,6 +82,7 @@ async function registrarWebhook(targetUrl) {
         { resource_type: 'task', action: 'added' },
         { resource_type: 'task', action: 'changed' },
         { resource_type: 'task', action: 'deleted' },
+        { resource_type: 'story', action: 'added' },
       ],
     },
   };
