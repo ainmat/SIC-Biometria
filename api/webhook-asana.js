@@ -236,18 +236,107 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, processed: events.length, synced: 0, reason: 'ASANA_ACCESS_TOKEN missing in Vercel' });
     }
 
-    // Filtra tarefas únicas alteradas ou adicionadas
+    // Carregar mapa de GID -> Ticket para resolução instantânea de exclusões
+    let gidMap = {};
+    try {
+      const { data: mapCfg } = await supabase.from('configuracoes').select('valor').eq('chave', 'asana_gid_map').maybeSingle();
+      if (mapCfg?.valor) gidMap = JSON.parse(mapCfg.valor);
+    } catch (e) {
+      console.warn('Erro ao carregar asana_gid_map:', e.message);
+    }
+    let mapAlterado = false;
+
+    // 1. Identificar tarefas criadas ou modificadas
     const taskGids = [...new Set(
       events
         .filter(e => e.resource?.resource_type === 'task' && (e.action === 'changed' || e.action === 'added'))
         .map(e => e.resource.gid)
     )];
 
+    // 2. Identificar tarefas excluídas
+    const deletedTaskGids = [...new Set(
+      events
+        .filter(e => e.resource?.resource_type === 'task' && e.action === 'deleted')
+        .map(e => e.resource.gid)
+    )];
+
     let inseridos = 0;
     let atualizados = 0;
+    let excluidos = 0;
+    let desvinculados = 0;
 
+    // Processar exclusões primeiro
+    if (deletedTaskGids.length > 0) {
+      console.log(`🗑️ Processando ${deletedTaskGids.length} tarefa(s) excluída(s) no Asana...`);
+      for (const gid of deletedTaskGids) {
+        let ticketToDelete = gidMap[gid];
+
+        if (ticketToDelete) {
+          // GID mapeado encontrado!
+          const { data: existing } = await supabase
+            .from('chamados')
+            .select('ticket, status_auvo')
+            .eq('ticket', ticketToDelete)
+            .maybeSingle();
+
+          if (existing) {
+            if (!existing.status_auvo) {
+              await supabase.from('chamados').delete().eq('ticket', ticketToDelete);
+              excluidos++;
+              console.log(`   ✓ Chamado #${ticketToDelete} excluído do banco (origem exclusiva Asana).`);
+            } else {
+              await supabase.from('chamados').update({ status_asana: null, secao_asana: null }).eq('ticket', ticketToDelete);
+              desvinculados++;
+              console.log(`   ✓ Chamado #${ticketToDelete} (Auvo) preservado e desvinculado do Asana.`);
+            }
+          }
+          delete gidMap[gid];
+          mapAlterado = true;
+        } else {
+          // GID não encontrado no mapa: reconciliação de segurança consultando o projeto
+          try {
+            const rawProjId = (process.env.ASANA_PROJECT_ID || '').trim().match(/\d+/)?.[0];
+            if (rawProjId) {
+              let url = `https://app.asana.com/api/1.0/projects/${rawProjId}/tasks?opt_fields=name,notes&limit=100`;
+              const ticketsAtivos = new Set();
+              while (url) {
+                const resP = await fetch(url, { headers: { Authorization: `Bearer ${asanaToken}` } });
+                if (!resP.ok) break;
+                const jsonP = await resP.json();
+                (jsonP.data || []).forEach(t => {
+                  const tkt = extrairTicket(t.name, t.notes);
+                  if (tkt) {
+                    ticketsAtivos.add(tkt);
+                    gidMap[t.gid] = tkt;
+                  }
+                });
+                url = jsonP.next_page?.uri || null;
+              }
+              mapAlterado = true;
+
+              // Encontrar chamados no banco que sumiram do Asana
+              const { data: dbAsana } = await supabase.from('chamados').select('ticket, status_auvo').not('status_asana', 'is', null);
+              for (const r of (dbAsana || [])) {
+                if (!ticketsAtivos.has(r.ticket)) {
+                  if (!r.status_auvo) {
+                    await supabase.from('chamados').delete().eq('ticket', r.ticket);
+                    excluidos++;
+                  } else {
+                    await supabase.from('chamados').update({ status_asana: null, secao_asana: null }).eq('ticket', r.ticket);
+                    desvinculados++;
+                  }
+                }
+              }
+            }
+          } catch (recErr) {
+            console.error('Erro na reconciliação de exclusão:', recErr);
+          }
+        }
+      }
+    }
+
+    // Processar tarefas adicionadas ou alteradas
     if (taskGids.length > 0) {
-      // Buscar equipamentos para contexto de IA/Heurística
       let contextoEquipamentos = "";
       let equipamentosLista = [];
       try {
@@ -260,7 +349,6 @@ export default async function handler(req, res) {
         console.warn('Erro ao carregar equipamentos:', e.message);
       }
 
-      // Processar cada tarefa
       for (const gid of taskGids) {
         try {
           const taskRes = await fetch(
@@ -279,6 +367,10 @@ export default async function handler(req, res) {
           const ticket = extrairTicket(task.name, task.notes);
           if (!ticket) continue;
 
+          // Registrar no mapa de GIDs
+          gidMap[gid] = ticket;
+          mapAlterado = true;
+
           const statusAtual = mapearStatus(task);
 
           // Verificar se já existe no Supabase
@@ -290,7 +382,6 @@ export default async function handler(req, res) {
           const existente = dbRows?.[0];
 
           if (existente) {
-            // Atualizar status
             await supabase
               .from('chamados')
               .update({
@@ -301,7 +392,6 @@ export default async function handler(req, res) {
               .eq('ticket', ticket);
             atualizados++;
           } else {
-            // Novo chamado: classificar e inserir
             const classif = await classificarChamadoLLM(
               { titulo: task.name, descricao: task.notes || '' },
               contextoEquipamentos,
@@ -328,8 +418,19 @@ export default async function handler(req, res) {
           console.error(`Erro ao processar tarefa Asana ${gid}:`, errTask);
         }
       }
+    }
 
-      // Atualizar indicador de sincronização no Supabase para o Topbar
+    // Salvar mapa de GID se foi alterado
+    if (mapAlterado) {
+      await supabase.from('configuracoes').upsert({
+        chave: 'asana_gid_map',
+        valor: JSON.stringify(gidMap),
+        descricao: 'Mapeamento de GID do Asana para número de ticket do SIC-Biometria',
+      });
+    }
+
+    // Atualizar indicador de sincronização no Supabase para o Topbar
+    if (taskGids.length > 0 || deletedTaskGids.length > 0) {
       const duracao = ((Date.now() - inicio) / 1000).toFixed(1);
       await supabase.from('configuracoes').upsert({
         chave: 'ultima_sincronizacao_asana',
@@ -338,6 +439,8 @@ export default async function handler(req, res) {
           status: 'sucesso',
           novos_inseridos: inseridos,
           status_atualizados: atualizados,
+          excluidos,
+          desvinculados,
           duracao_segundos: Number(duracao),
           origem: 'webhook_tempo_real',
         }),
@@ -351,6 +454,8 @@ export default async function handler(req, res) {
       tasks_evaluated: taskGids.length,
       inseridos,
       atualizados,
+      excluidos,
+      desvinculados,
       duracao: ((Date.now() - inicio) / 1000).toFixed(1) + 's'
     });
   } catch (error) {
