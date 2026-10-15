@@ -76,32 +76,33 @@ function mapearStatus(task) {
   return 'Aguardando Atendimento';
 }
 
+function normalizarTexto(str) {
+  return (str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .trim();
+}
+
 function extrairFallbackHeuristico(chamado, equipamentosLista = []) {
-  const textoCompleto = `${chamado.titulo || ''} ${chamado.descricao || ''}`.toUpperCase();
+  const textoOriginal = `${chamado.titulo || ''} ${chamado.descricao || ''}`;
+  const textoNorm = normalizarTexto(textoOriginal);
+
   let secretaria = 'NÃO IDENTIFICADO';
   let unidade = 'NÃO IDENTIFICADO';
   let motivo = 'EQUIPAMENTO';
 
-  const secretariasConhecidas = [
-    'SED', 'SAUDE', 'SS', 'SEMAP', 'SEINFRA', 'SECOL', 'SJDH', 'SECONT', 'SEHAB', 'SEF',
-    'SERH', 'SETIC', 'SEGOV', 'SECOM', 'SECULT', 'FITO', 'CMO', 'IPMO', 'ADVANCIS'
-  ];
-  for (const sec of secretariasConhecidas) {
-    const regex = new RegExp(`\\b${sec}\\b`, 'i');
-    if (regex.test(textoCompleto)) {
-      secretaria = sec === 'SAUDE' ? 'SS' : sec;
-      break;
-    }
-  }
-
+  // 1. Tentar encontrar correspondência na lista de equipamentos
   for (const eq of equipamentosLista) {
-    if (eq.nome && eq.nome.length > 4) {
+    if (eq.nome && eq.nome.length > 3) {
       const nomeLimpo = eq.nome
         .replace(/^\d+\s+/, '')
         .replace(/^FACE\s+/i, '')
         .replace(/\s+\d+$/, '')
         .trim();
-      if (nomeLimpo.length > 4 && textoCompleto.includes(nomeLimpo.toUpperCase())) {
+      const nomeNorm = normalizarTexto(nomeLimpo);
+
+      if (nomeNorm.length > 3 && textoNorm.includes(nomeNorm)) {
         unidade = nomeLimpo.toUpperCase();
         if (eq.secretaria && secretaria === 'NÃO IDENTIFICADO') {
           secretaria = eq.secretaria.toUpperCase();
@@ -111,7 +112,23 @@ function extrairFallbackHeuristico(chamado, equipamentosLista = []) {
     }
   }
 
-  if (textoCompleto.includes('ADVANCIS')) {
+  // 2. Se a secretaria ainda não foi identificada, procurar siglas conhecidas
+  if (secretaria === 'NÃO IDENTIFICADO') {
+    const secretariasConhecidas = [
+      'SAS', 'SED', 'SAUDE', 'SS', 'SEPLAG', 'SECONTRU', 'SEMARH', 'SEREL', 'SETRE',
+      'SEMAP', 'SEINFRA', 'SECOL', 'SJDH', 'SECONT', 'SEHAB', 'SEF', 'SF', 'SA',
+      'SERH', 'SETIC', 'SEGOV', 'SECOM', 'SECULT', 'FITO', 'CMO', 'IPMO', 'ADVANCIS'
+    ];
+    for (const sec of secretariasConhecidas) {
+      const regex = new RegExp(`\\b${sec}\\b`, 'i');
+      if (regex.test(textoOriginal)) {
+        secretaria = sec === 'SAUDE' ? 'SS' : sec;
+        break;
+      }
+    }
+  }
+
+  if (textoNorm.includes('ADVANCIS')) {
     if (secretaria === 'NÃO IDENTIFICADO') secretaria = 'ADVANCIS';
     if (unidade === 'NÃO IDENTIFICADO') unidade = 'ADVANCIS';
   }
