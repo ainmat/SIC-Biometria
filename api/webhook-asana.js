@@ -273,12 +273,19 @@ export default async function handler(req, res) {
         .map(e => e.parent.gid),
     ])];
 
-    // 2. Identificar tarefas excluídas
+    // 2. Identificar tarefas excluídas ou removidas do projeto no Asana
     const deletedTaskGids = [...new Set(
       events
-        .filter(e => e.resource?.resource_type === 'task' && e.action === 'deleted')
+        .filter(e => {
+          if (e.resource?.resource_type !== 'task') return false;
+          // Tarefa explicitamente deletada no Asana
+          if (e.action === 'deleted') return true;
+          // Tarefa removida do projeto no Asana (sem parent ou parent do tipo project)
+          if (e.action === 'removed' && (!e.parent || e.parent?.resource_type === 'project')) return true;
+          return false;
+        })
         .map(e => e.resource.gid)
-    )];
+    )].filter(gid => !taskGids.includes(gid));
 
     let inseridos = 0;
     let atualizados = 0;
@@ -292,38 +299,31 @@ export default async function handler(req, res) {
         let ticketToDelete = gidMap[gid];
 
         if (ticketToDelete) {
-          // GID mapeado encontrado!
-          const { data: existing } = await supabase
-            .from('chamados')
-            .select('ticket, status_auvo')
-            .eq('ticket', ticketToDelete)
-            .maybeSingle();
-
-          if (existing) {
-            if (!existing.status_auvo) {
-              await supabase.from('chamados').delete().eq('ticket', ticketToDelete);
-              excluidos++;
-              console.log(`   ✓ Chamado #${ticketToDelete} excluído do banco (origem exclusiva Asana).`);
-            } else {
-              await supabase.from('chamados').update({ status_asana: null, secao_asana: null }).eq('ticket', ticketToDelete);
-              desvinculados++;
-              console.log(`   ✓ Chamado #${ticketToDelete} (Auvo) preservado e desvinculado do Asana.`);
-            }
+          // GID mapeado encontrado! Exclui o chamado do banco e do histórico
+          const { error: delErr } = await supabase.from('chamados').delete().eq('ticket', ticketToDelete);
+          if (!delErr) {
+            await supabase.from('configuracoes').delete().eq('chave', `chamado_historico_${ticketToDelete}`);
+            excluidos++;
+            console.log(`   ✓ Chamado #${ticketToDelete} excluído automaticamente do banco (tarefa Asana GID ${gid} excluída).`);
+          } else {
+            console.error(`   ❌ Erro ao excluir chamado #${ticketToDelete}:`, delErr);
           }
           delete gidMap[gid];
           mapAlterado = true;
         } else {
-          // GID não encontrado no mapa: reconciliação de segurança consultando o projeto
+          // GID não encontrado no mapa direto: reconciliação de segurança consultando o projeto
           try {
             const rawProjId = (process.env.ASANA_PROJECT_ID || '').trim().match(/\d+/)?.[0];
             if (rawProjId) {
               let url = `https://app.asana.com/api/1.0/projects/${rawProjId}/tasks?opt_fields=name,notes&limit=100`;
               const ticketsAtivos = new Set();
+              const gidsAtivos = new Set();
               while (url) {
                 const resP = await fetch(url, { headers: { Authorization: `Bearer ${asanaToken}` } });
                 if (!resP.ok) break;
                 const jsonP = await resP.json();
                 (jsonP.data || []).forEach(t => {
+                  gidsAtivos.add(t.gid);
                   const tkt = extrairTicket(t.name, t.notes);
                   if (tkt) {
                     ticketsAtivos.add(tkt);
@@ -334,17 +334,25 @@ export default async function handler(req, res) {
               }
               mapAlterado = true;
 
-              // Encontrar chamados no banco que sumiram do Asana
-              const { data: dbAsana } = await supabase.from('chamados').select('ticket, status_auvo').not('status_asana', 'is', null);
+              // 1. Verificar se no mapa de GIDs há itens que sumiram do Asana
+              for (const [mGid, mTkt] of Object.entries(gidMap)) {
+                if (!gidsAtivos.has(mGid)) {
+                  await supabase.from('chamados').delete().eq('ticket', mTkt);
+                  await supabase.from('configuracoes').delete().eq('chave', `chamado_historico_${mTkt}`);
+                  delete gidMap[mGid];
+                  excluidos++;
+                  console.log(`   ✓ Chamado #${mTkt} (GID ${mGid}) excluído via reconciliação de GIDs.`);
+                }
+              }
+
+              // 2. Verificar chamados do Asana no Supabase que sumiram do projeto
+              const { data: dbAsana } = await supabase.from('chamados').select('ticket').not('status_asana', 'is', null).gte('ticket', 4000);
               for (const r of (dbAsana || [])) {
                 if (!ticketsAtivos.has(r.ticket)) {
-                  if (!r.status_auvo) {
-                    await supabase.from('chamados').delete().eq('ticket', r.ticket);
-                    excluidos++;
-                  } else {
-                    await supabase.from('chamados').update({ status_asana: null, secao_asana: null }).eq('ticket', r.ticket);
-                    desvinculados++;
-                  }
+                  await supabase.from('chamados').delete().eq('ticket', r.ticket);
+                  await supabase.from('configuracoes').delete().eq('chave', `chamado_historico_${r.ticket}`);
+                  excluidos++;
+                  console.log(`   ✓ Chamado #${r.ticket} excluído via reconciliação com Asana.`);
                 }
               }
             }

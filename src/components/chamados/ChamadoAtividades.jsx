@@ -47,7 +47,7 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
   const { sessao } = useAuth();
   const meuNome = sessao?.nome || sessao?.username || 'Usuário';
 
-  const statusAtual = chamado?.status_auvo || chamado?.status || 'Aguardando Atendimento';
+  const statusAtual = chamado?.status || chamado?.status_asana || chamado?.status_auvo || 'Aguardando Atendimento';
   const [novoStatus, setNovoStatus] = useState(statusAtual);
   const [observacao, setObservacao] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -135,14 +135,24 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
       let salvou = false;
 
       // 1. Tentar salvar diretamente na coluna historico_tramitacao
+      const updatePayload = {
+        historico_tramitacao: novoHistorico,
+        status: novoStatus,
+      };
+
+      // Preservar a integridade de origem:
+      // Apenas atualizar status_auvo se este chamado já possuía status_auvo originalmente (origem Auvo)
+      if (chamado.status_auvo !== null && chamado.status_auvo !== undefined) {
+        updatePayload.status_auvo = novoStatus;
+      }
+      if (chamado.status_asana !== null && chamado.status_asana !== undefined) {
+        updatePayload.status_asana = novoStatus;
+      }
+
       if (!usandoFallback) {
         const { error } = await supabase
           .from('chamados')
-          .update({
-            historico_tramitacao: novoHistorico,
-            status: novoStatus,
-            status_auvo: novoStatus,
-          })
+          .update(updatePayload)
           .eq('ticket', chamado.ticket);
 
         if (!error) {
@@ -157,12 +167,17 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
 
       // 2. Se a coluna ainda não existe, salvar status no chamado e histórico em configuracoes
       if (!salvou) {
+        const fallbackPayload = { status: novoStatus };
+        if (chamado.status_auvo !== null && chamado.status_auvo !== undefined) {
+          fallbackPayload.status_auvo = novoStatus;
+        }
+        if (chamado.status_asana !== null && chamado.status_asana !== undefined) {
+          fallbackPayload.status_asana = novoStatus;
+        }
+
         await supabase
           .from('chamados')
-          .update({
-            status: novoStatus,
-            status_auvo: novoStatus,
-          })
+          .update(fallbackPayload)
           .eq('ticket', chamado.ticket);
 
         await supabase.from('configuracoes').upsert({
@@ -198,9 +213,7 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
       if (onChamadoUpdated) {
         onChamadoUpdated({
           ...chamado,
-          status: novoStatus,
-          status_auvo: novoStatus,
-          historico_tramitacao: novoHistorico,
+          ...updatePayload,
         });
       }
     } catch (err) {
@@ -215,7 +228,7 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
   const historicoExibicao = historico.length > 0 ? historico : [
     {
       data: chamado.data_abertura || chamado.created_at,
-      status: chamado.status_auvo || chamado.status || 'Aguardando Atendimento',
+      status: chamado.status || chamado.status_asana || chamado.status_auvo || 'Aguardando Atendimento',
       observacao: 'Chamado registrado no sistema de biometria. (Sistema)',
       origem: 'sistema',
     },

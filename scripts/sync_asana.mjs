@@ -440,8 +440,8 @@ export async function sincronizarAsana() {
 
   for (const [ticket, reg] of dbMap.entries()) {
     if (reg.status_asana && !ticketsNoAsana.has(ticket)) {
-      if (!reg.status_auvo) {
-        // Chamado veio exclusivamente do Asana: pode excluir do banco!
+      if (!reg.status_auvo || ticket >= 4000) {
+        // Chamado criado no Asana: exclui do banco!
         ticketsParaExcluir.push(ticket);
       } else {
         // Chamado veio do Auvo: preserva o chamado, apenas desvincula do Asana e restaura status para status_auvo
