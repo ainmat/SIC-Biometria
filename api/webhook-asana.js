@@ -436,6 +436,11 @@ export default async function handler(req, res) {
             let historicoAlterado = false;
 
             for (const s of stories) {
+              // Comentários postados a partir do SIC-Biometria já foram salvos localmente
+              if (s.text && s.text.includes('[SIC-Biometria]')) {
+                continue;
+              }
+
               const autor = s.created_by?.name || 'Asana';
               const textoLimpo = s.text.trim();
               const observacaoFormatada = `${textoLimpo} (${autor})`;

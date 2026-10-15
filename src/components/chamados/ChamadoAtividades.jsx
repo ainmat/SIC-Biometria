@@ -127,6 +127,7 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
         data: now,
         status: novoStatus,
         observacao: `${observacao.trim()} (${operador})`,
+        origem: 'sic',
       };
 
       const novoHistorico = [...historico, novoItem];
@@ -171,6 +172,26 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
         });
       }
 
+      // 3. Sincronização assíncrona bidirecional com a tarefa no Asana
+      const textoParaAsana = observacao.trim();
+      fetch('/api/comentar-asana', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticket: chamado.ticket,
+          observacao: textoParaAsana,
+          autor: operador,
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            console.warn('Aviso ao sincronizar comentário com Asana:', res.status);
+          }
+        })
+        .catch((err) => {
+          console.warn('Aviso de rede ao postar no Asana:', err.message);
+        });
+
       setHistorico(novoHistorico);
       setObservacao('');
 
@@ -196,14 +217,20 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
       data: chamado.data_abertura || chamado.created_at,
       status: chamado.status_auvo || chamado.status || 'Aguardando Atendimento',
       observacao: 'Chamado registrado no sistema de biometria. (Sistema)',
+      origem: 'sistema',
     },
   ];
 
   return (
     <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid var(--border-c, rgba(0,0,0,0.06))' }}>
       {/* Título da Seção */}
-      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>
-        Todas as atividades
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+          Todas as atividades
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--sub)' }}>
+          {historicoExibicao.length} {historicoExibicao.length === 1 ? 'registro' : 'registros'}
+        </span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -212,6 +239,8 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
           const { mensagem, autor } = extrairAutor(t.observacao);
           const iniciais = obterIniciais(autor);
           const isSistema = autor === 'Sistema' || autor.toLowerCase().startsWith('sistema');
+          const isAsana = t.origem === 'asana' || Boolean(t.asana_gid) || autor.toLowerCase().includes('asana');
+          const isSic = t.origem === 'sic' || (!isSistema && !isAsana);
 
           return (
             <div key={idx} style={{ display: 'flex', gap: 12 }}>
@@ -222,8 +251,12 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
-                  background: isSistema ? 'rgba(13, 124, 61, 0.1)' : 'rgba(13, 124, 61, 0.14)',
-                  color: '#0D7C3D',
+                  background: isAsana
+                    ? 'rgba(240, 106, 106, 0.14)'
+                    : isSistema
+                    ? 'rgba(100, 116, 139, 0.12)'
+                    : 'rgba(13, 124, 61, 0.14)',
+                  color: isAsana ? '#E04B4B' : isSistema ? '#64748b' : '#0D7C3D',
                   fontSize: 11,
                   fontWeight: 700,
                   display: 'flex',
@@ -236,11 +269,44 @@ export default function ChamadoAtividades({ chamado, onChamadoUpdated }) {
 
               {/* Conteúdo do Comentário */}
               <div style={{ flex: 1, paddingTop: 5 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
                     {autor}
                   </span>
-                  <span style={{ fontSize: 11, color: 'var(--muted-c)' }}>
+
+                  {isAsana && (
+                    <span
+                      style={{
+                        fontSize: 9.5,
+                        fontWeight: 600,
+                        padding: '1px 6px',
+                        borderRadius: 4,
+                        background: 'rgba(240, 106, 106, 0.12)',
+                        color: '#E04B4B',
+                      }}
+                      title="Comentário importado em tempo real do Asana"
+                    >
+                      Asana
+                    </span>
+                  )}
+
+                  {isSic && !isSistema && (
+                    <span
+                      style={{
+                        fontSize: 9.5,
+                        fontWeight: 600,
+                        padding: '1px 6px',
+                        borderRadius: 4,
+                        background: 'rgba(13, 124, 61, 0.1)',
+                        color: '#0D7C3D',
+                      }}
+                      title="Publicado no SIC e sincronizado com o Asana"
+                    >
+                      SIC ⇄ Asana
+                    </span>
+                  )}
+
+                  <span style={{ fontSize: 11, color: 'var(--muted-c)', marginLeft: 'auto' }}>
                     {formatarDataHora(t.data)}
                   </span>
                 </div>

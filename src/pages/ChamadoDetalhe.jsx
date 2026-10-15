@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { fmtDate } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
+import { fmtDate, calcularAging } from '@/lib/utils';
 import { COR_SEC } from '@/lib/constants';
 import {
   ArrowLeft, Copy, Check, Building2, Wrench, ScanFace,
-  Clock, UserCheck, HelpCircle, AlertTriangle, ExternalLink, Calendar, User
+  Clock, UserCheck, HelpCircle, AlertTriangle, ExternalLink, Calendar, User, Flame
 } from 'lucide-react';
 
 function isDivergente(chamado) {
@@ -37,6 +38,30 @@ export default function ChamadoDetalhe() {
   const [chamado, setChamado] = useState(state?.chamado);
   const [copiado, setCopiado] = useState(false);
   const [copiadoTexto, setCopiadoTexto] = useState(false);
+  const [reincidentes, setReincidentes] = useState([]);
+
+  useEffect(() => {
+    if (!chamado?.unidade || chamado.unidade === 'NÃO IDENTIFICADO' || chamado.unidade === 'ADVANCIS') {
+      setReincidentes([]);
+      return;
+    }
+
+    const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    supabase
+      .from('chamados')
+      .select('ticket, unidade, secretaria, motivo, data_abertura, status, status_auvo, problema')
+      .eq('unidade', chamado.unidade)
+      .neq('ticket', chamado.ticket)
+      .gte('data_abertura', trintaDiasAtras)
+      .order('data_abertura', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setReincidentes(data);
+        }
+      })
+      .catch((err) => console.warn('Aviso ao carregar reincidentes:', err));
+  }, [chamado?.unidade, chamado?.ticket]);
 
   if (!chamado) {
     return (
@@ -74,6 +99,7 @@ export default function ChamadoDetalhe() {
   const stAsana = chamado.status_asana;
   const divergente = isDivergente(chamado);
   const corSec = COR_SEC[chamado.secretaria] || '#64748b';
+  const aging = calcularAging(chamado.data_abertura, stAuvo);
 
   const copiarTicket = () => {
     navigator.clipboard.writeText(String(chamado.ticket));
@@ -87,7 +113,7 @@ export default function ChamadoDetalhe() {
 • Motivo: ${chamado.motivo || 'N/A'}
 • Status AUVO: ${stAuvo}
 • Status ASANA: ${stAsana || 'Não registrado'}
-• Data Abertura: ${fmtDate(chamado.data_abertura)}
+• Data Abertura: ${fmtDate(chamado.data_abertura)} (${aging.diasTexto} - ${aging.label})
 • Descrição: ${chamado.problema || 'Sem descrição'}`;
     navigator.clipboard.writeText(resumo);
     setCopiadoTexto(true);
@@ -143,7 +169,7 @@ export default function ChamadoDetalhe() {
               gap: 12,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span className="ticket-pill" style={{ fontSize: 16, padding: '6px 12px' }}>
                 #{chamado.ticket}
                 <button onClick={copiarTicket} className="ticket-copy-btn" style={{ opacity: 1, marginLeft: 4 }} title="Copiar número">
@@ -154,6 +180,12 @@ export default function ChamadoDetalhe() {
               <span className={`status-chip ${stAuvo === 'Atendimento Encerrado' ? 'status-chip-encerrado' : 'status-chip-aberto'}`} style={{ fontSize: 12, padding: '4px 10px' }}>
                 <span className="status-dot-pulse" />
                 {stAuvo}
+              </span>
+
+              {/* Semáforo de SLA */}
+              <span className={`sla-badge ${aging.badgeClass}`} style={{ fontSize: 11, padding: '4px 8px' }}>
+                <span className="sla-dot" />
+                {aging.diasTexto} · {aging.label}
               </span>
 
               {divergente && (
@@ -167,6 +199,37 @@ export default function ChamadoDetalhe() {
               <Calendar size={13} /> Aberto em {fmtDate(chamado.data_abertura)}
             </div>
           </div>
+
+          {/* Alerta de Reincidência na Unidade */}
+          {reincidentes.length > 0 && (
+            <div className="recurrence-banner">
+              <div className="recurrence-icon-wrap">
+                <Flame size={16} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="recurrence-title">
+                  <Flame size={14} /> Unidade Reincidente Detectada
+                </div>
+                <div className="recurrence-text">
+                  Esta unidade abriu <strong>{reincidentes.length + 1} chamados</strong> nos últimos 30 dias.
+                  Equipamentos ou configurações nesse local podem requerer inspeção técnica especializada.
+                </div>
+                <div className="recurrence-tickets-list">
+                  {reincidentes.map((r) => (
+                    <button
+                      key={r.ticket}
+                      type="button"
+                      onClick={() => setChamado(r)}
+                      className="recurrence-ticket-pill"
+                      title={`Alternar para chamado #${r.ticket}`}
+                    >
+                      #{r.ticket} · {r.motivo || 'Incidente'} ({fmtDate(r.data_abertura)})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Divergence Notice */}
           {divergente && (

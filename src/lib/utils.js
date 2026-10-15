@@ -54,3 +54,68 @@ export function matchUnidade(userUnit, dbUnit) {
   const minWords = Math.min(words1.length, words2.length);
   return (matches / minWords) >= 0.7;
 }
+
+export function calcularAging(dataAbertura, status) {
+  if (!dataAbertura) {
+    return { dias: 0, nivel: 'regular', label: '—', diasTexto: '—', color: '#64748b' };
+  }
+
+  let dt;
+  if (typeof dataAbertura === 'string' && dataAbertura.includes('T')) {
+    dt = new Date(dataAbertura);
+  } else {
+    dt = new Date(String(dataAbertura) + 'T00:00:00');
+  }
+
+  if (isNaN(dt.getTime())) {
+    return { dias: 0, nivel: 'regular', label: '—', diasTexto: '—', color: '#64748b' };
+  }
+
+  const encerrado = status === 'Atendimento Encerrado' || status === 'Atendimento Cancelado';
+  const agora = Date.now();
+  const diffMs = agora - dt.getTime();
+  const dias = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+
+  if (encerrado) {
+    return {
+      dias,
+      nivel: 'encerrado',
+      label: 'Encerrado',
+      diasTexto: dias === 0 ? 'Hoje' : `${dias}d`,
+      color: '#64748b',
+      badgeClass: 'sla-encerrado',
+    };
+  }
+
+  if (dias <= 2) {
+    return {
+      dias,
+      nivel: 'regular',
+      label: 'SLA Regular',
+      diasTexto: dias === 0 ? 'Hoje' : `${dias}d`,
+      color: '#10B981',
+      badgeClass: 'sla-regular',
+    };
+  }
+
+  if (dias <= 7) {
+    return {
+      dias,
+      nivel: 'atencao',
+      label: 'SLA Atenção',
+      diasTexto: `${dias}d`,
+      color: '#F59E0B',
+      badgeClass: 'sla-atencao',
+    };
+  }
+
+  return {
+    dias,
+    nivel: 'critico',
+    label: 'SLA Crítico (>7d)',
+    diasTexto: `${dias}d`,
+    color: '#EF4444',
+    badgeClass: 'sla-critico',
+  };
+}
+

@@ -2,7 +2,7 @@ import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, fetchChamados } from '@/lib/supabase';
-import { fmtDate } from '@/lib/utils';
+import { fmtDate, calcularAging } from '@/lib/utils';
 import { COR_SEC } from '@/lib/constants';
 import {
   Upload, Download, Search, X, Filter, SlidersHorizontal,
@@ -10,7 +10,7 @@ import {
   ChevronsLeft, ChevronsRight, Copy, Check, ExternalLink,
   Building2, Wrench, ScanFace, UserCheck, HelpCircle,
   RefreshCw, Inbox, AlertCircle, Eye, ArrowUpDown, ChevronDown,
-  FileSpreadsheet
+  FileSpreadsheet, Flame
 } from 'lucide-react';
 import { baixarCSV, baixarExcel, formatarDataBR } from '@/lib/exportar';
 import ModalImportacaoChamados from '@/components/ModalImportacaoChamados';
@@ -49,7 +49,15 @@ function getMotivoIcon(motivo) {
 }
 
 // ─── Drawer Inspector (Slide-Over Sheet) ───────────────────────────────────────
-function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onChamadoUpdated }) {
+function ChamadoDrawer({
+  chamado,
+  todosChamados = [],
+  onClose,
+  onNavigateNext,
+  onNavigatePrev,
+  onChamadoUpdated,
+  onSelectChamado,
+}) {
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
   const [copiadoTexto, setCopiadoTexto] = useState(false);
@@ -92,12 +100,36 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onCha
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, onNavigateNext, onNavigatePrev]);
 
-  if (!chamado) return null;
-
-  const stAuvo = chamado.status_auvo || chamado.status || 'Aguardando Atendimento';
-  const stAsana = chamado.status_asana;
+  const stAuvo = chamado?.status_auvo || chamado?.status || 'Aguardando Atendimento';
+  const stAsana = chamado?.status_asana;
   const divergente = isDivergente(chamado);
-  const corSec = COR_SEC[chamado.secretaria] || '#64748b';
+  const corSec = COR_SEC[chamado?.secretaria] || '#64748b';
+  const aging = calcularAging(chamado?.data_abertura, stAuvo);
+
+  // Detecção de Reincidência na Unidade (Hotspot) nos últimos 30 dias
+  const reincidentes = useMemo(() => {
+    if (!chamado?.unidade || chamado.unidade === 'NÃO IDENTIFICADO' || chamado.unidade === 'ADVANCIS') {
+      return [];
+    }
+    const agora = Date.now();
+    const trintaDiasMs = 30 * 24 * 60 * 60 * 1000;
+    const uniAlvo = chamado.unidade.trim().toUpperCase();
+
+    return (todosChamados || []).filter((d) => {
+      if (d.ticket === chamado.ticket) return false;
+      if (!d.unidade || d.unidade.trim().toUpperCase() !== uniAlvo) return false;
+      if (!d.data_abertura) return false;
+      let dTime;
+      if (typeof d.data_abertura === 'string' && d.data_abertura.includes('T')) {
+        dTime = new Date(d.data_abertura).getTime();
+      } else {
+        dTime = new Date(String(d.data_abertura) + 'T00:00:00').getTime();
+      }
+      return !isNaN(dTime) && agora - dTime <= trintaDiasMs;
+    });
+  }, [chamado?.unidade, chamado?.ticket, todosChamados]);
+
+  if (!chamado) return null;
 
   const copiarTicket = (e) => {
     e.stopPropagation();
@@ -112,7 +144,7 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onCha
 • Motivo: ${chamado.motivo || 'N/A'}
 • Status AUVO: ${stAuvo}
 • Status ASANA: ${stAsana || 'Não registrado'}
-• Data Abertura: ${fmtDate(chamado.data_abertura)}
+• Data Abertura: ${fmtDate(chamado.data_abertura)} (${aging.diasTexto} - ${aging.label})
 • Problema: ${chamado.problema || 'Sem descrição'}`;
     navigator.clipboard.writeText(resumo);
     setCopiadoTexto(true);
@@ -168,6 +200,12 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onCha
                 {stAuvo}
               </span>
 
+              {/* Semáforo de SLA */}
+              <span className={`sla-badge ${aging.badgeClass}`} title={`SLA: ${aging.label}`}>
+                <span className="sla-dot" />
+                {aging.diasTexto} · {aging.label}
+              </span>
+
               {divergente && (
                 <span className="divergence-pill">
                   <AlertTriangle size={11} /> Descompasso Auvo/Asana
@@ -192,6 +230,37 @@ function ChamadoDrawer({ chamado, onClose, onNavigateNext, onNavigatePrev, onCha
 
         {/* Drawer Body */}
         <div className="drawer-body">
+          {/* Card de Alerta de Reincidência (Hotspot) */}
+          {reincidentes.length > 0 && (
+            <div className="recurrence-banner">
+              <div className="recurrence-icon-wrap">
+                <Flame size={15} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="recurrence-title">
+                  <Flame size={13} /> Unidade Reincidente Detectada
+                </div>
+                <div className="recurrence-text">
+                  Esta unidade abriu <strong>{reincidentes.length + 1} chamados</strong> nos últimos 30 dias.
+                  Possível instabilidade recorrente ou falha crônica no ponto de biometria.
+                </div>
+                <div className="recurrence-tickets-list">
+                  {reincidentes.map((r) => (
+                    <button
+                      key={r.ticket}
+                      type="button"
+                      onClick={() => onSelectChamado && onSelectChamado(r)}
+                      className="recurrence-ticket-pill"
+                      title={`Alternar para chamado #${r.ticket} (${r.status_auvo || r.status})`}
+                    >
+                      #{r.ticket} · {r.motivo || 'Incidente'} ({fmtDate(r.data_abertura)})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Card de Alerta se houver Divergência */}
           {divergente && (
             <div
@@ -534,16 +603,22 @@ export default function TodosChamados() {
     let abertos = 0;
     let divergentes = 0;
     let encerrados = 0;
+    let criticosSla = 0;
 
     for (let i = 0; i < dados.length; i++) {
       const d = dados[i];
       const st = d.status_auvo || d.status || 'Aguardando Atendimento';
+      const encerrado = st === 'Atendimento Encerrado' || st === 'Atendimento Cancelado';
       if (st === 'Aguardando Atendimento') abertos++;
-      if (st === 'Atendimento Encerrado') encerrados++;
+      if (encerrado) encerrados++;
       if (isDivergente(d)) divergentes++;
+      if (!encerrado) {
+        const ag = calcularAging(d.data_abertura, st);
+        if (ag.nivel === 'critico') criticosSla++;
+      }
     }
 
-    return { total, abertos, divergentes, encerrados };
+    return { total, abertos, divergentes, encerrados, criticosSla };
   }, [dados]);
 
   // Opções para Filtro Multi-Select de Secretarias (com pesquisa estilo Excel e contadores)
@@ -615,6 +690,12 @@ export default function TodosChamados() {
     // Quick View (Segmented Control)
     if (quickView === 'abertos') {
       r = r.filter((d) => (d.status_auvo || d.status || 'Aguardando Atendimento') === 'Aguardando Atendimento');
+    } else if (quickView === 'criticos_sla') {
+      r = r.filter((d) => {
+        const st = d.status_auvo || d.status || 'Aguardando Atendimento';
+        if (st === 'Atendimento Encerrado' || st === 'Atendimento Cancelado') return false;
+        return calcularAging(d.data_abertura, st).nivel === 'critico';
+      });
     } else if (quickView === 'divergencias') {
       r = r.filter(isDivergente);
     } else if (quickView === 'encerrados') {
@@ -995,6 +1076,7 @@ export default function TodosChamados() {
               {[
                 { id: 'todos', label: 'Todos', count: metricas.total },
                 { id: 'abertos', label: 'Em Aberto', count: metricas.abertos },
+                { id: 'criticos_sla', label: 'Críticos SLA (>7d)', count: metricas.criticosSla, icon: <Clock size={12} className="text-rose-500" /> },
                 { id: 'divergencias', label: 'Divergências', count: metricas.divergentes, icon: <AlertTriangle size={12} className="text-amber-500" /> },
                 { id: 'encerrados', label: 'Encerrados', count: metricas.encerrados },
               ].map((tab) => (
@@ -1142,7 +1224,7 @@ export default function TodosChamados() {
                   <th style={{ width: '110px' }}>Ticket</th>
                   <th>Unidade & Lotação</th>
                   <th style={{ width: '160px' }}>Categoria / Motivo</th>
-                  <th style={{ width: '100px', textAlign: 'center' }}>Abertura</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Abertura / SLA</th>
                   <th style={{ width: '140px' }}>Status AUVO</th>
                   <th style={{ width: '150px' }}>Status ASANA</th>
                   <th style={{ width: '240px' }}>Problema Relatado</th>
@@ -1233,9 +1315,22 @@ export default function TodosChamados() {
                           </div>
                         </td>
 
-                        {/* Abertura */}
-                        <td style={{ textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 11, color: 'var(--muted-c)' }}>
-                          {fmtDate(r.data_abertura)}
+                        {/* Abertura / SLA */}
+                        <td style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                            <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 11, color: 'var(--muted-c)' }}>
+                              {fmtDate(r.data_abertura)}
+                            </span>
+                            {(() => {
+                              const ag = calcularAging(r.data_abertura, stAuvo);
+                              return (
+                                <span className={`sla-badge ${ag.badgeClass}`} title={ag.label}>
+                                  <span className="sla-dot" />
+                                  {ag.diasTexto}
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </td>
 
                         {/* Status Auvo */}
@@ -1387,9 +1482,11 @@ export default function TodosChamados() {
         {drawerChamado && (
           <ChamadoDrawer
             chamado={drawerChamado}
+            todosChamados={dados}
             onClose={() => setDrawerChamado(null)}
             onNavigateNext={() => navegarDrawer(1)}
             onNavigatePrev={() => navegarDrawer(-1)}
+            onSelectChamado={(c) => setDrawerChamado(c)}
             onChamadoUpdated={(updated) => {
               setDrawerChamado(updated);
               setDados((prev) =>

@@ -726,3 +726,147 @@
 .dark .chamados-empty-icon {
   background: rgba(255, 255, 255, 0.06);
 }
+
+/* ─── Semáforo de SLA e Envelhecimento (Aging Buckets) ───────────────────── */
+.sla-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.sla-badge.sla-regular {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.sla-badge.sla-atencao {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.sla-badge.sla-critico {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.32);
+}
+
+.sla-badge.sla-encerrado {
+  background: rgba(100, 116, 139, 0.08);
+  color: var(--muted-c);
+  border: 1px solid rgba(100, 116, 139, 0.18);
+}
+
+.sla-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sla-badge.sla-regular .sla-dot {
+  background: #10B981;
+}
+
+.sla-badge.sla-atencao .sla-dot {
+  background: #F59E0B;
+}
+
+.sla-badge.sla-critico .sla-dot {
+  background: #EF4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+  animation: pulseCritico 2s infinite ease-in-out;
+}
+
+@keyframes pulseCritico {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* ─── Alerta de Reincidência (Hotspot) ───────────────────────────────────── */
+.recurrence-banner {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: all 160ms ease-out;
+}
+
+.dark .recurrence-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.recurrence-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.recurrence-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #DC2626;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dark .recurrence-title {
+  color: #F87171;
+}
+
+.recurrence-text {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.recurrence-tickets-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.recurrence-ticket-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 120ms ease;
+}
+
+.recurrence-ticket-pill:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #EF4444;
+  color: #EF4444;
+}
+
