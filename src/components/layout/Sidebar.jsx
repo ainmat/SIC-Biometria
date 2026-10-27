@@ -221,6 +221,23 @@ const NAV = [
         ),
       },
       {
+        to: '/servidores/organograma',
+        label: 'Organograma',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="9" y="3" width="6" height="4" rx="1" />
+            <rect x="2" y="15" width="6" height="4" rx="1" />
+            <rect x="9" y="15" width="6" height="4" rx="1" />
+            <rect x="16" y="15" width="6" height="4" rx="1" />
+            <path d="M12 7v4" />
+            <path d="M5 11h14" />
+            <path d="M5 11v4" />
+            <path d="M12 11v4" />
+            <path d="M19 11v4" />
+          </svg>
+        ),
+      },
+      {
         to: '/admin/servidores/importar',
         label: 'Importar Servidores',
         adminOnly: true,

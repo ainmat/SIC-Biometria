@@ -137,3 +137,70 @@ export async function fetchOpcoesServidores() {
     padroes:     [...sets.Des_Padrao_Adm].sort(),
   };
 }
+
+import fallbackLiderancasSS from '../data/Lideranca_SS.json';
+
+/**
+ * Busca o quadro de lideranças da Secretaria de Saúde na tabela Lideranca_SS do Supabase
+ * Caso a tabela esteja vazia ou ocorra erro de conexão/RLS, utiliza a base de dados correta Lideranca_SS.json
+ */
+export async function fetchLiderancasSS() {
+  try {
+    let { data, error } = await supabase.from('Lideranca_SS').select('*');
+    if (error || !data || data.length === 0) {
+      const res2 = await supabase.from('Lideraca_SS').select('*');
+      if (!res2.error && res2.data && res2.data.length > 0) {
+        data = res2.data;
+      }
+    }
+
+    if (data && data.length > 0) {
+      return data.map((row, idx) => {
+        const cargo = row['Descrição Cargo'] || row['Descricao_Cargo'] || row['Cargo'] || row['cargo'] || '';
+        const nome = row['Nome Funcionário'] || row['Nome_Funcionario'] || row['Nome'] || row['nome'] || '';
+        const local = row['Descrição Local Trabalho'] || row['Descricao_LocalTrab'] || row['localTrabalho'] || '';
+        const sigla = row['Sigla Cargo'] || row['Sigla_Cargo'] || row['siglaCargo'] || '';
+        const matricula = row['Matrícula'] || row['Matricula'] || row['matricula'] || '';
+        const situacao = row['Situação'] || row['Situacao'] || row['situacao'] || 'Normal';
+        const padrao = row['Símbolo Padrão Salário'] || row['Simbolo_Padrao_Salario'] || row['padrao'] || '';
+        const vinculo = row['Descrição Categoria Funcional'] || row['vinculo'] || '';
+        const cpf = row['CPF'] || row['cpf'] || '';
+        const regime = row['Regime Trabalho'] || row['regime'] || '';
+        const admissao = row['Data Admissão'] || row['admissao'] || '';
+
+        let roleCategory = 'SUPERVISOR';
+        if (/SECRET[ÁA]RIO|CHEFE\s+DE\s+GABINETE/i.test(cargo)) roleCategory = 'GABINETE';
+        else if (/DIRETOR/i.test(cargo)) roleCategory = 'DIRETOR';
+        else if (/GERENTE/i.test(cargo)) roleCategory = 'GERENTE';
+        else if (/SUPERVISOR|SUPERVISAO/i.test(cargo)) roleCategory = 'SUPERVISOR';
+
+        const mLocal = local.match(/(58[-\d.]+)/);
+        const mSigla = sigla.match(/(58[-\d.]+)/);
+        const unitCode = mSigla ? mSigla[1].split('.')[0] : (mLocal ? mLocal[1] : '58-0-0-0-0');
+
+        return {
+          id: `lead_${idx + 1}_${matricula}`,
+          matricula,
+          cpf,
+          nome,
+          cargo,
+          roleCategory,
+          unitCode,
+          localTrabalho: local,
+          siglaCargo: sigla,
+          situacao,
+          vinculo,
+          padrao,
+          regime,
+          admissao,
+          raw: row,
+        };
+      });
+    }
+  } catch (e) {
+    console.warn('Aviso: Utilizando base Lideranca_SS:', e);
+  }
+
+  return fallbackLiderancasSS;
+}
+

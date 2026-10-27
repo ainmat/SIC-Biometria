@@ -1,0 +1,16 @@
+<USER_REQUEST>
+essa é a base de dados correta, utilize apenas ela como a tabela Lideranca_SS do supabase
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-27T11:17:55-03:00.
+
+The user's current state is as follows:
+Active Document: /Users/mat/Documentos Prefeitura/Dashboard-Biometria/src/components/chamados/ChamadoAtividades.jsx (LANGUAGE_JAVASCRIPT)
+Cursor is on line: 1
+Other open documents:
+- /Users/mat/Documentos Prefeitura/Dashboard-Biometria/api/webhook-asana.js (LANGUAGE_JAVASCRIPT)
+- /Users/mat/Documentos Prefeitura/Dashboard-Biometria/src/components/layout/Sidebar.jsx (LANGUAGE_JAVASCRIPT)
+- /Users/mat/Documentos Prefeitura/Dashboard-Biometria/src/modules/servidores/components/organograma/OrganogramaLista.jsx (LANGUAGE_JAVASCRIPT)
+- /Users/mat/Documentos Prefeitura/Dashboard-Biometria/src/modules/servidores/utils/organogramaEngine.js (LANGUAGE_JAVASCRIPT)
+- /Users/mat/Documentos Prefeitura/Dashboard-Biometria/src/modules/servidores/components/organograma/OrganogramaTree.jsx (LANGUAGE_JAVASCRIPT)
+</ADDITIONAL_METADATA>

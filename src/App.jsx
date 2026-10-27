@@ -40,6 +40,7 @@ import PerfilQuadro          from '@/modules/servidores/pages/PerfilQuadro';
 import IndiceSaude           from '@/modules/servidores/pages/IndiceSaude';
 import SimuladorCenarios     from '@/modules/servidores/pages/SimuladorCenarios';
 import SentinelJornada       from '@/modules/servidores/pages/SentinelJornada';
+import Organograma           from '@/modules/servidores/pages/Organograma';
 
 // Protocolo Digital
 import PainelProtocolo       from '@/modules/protocolo/pages/PainelProtocolo';
@@ -125,6 +126,7 @@ export default function App() {
           <Route path="saude"         element={<BlockApoio><IndiceSaude /></BlockApoio>} />
           <Route path="simulador"     element={<BlockApoio><SimuladorCenarios /></BlockApoio>} />
           <Route path="sentinel"      element={<BlockApoio><SentinelJornada /></BlockApoio>} />
+          <Route path="organograma"   element={<BlockApoio><Organograma /></BlockApoio>} />
         </Route>
 
         {/* Protocolo Digital */}
