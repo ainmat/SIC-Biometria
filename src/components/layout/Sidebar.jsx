@@ -116,6 +116,17 @@ const NAV = [
           </svg>
         ),
       },
+      {
+        to: '/ponto/horas-positivas',
+        label: 'Horas Positivas',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 8 14" />
+            <line x1="12" y1="2" x2="12" y2="5" />
+          </svg>
+        ),
+      },
     ],
   },
   {

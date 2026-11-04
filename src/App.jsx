@@ -42,6 +42,9 @@ import SimuladorCenarios     from '@/modules/servidores/pages/SimuladorCenarios'
 import SentinelJornada       from '@/modules/servidores/pages/SentinelJornada';
 import Organograma           from '@/modules/servidores/pages/Organograma';
 
+// Ponto — Horas Positivas
+import HorasPositivasEntrada from '@/modules/ponto/pages/HorasPositivasEntrada';
+
 // Protocolo Digital
 import PainelProtocolo       from '@/modules/protocolo/pages/PainelProtocolo';
 import ConsultaProtocolo     from '@/modules/protocolo/pages/ConsultaProtocolo';
@@ -127,6 +130,12 @@ export default function App() {
           <Route path="simulador"     element={<BlockApoio><SimuladorCenarios /></BlockApoio>} />
           <Route path="sentinel"      element={<BlockApoio><SentinelJornada /></BlockApoio>} />
           <Route path="organograma"   element={<BlockApoio><Organograma /></BlockApoio>} />
+        </Route>
+
+        {/* Ponto — Horas Positivas */}
+        <Route path="ponto">
+          <Route index element={<Navigate to="horas-positivas" replace />} />
+          <Route path="horas-positivas" element={<BlockApoio><HorasPositivasEntrada /></BlockApoio>} />
         </Route>
 
         {/* Protocolo Digital */}
