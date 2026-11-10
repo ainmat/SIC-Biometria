@@ -66,7 +66,7 @@ export default function AbaAuditoriaProtocolos() {
   // Sub-abas de visualização: 'protocolos' | 'servidores'
   const [visaoAtiva, setVisaoAtiva] = useState('protocolos');
   const [busca, setBusca] = useState('');
-  const [filtroAno, setFiltroAno] = useState('todos'); // 'todos' | '2024' | '2025' | '2026'
+  const [filtroAno, setFiltroAno] = useState('todos'); // 'todos' ou ano específico (ex: '2025', '2026')
   const [expandidos, setExpandidos] = useState(new Set());
 
   // Upload e detecção inicial de abas
@@ -146,14 +146,15 @@ export default function AbaAuditoriaProtocolos() {
     let lista = resultado.listaProtocolos;
 
     if (filtroAno !== 'todos') {
-      lista = lista.filter(p => p.ano === filtroAno);
+      const dadosAno = resultado.anosDetalhados?.[filtroAno];
+      lista = dadosAno ? dadosAno.listaProtocolos : lista.filter(p => p.ano === filtroAno);
     }
 
     const b = busca.trim().toLowerCase();
     if (b) {
       lista = lista.filter(p =>
         p.protocolo.includes(b) ||
-        p.servidores.some(s => s.nome.toLowerCase().includes(b) || s.cartao.includes(b))
+        p.servidores.some(s => s.nome.toLowerCase().includes(b) || (s.cartao && s.cartao.includes(b)))
       );
     }
 
@@ -165,18 +166,25 @@ export default function AbaAuditoriaProtocolos() {
     if (!resultado) return [];
     let lista = resultado.listaServidores;
 
+    if (filtroAno !== 'todos') {
+      const dadosAno = resultado.anosDetalhados?.[filtroAno];
+      if (dadosAno) {
+        lista = dadosAno.listaServidores;
+      }
+    }
+
     const b = busca.trim().toLowerCase();
     if (b) {
       lista = lista.filter(s =>
         s.nome.toLowerCase().includes(b) ||
-        s.cartao.includes(b) ||
+        (s.cartao && s.cartao.includes(b)) ||
         (s.setor && s.setor.toLowerCase().includes(b)) ||
         s.protocolos.some(p => p.protocolo.includes(b))
       );
     }
 
     return lista;
-  }, [resultado, busca]);
+  }, [resultado, filtroAno, busca]);
 
   return (
     <div>
@@ -383,7 +391,7 @@ export default function AbaAuditoriaProtocolos() {
                 />
               </div>
 
-              {visaoAtiva === 'protocolos' && (
+              {resultado.anosDetectados && resultado.anosDetectados.length > 0 && (
                 <select
                   value={filtroAno}
                   onChange={(e) => setFiltroAno(e.target.value)}
@@ -393,10 +401,10 @@ export default function AbaAuditoriaProtocolos() {
                     color: 'var(--text)', outline: 'none'
                   }}
                 >
-                  <option value="todos">Todos os Anos</option>
-                  <option value="2026">Ano 2026</option>
-                  <option value="2025">Ano 2025</option>
-                  <option value="2024">Ano 2024</option>
+                  <option value="todos">Todos os Anos (Consolidado)</option>
+                  {resultado.anosDetectados.map(ano => (
+                    <option key={ano} value={ano}>Ano {ano}</option>
+                  ))}
                 </select>
               )}
             </div>
