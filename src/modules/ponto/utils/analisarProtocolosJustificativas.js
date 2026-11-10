@@ -44,7 +44,7 @@ function estDado(opts = {}) {
   return {
     font:  { name: 'Calibri', sz: 10, bold: opts.bold || false, color: { rgb: opts.fontColor || COR.pretoCel } },
     fill:  opts.fill ? { patternType: 'solid', fgColor: { rgb: opts.fill } } : { patternType: 'none' },
-    alignment: { horizontal: opts.align || 'left', vertical: 'center', wrapText: false },
+    alignment: { horizontal: opts.align || 'left', vertical: 'center', wrapText: opts.wrapText || false },
     border: bordaThin(COR.cinzaBorda),
     numFmt: opts.numFmt || 'General',
   };
@@ -79,6 +79,7 @@ function criarSheetFormatada(dados, colsDef, estLinhaFn, corCabecalho = COR.azul
           bold: linhaOpts?.bold || false,
           align: colsDef[c].align || 'left',
           numFmt: colsDef[c].numFmt || 'General',
+          wrapText: colsDef[c].wrapText || linhaOpts?.wrapText || false,
         });
       }
     }
@@ -163,7 +164,7 @@ export function analisarProtocolosJustificativas(workbook, abasSelecionadas) {
 
     const headers = matriz[headerIdx].map(c => String(c || '').trim());
 
-    const idxObs = encontrarIndiceColuna(headers, ['calendarioobsusuario', 'observacao', 'obs', 'protocolo', 'justificativa']);
+    const idxObs = encontrarIndiceColuna(headers, ['calendarioobsusuario', 'observacao', 'obs', 'descricao', 'protocolo', 'justificativa']);
     const idxNome = encontrarIndiceColuna(headers, ['funcionarionome', 'nome', 'servidor', 'funcionario']);
     const idxCartao = encontrarIndiceColuna(headers, ['funcionariocartao', 'cartao', 'matricula', 'registro']);
     const idxSetor = encontrarIndiceColuna(headers, ['setordescricao', 'setor', 'departamento', 'lotacao']);
@@ -381,18 +382,45 @@ export function analisarProtocolosJustificativas(workbook, abasSelecionadas) {
 function gerarPlanilhasAno(wb, tituloAno, listaProtocolos, listaServidores, totalGeralUsos) {
   // Aba Protocolos
   const cabecalhoProtocolos = [
-    'Protocolo Digital (PD)', 'Ano do PD', 'Total de Usos', '% do Volume',
-    'Qtd Servidores Distintos', 'Servidores Envolvidos (e utilizações individuais)'
+    'Protocolo Digital (PD)',
+    'Ano do PD',
+    'Total de Usos',
+    '% do Volume Total',
+    'Qtd Servidores Distintos',
+    'Servidor Mais Frequente',
+    'Matrícula Princ.',
+    'Usos Servidor Princ.',
+    '% Concentração no Princ.',
+    'Demais Servidores Envolvidos'
   ];
 
-  const linhasProtocolos = listaProtocolos.map(p => [
-    p.protocolo,
-    p.ano,
-    p.totalUsos,
-    totalGeralUsos > 0 ? p.totalUsos / totalGeralUsos : 0,
-    p.totalServidores,
-    p.servidores.map(s => `${s.nome}${s.cartao ? ` (Mat: ${s.cartao})` : ''}: ${s.qtd}x`).join(' | '),
-  ]);
+  const linhasProtocolos = listaProtocolos.map(p => {
+    const servPrincipal = p.servidores[0] || null;
+    const usosPrincipal = servPrincipal ? servPrincipal.qtd : 0;
+    const concPrincipal = p.totalUsos > 0 ? usosPrincipal / p.totalUsos : 0;
+    
+    // Demais servidores organizados de forma clara
+    const demais = p.servidores.slice(1);
+    let textoDemais = '-';
+    if (demais.length > 0) {
+      const topDemais = demais.slice(0, 3).map(s => `${s.nome}: ${s.qtd}x`).join('\n');
+      const restante = demais.length > 3 ? `\n(+${demais.length - 3} outros servidores)` : '';
+      textoDemais = topDemais + restante;
+    }
+
+    return [
+      p.protocolo,
+      p.ano,
+      p.totalUsos,
+      totalGeralUsos > 0 ? p.totalUsos / totalGeralUsos : 0,
+      p.totalServidores,
+      servPrincipal ? servPrincipal.nome : '-',
+      servPrincipal?.cartao || '-',
+      usosPrincipal,
+      concPrincipal,
+      textoDemais,
+    ];
+  });
 
   const dadosProtocolosComTotais = [
     cabecalhoProtocolos,
@@ -404,17 +432,25 @@ function gerarPlanilhasAno(wb, tituloAno, listaProtocolos, listaServidores, tota
       totalGeralUsos,
       1.0,
       listaServidores.length,
+      '',
+      '',
+      '',
+      '',
       `Total de ${listaProtocolos.length} protocolos distintos`,
     ],
   ];
 
   const colsProtocolos = [
-    { w: 24, align: 'center' },
+    { w: 22, align: 'center' },
     { w: 12, align: 'center' },
     { w: 16, align: 'right', numFmt: '#,##0' },
     { w: 18, align: 'right', numFmt: '0.0%' },
     { w: 22, align: 'right', numFmt: '#,##0' },
-    { w: 85, align: 'left' },
+    { w: 36, align: 'left' },
+    { w: 16, align: 'center' },
+    { w: 20, align: 'right', numFmt: '#,##0' },
+    { w: 24, align: 'right', numFmt: '0.0%' },
+    { w: 45, align: 'left', wrapText: true },
   ];
 
   const wsProtocolos = criarSheetFormatada(
@@ -508,28 +544,59 @@ function gerarPlanilhasAno(wb, tituloAno, listaProtocolos, listaServidores, tota
 export function exportarProtocolosXLSX(resultado) {
   const wb = XLSXStyle.utils.book_new();
 
-  // 1. Aba Consolidada Multi-Anual por Servidor (com colunas separadas para cada ano: 2025, 2026, Total Geral)
+  // 1. Aba Consolidada Multi-Anual por Servidor (com colunas analíticas e pódio de PDs)
   const anos = resultado.anosDetectados || [];
   const cabecalhoComparativo = [
     'Matrícula/Cartão', 'Servidor', 'Setor / Gerência', 'Cargo',
     ...anos.map(a => `Total ${a}`),
     'TOTAL GERAL',
     'Qtd PDs Distintos',
-    'Principais Protocolos'
+    'Protocolo Principal (Top 1)',
+    'Usos Top 1',
+    '% Concentração Top 1',
+    'Protocolo Top 2',
+    'Usos Top 2',
+    'Protocolo Top 3',
+    'Usos Top 3',
+    'Outros Protocolos Utilizados'
   ];
 
   const totalGeralUsos = resultado.kpis.totalUsosIdentificados || 1;
 
-  const linhasComparativo = resultado.listaServidores.map(s => [
-    s.cartao || '-',
-    s.nome,
-    s.setor || '-',
-    s.cargo || '-',
-    ...anos.map(a => s.porAno[a] || 0),
-    s.totalUsos,
-    s.totalProtocolosDistintos,
-    s.protocolos.slice(0, 5).map(p => `${p.protocolo} (${p.qtd}x)`).join(', ') + (s.protocolos.length > 5 ? '...' : ''),
-  ]);
+  const linhasComparativo = resultado.listaServidores.map(s => {
+    const p1 = s.protocolos[0] || null;
+    const p2 = s.protocolos[1] || null;
+    const p3 = s.protocolos[2] || null;
+
+    const usosP1 = p1 ? p1.qtd : 0;
+    const concP1 = s.totalUsos > 0 ? usosP1 / s.totalUsos : 0;
+
+    const outros = s.protocolos.slice(3);
+    let textoOutros = '-';
+    if (outros.length > 0) {
+      const topOutros = outros.slice(0, 3).map(p => `${p.protocolo} (${p.qtd}x)`).join('\n');
+      const restante = outros.length > 3 ? `\n(+${outros.length - 3} outros)` : '';
+      textoOutros = topOutros + restante;
+    }
+
+    return [
+      s.cartao || '-',
+      s.nome,
+      s.setor || '-',
+      s.cargo || '-',
+      ...anos.map(a => s.porAno[a] || 0),
+      s.totalUsos,
+      s.totalProtocolosDistintos,
+      p1 ? p1.protocolo : '-',
+      usosP1,
+      concP1,
+      p2 ? p2.protocolo : '-',
+      p2 ? p2.qtd : 0,
+      p3 ? p3.protocolo : '-',
+      p3 ? p3.qtd : 0,
+      textoOutros,
+    ];
+  });
 
   const totaisAnos = anos.map(a =>
     resultado.listaServidores.reduce((acc, s) => acc + (s.porAno[a] || 0), 0)
@@ -547,6 +614,13 @@ export function exportarProtocolosXLSX(resultado) {
       ...totaisAnos,
       totalGeralUsos,
       resultado.kpis.totalProtocolosDistintos,
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
       ''
     ]
   ];
@@ -559,7 +633,14 @@ export function exportarProtocolosXLSX(resultado) {
     ...anos.map(() => ({ w: 15, align: 'right', numFmt: '#,##0' })),
     { w: 18, align: 'right', numFmt: '#,##0' },
     { w: 18, align: 'right', numFmt: '#,##0' },
-    { w: 60, align: 'left' },
+    { w: 24, align: 'center' },
+    { w: 14, align: 'right', numFmt: '#,##0' },
+    { w: 20, align: 'right', numFmt: '0.0%' },
+    { w: 22, align: 'center' },
+    { w: 14, align: 'right', numFmt: '#,##0' },
+    { w: 22, align: 'center' },
+    { w: 14, align: 'right', numFmt: '#,##0' },
+    { w: 35, align: 'left', wrapText: true },
   ];
 
   const wsComparativo = criarSheetFormatada(
