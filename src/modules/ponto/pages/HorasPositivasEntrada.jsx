@@ -2,13 +2,16 @@ import TopbarAvatar from '@/components/layout/TopbarAvatar';
 import { useState, useCallback, useMemo } from 'react';
 import {
   Upload, AlertTriangle, CheckCircle, Download, Search,
-  ChevronDown, ChevronUp, Info, XCircle, Clock, Users, Calendar
+  ChevronDown, ChevronUp, Info, XCircle, Clock, Users, Calendar, FileText,
+  FileSpreadsheet, ShieldCheck
 } from 'lucide-react';
+import AbaAuditoriaProtocolos from '@/modules/ponto/components/AbaAuditoriaProtocolos';
 import {
   lerCSVMarcacoes,
   lerXLSXHorarios,
   cruzarDados,
   exportarRelatorioXLSX,
+  exportarRelatorioDOCX,
   LIMITE_PADRAO,
   minParaHorario,
   minParaHrMm,
@@ -156,6 +159,11 @@ function ResumoServidor({ r, expanded, onToggle, modo = 'entrada' }) {
         <div style={{ minWidth: 260, flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{r.nome}</span>
+            {r.matricula && (
+              <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(31,56,100,.08)', color: '#1F3864', fontWeight: 600 }}>
+                Mat: {r.matricula}
+              </span>
+            )}
             {r.cargo && (
               <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,0,0,.05)', color: 'var(--muted-c)' }}>
                 {r.cargo}
@@ -310,6 +318,7 @@ function ResumoServidor({ r, expanded, onToggle, modo = 'entrada' }) {
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function HorasPositivasEntrada() {
+  const [moduloAtivo, setModuloAtivo] = useState('horas-positivas'); // 'horas-positivas' | 'protocolos'
   const [arquivoCSV, setArquivoCSV] = useState(null);
   const [arquivoXLSX, setArquivoXLSX] = useState(null);
   const [limiteMin, setLimiteMin] = useState(LIMITE_PADRAO);
@@ -416,8 +425,12 @@ export default function HorasPositivasEntrada() {
     <div>
       <div className="topbar">
         <div className="topbar-left">
-          <h1>Auditoria de Horas Positivas (HE)</h1>
-          <p>Levantamento e cruzamento automatizado de marcações biométricas fora da escala prevista</p>
+          <h1>{moduloAtivo === 'horas-positivas' ? 'Auditoria de Horas Positivas (HE)' : 'Auditoria de Protocolos nas Justificativas'}</h1>
+          <p>
+            {moduloAtivo === 'horas-positivas'
+              ? 'Levantamento e cruzamento automatizado de marcações biométricas fora da escala prevista'
+              : 'Varredura e contagem automatizada de Protocolos Digitais (PD) por servidor e total geral'}
+          </p>
         </div>
         <div className="topbar-right">
           <TopbarAvatar />
@@ -425,8 +438,51 @@ export default function HorasPositivasEntrada() {
       </div>
 
       <div className="content">
+        {/* ── Seletor de Ferramenta ── */}
+        <div style={{
+          display: 'flex', gap: 6, marginBottom: 18,
+          background: 'rgba(0,0,0,.03)', padding: 4, borderRadius: 10,
+          width: 'fit-content'
+        }}>
+          <button
+            type="button"
+            onClick={() => setModuloAtivo('horas-positivas')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              border: 'none', cursor: 'pointer',
+              background: moduloAtivo === 'horas-positivas' ? '#1F3864' : 'transparent',
+              color: moduloAtivo === 'horas-positivas' ? '#fff' : 'var(--muted-c)',
+              boxShadow: moduloAtivo === 'horas-positivas' ? '0 2px 4px rgba(31,56,100,.25)' : 'none',
+              transition: 'all .15s'
+            }}
+          >
+            <Clock size={15} />
+            Horas Positivas (HE)
+          </button>
+          <button
+            type="button"
+            onClick={() => setModuloAtivo('protocolos')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              border: 'none', cursor: 'pointer',
+              background: moduloAtivo === 'protocolos' ? '#0284c7' : 'transparent',
+              color: moduloAtivo === 'protocolos' ? '#fff' : 'var(--muted-c)',
+              boxShadow: moduloAtivo === 'protocolos' ? '0 2px 4px rgba(2,132,199,.25)' : 'none',
+              transition: 'all .15s'
+            }}
+          >
+            <ShieldCheck size={15} />
+            Auditoria de Protocolos (PD)
+          </button>
+        </div>
 
-        {/* ── Instruções ── */}
+        {moduloAtivo === 'protocolos' ? (
+          <AbaAuditoriaProtocolos />
+        ) : (
+          <>
+            {/* ── Instruções ── */}
         <div style={{ ...CARD, background: 'rgba(31,56,100,.04)', border: '1px solid rgba(31,56,100,.15)' }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             <Info size={16} color="#1F3864" style={{ flexShrink: 0, marginTop: 1 }} />
@@ -645,12 +701,22 @@ export default function HorasPositivasEntrada() {
                   <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
                     2. Relatório {resultado.modoAnalise === 'geral' ? 'Consolidado (Entrada e Saída)' : resultado.modoAnalise === 'saida' ? 'de Horas Extras na Saída' : 'de Horas Extras na Entrada'}
                   </div>
-                  <button
-                    onClick={() => exportarRelatorioXLSX(resultado)}
-                    style={{ ...BTN_PRIMARY, background: '#1F3864' }}
-                  >
-                    <Download size={15} /> Exportar Relatório Executivo XLSX
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => exportarRelatorioDOCX(resultado)}
+                      style={{ ...BTN_PRIMARY, background: '#2E5090' }}
+                      title="Gera o relatório executivo completo em formato Microsoft Word (.docx)"
+                    >
+                      <FileText size={15} /> Exportar Relatório DOCX
+                    </button>
+                    <button
+                      onClick={() => exportarRelatorioXLSX(resultado)}
+                      style={{ ...BTN_PRIMARY, background: '#1F3864' }}
+                      title="Gera a planilha detalhada em Excel (.xlsx)"
+                    >
+                      <Download size={15} /> Exportar Relatório XLSX
+                    </button>
+                  </div>
                 </div>
 
                 {/* Busca */}
@@ -908,6 +974,8 @@ export default function HorasPositivasEntrada() {
               </ul>
             </div>
           </>
+        )}
+        </>
         )}
 
       </div>

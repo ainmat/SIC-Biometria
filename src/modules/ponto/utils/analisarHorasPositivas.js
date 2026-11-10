@@ -232,6 +232,7 @@ export async function lerCSVMarcacoes(arquivo) {
         const colDataHora = col(['DATA_HORA', 'DATAHORA', 'DATA HORA', 'DATETIME', 'DATA_MARCACAO', 'MARCACAO']);
         const colES      = col(['E_S', 'ES', 'TIPO', 'ENTRADA_SAIDA', 'TIPO_MARCACAO']);
         const colDep     = col(['DEPARTAMENTO', 'SETOR', 'LOTACAO', 'SECRETARIA', 'CATEGORIA']);
+        const colMatricula = col(['MATRICULA', 'MATRÍCULA', 'CARTAO', 'CARTÃO', 'CHAPA', 'FOLHA', 'ID', 'CODIGO', 'COD']);
 
         if (colNome === -1) {
           return reject(new Error(
@@ -273,12 +274,14 @@ export async function lerCSVMarcacoes(arquivo) {
           }
 
           const departamento = colDep !== -1 ? String(row[colDep] || '').trim() : '';
+          const matricula = colMatricula !== -1 ? String(row[colMatricula] || '').trim() : '';
 
           marcacoes.push({
             nome,
             data: parsed.data,
             horario: parsed.horario,
             departamento,
+            matricula,
             tipoES,
           });
         }
@@ -341,6 +344,7 @@ export async function lerXLSXHorarios(arquivo) {
         // Colunas opcionais (enriquecem o relatório)
         const colCargo     = col(['cargodescricao', 'cargo', 'descricaocargo', 'funcao']);
         const colSetor     = col(['setordescricao', 'setor', 'departamento', 'descricaosetor', 'lotacao']);
+        const colMatricula = col(['funcionariomatricula', 'matricula', 'cartao', 'chapa', 'codigofuncionario', 'id']);
 
         if (colNome === -1 || colData === -1 || colHorario === -1) {
           return reject(new Error(
@@ -350,9 +354,9 @@ export async function lerXLSXHorarios(arquivo) {
           ));
         }
 
-        // Mapa: "NOME|YYYY-MM-DD" → { horarioStr, inicioMin, folga, cargo, setor }
+        // Mapa: "NOME|YYYY-MM-DD" → { horarioStr, inicioMin, folga, cargo, setor, matricula }
         const mapa = new Map();
-        // Mapa geral: NOME → { cargo, setor }
+        // Mapa geral: NOME → { cargo, setor, matricula }
         const infoServidores = new Map();
         let linhasIgnoradas = 0;
 
@@ -366,9 +370,14 @@ export async function lerXLSXHorarios(arquivo) {
 
           const cargo = colCargo !== -1 ? String(row[colCargo] || '').trim() : '';
           const setor = colSetor !== -1 ? String(row[colSetor] || '').trim() : '';
+          const matricula = colMatricula !== -1 ? String(row[colMatricula] || '').trim() : '';
 
-          if ((cargo || setor) && (!infoServidores.has(nome) || (!infoServidores.get(nome).cargo && cargo))) {
-            infoServidores.set(nome, { cargo, setor });
+          if ((cargo || setor || matricula) && (!infoServidores.has(nome) || (!infoServidores.get(nome).cargo && cargo))) {
+            infoServidores.set(nome, {
+              cargo: cargo || infoServidores.get(nome)?.cargo || '',
+              setor: setor || infoServidores.get(nome)?.setor || '',
+              matricula: matricula || infoServidores.get(nome)?.matricula || '',
+            });
           }
 
           const horarioRaw = String(row[colHorario]).trim();
@@ -383,6 +392,7 @@ export async function lerXLSXHorarios(arquivo) {
               folga,
               cargo,
               setor,
+              matricula,
             });
           }
         }
@@ -418,8 +428,9 @@ export function cruzarDados(marcacoes, mapaHorarios, limiteMinutos = LIMITE_PADR
   const mapaDiaServidor = new Map(); // "NOME|DATA" → { entradas: [], saidas: [], todas: [], departamento: '' }
   const diasComMarcacaoPorServidor = new Map(); // NOME → Set(data)
   const departamentoPorServidor = new Map(); // NOME → departamento
+  const matriculaPorServidor = new Map(); // NOME → matricula
 
-  for (const { nome, data, horario, departamento, tipoES } of marcacoes) {
+  for (const { nome, data, horario, departamento, matricula, tipoES } of marcacoes) {
     if (!diasComMarcacaoPorServidor.has(nome)) {
       diasComMarcacaoPorServidor.set(nome, new Set());
     }
@@ -427,6 +438,9 @@ export function cruzarDados(marcacoes, mapaHorarios, limiteMinutos = LIMITE_PADR
 
     if (departamento && !departamentoPorServidor.has(nome)) {
       departamentoPorServidor.set(nome, departamento);
+    }
+    if (matricula && !matriculaPorServidor.has(nome)) {
+      matriculaPorServidor.set(nome, matricula);
     }
 
     const minutos = parsearHorario(horario);
@@ -463,6 +477,7 @@ export function cruzarDados(marcacoes, mapaHorarios, limiteMinutos = LIMITE_PADR
 
     const setor = entrada?.setor || infoGeral.setor || depCSV || 'NÃO INFORMADO';
     const cargo = entrada?.cargo || infoGeral.cargo || 'NÃO INFORMADO';
+    const matricula = entrada?.matricula || infoGeral.matricula || matriculaPorServidor.get(nome) || '';
 
     // Determinar primeira entrada e última saída do dia
     const primeiraEntradaMin = infoDia.entradas.length > 0
@@ -586,6 +601,7 @@ export function cruzarDados(marcacoes, mapaHorarios, limiteMinutos = LIMITE_PADR
       const totalMinutosDia = minutosEntrada + minutosSaida;
       ocorrencias.push({
         nome,
+        matricula,
         data,
         setor,
         cargo,
@@ -614,6 +630,7 @@ export function cruzarDados(marcacoes, mapaHorarios, limiteMinutos = LIMITE_PADR
       const diasTotal = diasComMarcacaoPorServidor.get(oc.nome)?.size || 0;
       resumoMap.set(oc.nome, {
         nome: oc.nome,
+        matricula: oc.matricula || matriculaPorServidor.get(oc.nome) || '',
         setor: oc.setor,
         cargo: oc.cargo,
         horarioPrevisto: oc.horarioPrevisto,
@@ -1278,3 +1295,6 @@ export function diaDaSemana(iso) {
   const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
   return dias[new Date(y, m - 1, d).getDay()];
 }
+
+export { exportarRelatorioDOCX } from './exportarRelatorioDOCX';
+
